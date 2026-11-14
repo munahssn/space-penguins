@@ -19,6 +19,20 @@ The challenge's test objects, with positions already moved to the SPHEREx era.
 ]
 ```
 
+## `GET /api/resolve?name=`
+Turn a name into coordinates, so people can type "Barnard's Star" instead of RA/Dec.
+```json
+{ "name": "Barnard's Star", "ra": 269.446297, "dec": 4.767943, "epoch": 2025.9, "source": "targets" }
+```
+- `ra`/`dec` are degrees **already moved to the SPHEREx era** (epoch 2025.9) with the object's proper motion,
+  so you can pass them straight to `/api/frames`.
+- The 5 challenge targets (and common spellings such as `WISE 0855`, `eps Ind B`, `R Dra`) are answered
+  locally and instantly: `source: "targets"`.
+- Any other name is looked up at CDS Sesame (SIMBAD/NED/VizieR), takes about 2 s, and is cached:
+  `source: "sesame"`, plus `ra_j2000`, `dec_j2000`, `pmra`, `pmdec` (mas/yr). An unknown name can take ~8 s to fail.
+- Errors: 404 name not found, 422 empty or over-long name, 502 name service not reachable.
+- In mock mode only the test targets resolve (no network).
+
 ## `GET /api/frames`
 The main endpoint: one stacked image per survey pass (epoch), ready to blink.
 
