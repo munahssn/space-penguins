@@ -13,15 +13,18 @@ export default function EmbedPage() {
     <div className="embed">
       <StatusBar />
       <main className="embed-main">
+        <h1 className="visually-hidden">SPHEREx Blink player</h1>
         {hasTarget ? (
           <FramePlayer />
         ) : (
           <p className="embed-empty">This embed link has no target. Add ?ra=…&dec=… to the address.</p>
         )}
       </main>
-      <a className="embed-open" href={shareUrl()} target="_blank" rel="noopener noreferrer">
-        Open in SPHEREx Blink ↗
-      </a>
+      <footer>
+        <a className="embed-open" href={shareUrl()} target="_blank" rel="noopener noreferrer">
+          Open in SPHEREx Blink ↗
+        </a>
+      </footer>
     </div>
   );
 }

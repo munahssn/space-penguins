@@ -170,14 +170,6 @@
 }
 .fp-placeholder--error { color: var(--color-danger); border-style: solid; }
 
-.fp-visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
 
 /* legend under the Difference / IR colour image */
 .fp-legend { display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }

@@ -8,7 +8,7 @@ import { OVERLAYS } from "./constants.js";
 export default function OverlayToggles({ value, onChange, unavailable = {} }) {
   return (
     <fieldset className="fp-overlays">
-      <legend className="fp-visually-hidden">Overlays</legend>
+      <legend className="visually-hidden">Overlays</legend>
       {OVERLAYS.map(({ id, label }) => (
         <label key={id} className="fp-overlay-toggle" title={unavailable[id]}>
           <input

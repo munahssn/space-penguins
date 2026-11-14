@@ -30,43 +30,46 @@ export default function MotionTrackChart({ track }) {
 
   return (
     <figure className="chart" aria-label="Motion track: measured positions against the catalog prediction">
-      <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-        <ScatterChart margin={CHART_MARGIN}>
-          <CartesianGrid stroke={INK.grid} />
-          <XAxis
-            {...AXIS_PROPS}
-            type="number"
-            dataKey="x"
-            reversed
-            tickFormatter={(v) => v.toFixed(0)}
-            label={{ ...AXIS_LABEL_STYLE, value: "← east (″)", position: "insideBottom", offset: -12 }}
-          />
-          <YAxis
-            {...AXIS_PROPS}
-            type="number"
-            dataKey="y"
-            width={44}
-            tickFormatter={(v) => v.toFixed(1)}
-            label={{ ...AXIS_LABEL_STYLE, value: "north (″)", angle: -90, position: "insideLeft" }}
-          />
-          <Tooltip content={<ChartTooltip rows={tooltipRows} />} cursor={false} />
-          <Legend verticalAlign="top" height={24} iconType="circle" formatter={legendText} wrapperStyle={{ fontSize: 12 }} />
-          {predicted.length > 0 && (
-            <Scatter
-              name="Catalog prediction"
-              data={predicted}
-              fill={SERIES.predicted}
-              line={{ stroke: SERIES.predicted, strokeWidth: 2, strokeDasharray: "6 4" }}
-              shape={<Dot />}
-              isAnimationActive={false}
+      {/* The drawing is hidden from screen readers: the label above and the table below carry the data. */}
+      <div aria-hidden="true">
+        <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+          <ScatterChart margin={CHART_MARGIN}>
+            <CartesianGrid stroke={INK.grid} />
+            <XAxis
+              {...AXIS_PROPS}
+              type="number"
+              dataKey="x"
+              reversed
+              tickFormatter={(v) => v.toFixed(0)}
+              label={{ ...AXIS_LABEL_STYLE, value: "← east (″)", position: "insideBottom", offset: -12 }}
             />
-          )}
-          <Scatter name="Measured" data={measured} fill={SERIES.measured} shape={<Dot />} isAnimationActive={false}>
-            <ErrorBar dataKey="err" direction="x" stroke={SERIES.measured} strokeWidth={1} width={0} />
-            <ErrorBar dataKey="err" direction="y" stroke={SERIES.measured} strokeWidth={1} width={0} />
-          </Scatter>
-        </ScatterChart>
-      </ResponsiveContainer>
+            <YAxis
+              {...AXIS_PROPS}
+              type="number"
+              dataKey="y"
+              width={44}
+              tickFormatter={(v) => v.toFixed(1)}
+              label={{ ...AXIS_LABEL_STYLE, value: "north (″)", angle: -90, position: "insideLeft" }}
+            />
+            <Tooltip content={<ChartTooltip rows={tooltipRows} />} cursor={false} />
+            <Legend verticalAlign="top" height={24} iconType="circle" formatter={legendText} wrapperStyle={{ fontSize: 12 }} />
+            {predicted.length > 0 && (
+              <Scatter
+                name="Catalog prediction"
+                data={predicted}
+                fill={SERIES.predicted}
+                line={{ stroke: SERIES.predicted, strokeWidth: 2, strokeDasharray: "6 4" }}
+                shape={<Dot />}
+                isAnimationActive={false}
+              />
+            )}
+            <Scatter name="Measured" data={measured} fill={SERIES.measured} shape={<Dot />} isAnimationActive={false}>
+              <ErrorBar dataKey="err" direction="x" stroke={SERIES.measured} strokeWidth={1} width={0} />
+              <ErrorBar dataKey="err" direction="y" stroke={SERIES.measured} strokeWidth={1} width={0} />
+            </Scatter>
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
       <figcaption className="chart-caption">
         Offsets from the first pass. If the orange dots follow the blue path, the object moves as the catalog says.
       </figcaption>
