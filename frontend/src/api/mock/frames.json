@@ -1,0 +1,41 @@
+{
+  "grid": { "width": 59, "height": 59, "pixscale_arcsec": 6.15 },
+  "frames": [
+    {
+      "id": "mock-epoch-0",
+      "url": "/mock/frame-0.svg",
+      "date": "2025-05-21",
+      "mjd": 60816.4,
+      "det": "D3",
+      "wavelength_um": 1.92,
+      "n_exposures": 14,
+      "n_exposures_total": 14,
+      "flagged_fraction": 0.04,
+      "artifact_fraction": 0.01
+    },
+    {
+      "id": "mock-epoch-1",
+      "url": "/mock/frame-1.svg",
+      "date": "2025-11-18",
+      "mjd": 60997.6,
+      "det": "D3",
+      "wavelength_um": 2.05,
+      "n_exposures": 11,
+      "n_exposures_total": 12,
+      "flagged_fraction": 0.02,
+      "artifact_fraction": 0.08
+    },
+    {
+      "id": "mock-epoch-2",
+      "url": "/mock/frame-2.svg",
+      "date": "2026-05-20",
+      "mjd": 61180.3,
+      "det": "D3",
+      "wavelength_um": 1.98,
+      "n_exposures": 16,
+      "n_exposures_total": 16,
+      "flagged_fraction": 0.03,
+      "artifact_fraction": 0.0
+    }
+  ]
+}

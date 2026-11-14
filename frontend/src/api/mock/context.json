@@ -1,0 +1,13 @@
+{
+  "verdict": "known_star",
+  "match": { "name": "WISE J085510.83-071442.5", "type": "brown dwarf", "source": "SIMBAD" },
+  "stars": [
+    { "source_id": "5765398417290745728", "ra": 133.7712, "dec": -7.2401, "gmag": 15.2, "pmra": -3.1, "pmdec": 1.4 },
+    { "source_id": "5765398417290745856", "ra": 133.7642, "dec": -7.2468, "gmag": 16.8, "pmra": 0.6, "pmdec": -2.2 },
+    { "source_id": "5765398383930996224", "ra": 133.7738, "dec": -7.2482, "gmag": 17.4, "pmra": 1.9, "pmdec": 0.3 }
+  ],
+  "asteroids": [
+    { "name": "(12345) Mockaroid", "ra": 133.7590, "dec": -7.2380, "vmag": 19.6 }
+  ],
+  "warnings": []
+}

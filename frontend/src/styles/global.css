@@ -1,0 +1,34 @@
+/* Global base styles. The real theme comes in #2 (Person 2). */
+:root {
+  --bg: #0b0d12;
+  --panel: #151923;
+  --border: #2a3040;
+  --text: #e6e8ee;
+  --muted: #8a91a3;
+  --accent: #24304a;
+  --error: #ff7a7a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); }
+h1 { font-size: 1.3rem; margin: 0 0 0.3rem; }
+h2 { font-size: 1rem; margin: 1.5rem 0 0.5rem; }
+.muted { color: var(--muted); font-size: 0.85rem; }
+
+input, select, button {
+  font: inherit; color: inherit; background: var(--panel);
+  border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem;
+}
+button { cursor: pointer; background: var(--accent); }
+button:disabled { opacity: 0.4; cursor: default; }
+
+/* dev check page */
+.dev { max-width: 960px; margin: 0 auto; padding: 1.5rem 16px; }
+.dev .row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.dev pre {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+  padding: 0.8rem; overflow-x: auto; font-size: 0.8rem; max-height: 420px;
+}
+.dev pre.error { color: var(--error); }
+.dev .thumb { width: 160px; height: 160px; image-rendering: pixelated; border: 1px solid var(--border); }

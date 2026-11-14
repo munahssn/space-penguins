@@ -216,8 +216,8 @@ Rules:
 |---|---|
 | A (backend) | Finder, Fetcher (S3 test first!), cache, job runner + queue, rate limit, precache + GitHub Action |
 | B (backend) | Processor (stacks, diff, RGB, wavelength filter), Measure, Context, Spectrum, Explain, API layer |
-| C (frontend) | SearchBar, FramePlayer (canvas + overlays), ControlPanel (incl. wavelength slider), "Is it new?" panel, status bar |
-| D (frontend) | SkyMap (+ WISE toggle), charts, URL state + embed, Vercel + domain, README/GIFs, pitch |
+| C (frontend, Person 1) | FramePlayer (canvas + overlays), charts, "Is it new?" panel. See `FRONTEND_PLAN.md` |
+| D (frontend, Person 2) | App shell, `api.js` + mock switch, URL state + embed, SearchBar, ControlPanel (incl. wavelength slider), status bar, SkyMap (+ WISE toggle), Vercel + domain, README, video, submission |
 
 ## 11. Build order
 
