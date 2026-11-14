@@ -5,6 +5,7 @@ import DataChip from "../components/status/DataChip.jsx";
 import StatusBar from "../components/status/StatusBar.jsx";
 import ShareActions from "../components/share/ShareActions.jsx";
 import FramePlayer from "../components/player/FramePlayer.jsx";
+import IsItNewPanel from "../components/verdict/IsItNewPanel.jsx";
 import SearchBar from "../components/search/SearchBar.jsx";
 import ControlPanel from "../components/controls/ControlPanel.jsx";
 import StretchFrame from "../components/controls/StretchFrame.jsx";
@@ -34,7 +35,7 @@ export default function ViewerPage() {
       }
       side={
         <>
-          <Placeholder name="“Is it new?” panel" issue={10} owner={PERSON_1} />
+          <IsItNewPanel />
           <Placeholder name="Charts" issue={11} owner={PERSON_1} />
           <Placeholder name="SkyMap" issue={12} owner={PERSON_2} className="placeholder-square" />
         </>

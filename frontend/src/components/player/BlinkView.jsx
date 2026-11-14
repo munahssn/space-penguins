@@ -30,6 +30,8 @@ export default function BlinkView({ frames, grid, images, view, overlays }) {
   }
 
   const center = { ra: view.ra, dec: view.dec };
+  // The verdict is "at a frame's date", so a click remembers which frame it was made on.
+  const selectHere = (position) => view.setSelected({ ...position, mjd: frame.mjd, date: frame.date });
   const label = frameLabel(frame, playback.index, frames.length, view.mode);
   const mask = masks.images[maskUrls.indexOf(frame.flags_url)] ?? null;
 
@@ -62,7 +64,7 @@ export default function BlinkView({ frames, grid, images, view, overlays }) {
           showStars={overlays.stars}
           showAsteroids={overlays.asteroids}
         />
-        <SelectionLayer grid={grid} center={center} selected={view.selected} onSelect={view.setSelected} />
+        <SelectionLayer grid={grid} center={center} selected={view.selected} onSelect={selectHere} />
         <span className="fp-badge">{label}</span>
         <ScaleBar grid={grid} />
       </FrameCanvas>

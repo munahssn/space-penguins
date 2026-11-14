@@ -19,7 +19,7 @@ export const DEFAULTS = {
   stretch: "normal", // brightness, applied in the browser: "normal" | "faint" | "contrast"
   wmin: null,        // µm, null = no wavelength filter
   wmax: null,        // µm
-  selected: null,    // { ra, dec } of the clicked source, or null
+  selected: null,    // { ra, dec, mjd, date } of the clicked spot and the frame it was clicked on, or null
   embed: false,      // true when the page is loaded with ?embed=1
 };
 

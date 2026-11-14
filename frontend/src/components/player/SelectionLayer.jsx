@@ -1,5 +1,6 @@
 // Click anywhere on the image to select that spot: turns the click into RA/Dec and shows an orange
-// dashed ring there. The selection feeds the "Is it new?" panel (#10) through useViewState.
+// dashed ring there. The parent adds the frame date and stores it in useViewState().selected,
+// which feeds the "Is it new?" panel (#10).
 //
 // Pointer only: keyboard users can type exact coordinates in the search bar instead.
 import { MARKER_SIZES } from "./constants.js";

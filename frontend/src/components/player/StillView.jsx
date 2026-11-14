@@ -20,6 +20,9 @@ export default function StillView({ kind, view, frames, grid }) {
   const still = useStillImage(kind, view);
   const image = usePreloadedImages(still.url ? [still.url] : []);
   const { what, badge } = TEXT[kind];
+  // Both still images show the sky as of the latest pass, so a click is dated to that pass.
+  const latest = frames[frames.length - 1];
+  const selectHere = (position) => view.setSelected({ ...position, mjd: latest.mjd, date: latest.date });
 
   if (still.error) return <PlayerPlaceholder tone="error">{errorMessage(still.error, what)}</PlayerPlaceholder>;
   if (still.loading) return <PlayerPlaceholder>{progressMessage(still.progress, what)}</PlayerPlaceholder>;
@@ -32,7 +35,7 @@ export default function StillView({ kind, view, frames, grid }) {
           grid={grid}
           center={{ ra: view.ra, dec: view.dec }}
           selected={view.selected}
-          onSelect={view.setSelected}
+          onSelect={selectHere}
         />
         <span className="fp-badge">{badge}</span>
         <ScaleBar grid={grid} />
