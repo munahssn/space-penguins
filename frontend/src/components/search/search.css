@@ -12,3 +12,8 @@
   .search-input { flex-basis: 100%; }
   .search-targets { flex: 1; max-width: none; }
 }
+
+/* start page: bigger box */
+.search--large .search-input,
+.search--large button { padding: var(--space-3) var(--space-4); font-size: var(--text-lg); }
+.search--large .search-error { font-size: var(--text-sm); }
