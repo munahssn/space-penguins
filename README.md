@@ -37,6 +37,10 @@ uvicorn app.main:app --reload
 # Fake data (frontend team uses this)
 $env:SPHEREX_MOCK=1; uvicorn app.main:app --reload
 ```
+Where the pixels come from (`SPHEREX_SOURCE`): by default the backend reads only the small pixel box it needs
+from IRSA's public S3 bucket (`nasa-irsa-spherex`, no credentials) and falls back to IRSA's cutout service if S3
+fails. Set `$env:SPHEREX_SOURCE="irsa"` to use the cutout service only.
+
 Open http://localhost:8000 for the app and http://localhost:8000/docs for the interactive API.
 Shareable links work: `http://localhost:8000/?ra=133.768&dec=-7.243&fov=0.1&det=D3`
 

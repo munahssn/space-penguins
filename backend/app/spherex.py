@@ -88,6 +88,26 @@ def target_grid(ra, dec, fov):
     return w, (n, n)
 
 
+# Where pixels come from: "s3" = range reads from IRSA's public S3 bucket (fast, no cutout
+# server), falling back to IRSA's cutout service if S3 fails. "irsa" = cutout service only.
+SOURCE = os.environ.get("SPHEREX_SOURCE", "s3")
+S3_PAD = 4  # extra detector pixels around the field, so reprojection has no empty edge
+
+
+def _to_common_grid(img, flags, w_in, wcs_out, shape):
+    """Mask bad pixels and reproject onto the target grid.
+    Returns (image, bad_fraction, artifact_fraction)."""
+    from reproject import reproject_interp
+
+    bad = ((flags & BAD_MASK) != 0).astype(float)
+    art = ((flags & ARTIFACT_MASK) != 0).astype(float)
+    img = img.copy()
+    img[bad > 0] = np.nan
+    out, _ = reproject_interp((img, w_in), wcs_out, shape_out=shape)
+    # fractions measured on the original pixels (reprojection would blur single pixels)
+    return out, float(bad.mean()), float(art.mean())
+
+
 def wavelength_at(hdul, w_sky, ra, dec):
     """Wavelength (um) the pixel under (ra, dec) saw in this exposure, or None.
 
@@ -113,34 +133,68 @@ def wavelength_at(hdul, w_sky, ra, dec):
         return None
 
 
+def _fetch_cutout_s3(uri, wcs_out, shape, ra, dec):
+    """Read only the needed pixel box of IMAGE, ZODI and FLAGS from S3 (range requests)."""
+    from astropy.coordinates import SkyCoord
+
+    from .s3io import open_remote, s3_url_from_access_url
+
+    hdul, _ = open_remote(s3_url_from_access_url(uri))
+    try:
+        hdr = hdul["IMAGE"].header
+        w_in = WCS(hdr)  # primary = sky WCS (TAN-SIP)
+        x, y = w_in.world_to_pixel(SkyCoord(ra, dec, unit="deg"))
+        # native pixel is ~6.15", same as our grid, so half the grid size + padding
+        half = int(np.ceil(max(shape) / 2)) + S3_PAD
+        ny, nx = hdr["NAXIS2"], hdr["NAXIS1"]
+        x0, x1 = max(int(round(float(x))) - half, 0), min(int(round(float(x))) + half + 1, nx)
+        y0, y1 = max(int(round(float(y))) - half, 0), min(int(round(float(y))) + half + 1, ny)
+        if x1 - x0 < 3 or y1 - y0 < 3:
+            raise NoData("target is off this detector image")
+        img = hdul["IMAGE"].section[y0:y1, x0:x1].astype(float) - hdul["ZODI"].section[y0:y1, x0:x1]
+        flags = hdul["FLAGS"].section[y0:y1, x0:x1].astype(np.int64)
+        wl = wavelength_at(hdul, w_in, ra, dec)  # full-frame WCS, before slicing
+    finally:
+        hdul.close()
+    return (*_to_common_grid(img, flags, w_in[y0:y1, x0:x1], wcs_out, shape), wl)
+
+
+def _fetch_cutout_irsa(uri, wcs_out, shape, ra, dec):
+    """Download one cutout from IRSA's cutout service (slower, sometimes 503 'busy')."""
+    with fits.open(uri, memmap=False) as hdul:
+        img = hdul["IMAGE"].data.astype(float) - hdul["ZODI"].data
+        flags = hdul["FLAGS"].data.astype(np.int64)
+        w_in = WCS(hdul["IMAGE"].header)  # primary = sky WCS (TAN-SIP)
+        wl = wavelength_at(hdul, w_in, ra, dec)
+    return (*_to_common_grid(img, flags, w_in, wcs_out, shape), wl)
+
+
 def fetch_cutout(uri, wcs_out, shape, ra, dec):
-    """Download one cutout, subtract zodiacal light, put on the common grid.
-    Returns (image, bad_fraction, artifact_fraction, wavelength_um) or None.
-    wavelength_um is the wavelength at the target position (None if unknown).
+    """Get one exposure's pixels around the target: subtract zodiacal light, mask bad pixels,
+    put on the common grid. Returns (image, bad_fraction, artifact_fraction, wavelength_um)
+    or None. wavelength_um is the wavelength at the target position (None if unknown).
 
     IMAGE is in MJy/sr with zodiacal light NOT subtracted, so we subtract ZODI.
+
+    Tries S3 range reads first (2 tries), then IRSA's cutout service (3 tries, backoff).
     """
     import time
 
-    from reproject import reproject_interp
+    plan = []
+    if SOURCE == "s3":
+        plan += [("s3", 1), ("s3", 2)]
+    plan += [("irsa", 5), ("irsa", 10), ("irsa", 15)]
 
     err = None
-    for attempt in range(3):
+    for source, wait in plan:
         try:
-            with fits.open(uri, memmap=False) as hdul:
-                img = hdul["IMAGE"].data.astype(float) - hdul["ZODI"].data
-                flags = hdul["FLAGS"].data.astype(np.int64)
-                w_in = WCS(hdul["IMAGE"].header)  # primary = sky WCS (TAN-SIP)
-                wl = wavelength_at(hdul, w_in, ra, dec)
-            bad = ((flags & BAD_MASK) != 0).astype(float)
-            art = ((flags & ARTIFACT_MASK) != 0).astype(float)
-            img[bad > 0] = np.nan
-            out, _ = reproject_interp((img, w_in), wcs_out, shape_out=shape)
-            # fractions measured on the original pixels (reprojection would blur single pixels)
-            return out, float(bad.mean()), float(art.mean()), wl
-        except Exception as e:  # IRSA can be slow / flaky
+            fn = _fetch_cutout_s3 if source == "s3" else _fetch_cutout_irsa
+            return fn(uri, wcs_out, shape, ra, dec)
+        except NoData:
+            return None  # target is not on this exposure's detector: no point retrying
+        except Exception as e:  # network trouble, 503 busy, ...
             err = e
-            time.sleep(5 * (attempt + 1))
+            time.sleep(wait)
     print(f"cutout failed: {uri} ({err})")
     return None
 
