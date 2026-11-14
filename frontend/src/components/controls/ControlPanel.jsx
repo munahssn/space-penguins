@@ -6,13 +6,10 @@ import "./controls.css";
 
 /** View settings under the player. Everything writes to useViewState, so it ends up in the URL. */
 export default function ControlPanel() {
-  const { fov, det, stretch, setFov, setStretch, setDet, setView } = useViewState();
+  const { fov, det, stretch, setFov, setStretch, setView } = useViewState();
 
   // A wavelength filter only makes sense inside one detector's range, so a new detector clears it.
-  const changeDetector = (value) => {
-    setDet(value);
-    setView({ wmin: null, wmax: null });
-  };
+  const changeDetector = (value) => setView({ det: value, wmin: null, wmax: null });
 
   return (
     <section className="control-panel" aria-label="View settings">

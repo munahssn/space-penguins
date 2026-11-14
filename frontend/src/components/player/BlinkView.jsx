@@ -12,7 +12,13 @@ import { useFrameContext } from "./useFrameContext.js";
 import { usePlayback } from "./usePlayback.js";
 import { usePreloadedImages } from "./usePreloadedImages.js";
 
-const NO_CONTEXT = { stars: [], asteroids: [] };
+/** Overlay lists from /api/context; missing fields (or no answer yet) just mean nothing to draw. */
+function overlayItems(context) {
+  return {
+    stars: Array.isArray(context?.stars) ? context.stars : [],
+    asteroids: Array.isArray(context?.asteroids) ? context.asteroids : [],
+  };
+}
 
 /**
  * @param {{frames: object[], grid: object, images: object, view: object, overlays: Record<string, boolean>}} props
@@ -21,7 +27,7 @@ const NO_CONTEXT = { stars: [], asteroids: [] };
 export default function BlinkView({ frames, grid, images, view, overlays }) {
   const playback = usePlayback(frames.length, frames);
   const frame = frames[playback.index];
-  const context = useFrameContext(view, frame.mjd, overlays.stars || overlays.asteroids) ?? NO_CONTEXT;
+  const context = overlayItems(useFrameContext(view, frame.mjd, overlays.stars || overlays.asteroids));
   const maskUrls = overlays.flags ? frames.map((f) => f.flags_url).filter(Boolean) : [];
   const masks = usePreloadedImages(maskUrls);
 

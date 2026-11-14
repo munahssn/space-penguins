@@ -13,3 +13,63 @@
 .field label { font-size: var(--text-xs); color: var(--color-text-muted); }
 .field select { width: 100%; }
 
+/* ---------- wavelength slider (two thumbs over one track) ---------- */
+.wl { grid-column: 1 / -1; display: flex; flex-direction: column; gap: var(--space-2); }
+.wl-head { display: flex; align-items: baseline; gap: var(--space-3); }
+.wl-label { font-size: var(--text-xs); color: var(--color-text-muted); }
+.wl-value { font-family: var(--font-mono); font-size: var(--text-sm); }
+.wl-reset { margin-left: auto; padding: var(--space-1) var(--space-2); font-size: var(--text-xs); }
+.wl-summary { margin: 0; font-size: var(--text-xs); color: var(--color-text-muted); }
+
+.wl-track { --thumb: 16px; position: relative; height: 24px; }
+.wl-track::before {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: linear-gradient(to right,
+    var(--color-border) var(--from), var(--color-accent) var(--from),
+    var(--color-accent) var(--to), var(--color-border) var(--to));
+}
+
+/* Both inputs cover the whole track; only their thumbs take clicks. */
+.wl-track input[type="range"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  outline: none;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.wl-track input::-webkit-slider-runnable-track { height: 100%; background: transparent; }
+.wl-track input::-moz-range-track { background: transparent; }
+.wl-track input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc((24px - var(--thumb)) / 2);
+  border: 2px solid var(--color-bg);
+  border-radius: 50%;
+  background: var(--color-accent);
+  cursor: grab;
+  pointer-events: auto;
+}
+.wl-track input::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 2px solid var(--color-bg);
+  border-radius: 50%;
+  background: var(--color-accent);
+  cursor: grab;
+  pointer-events: auto;
+}
+.wl-track input:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.wl-track input:focus-visible::-moz-range-thumb { outline: 2px solid var(--color-accent); outline-offset: 2px; }

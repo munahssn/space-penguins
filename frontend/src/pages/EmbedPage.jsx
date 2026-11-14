@@ -1,6 +1,5 @@
 // Embed mode (#14): what an <iframe> with ?embed=1 shows. Only the player (with its own controls),
 // the status bar for "waking up…" messages, and a link to the full app.
-import StretchFrame from "../components/controls/StretchFrame.jsx";
 import FramePlayer from "../components/player/FramePlayer.jsx";
 import StatusBar from "../components/status/StatusBar.jsx";
 import { useViewState } from "../hooks/useViewState.jsx";
@@ -15,9 +14,7 @@ export default function EmbedPage() {
       <StatusBar />
       <main className="embed-main">
         {hasTarget ? (
-          <StretchFrame>
-            <FramePlayer />
-          </StretchFrame>
+          <FramePlayer />
         ) : (
           <p className="embed-empty">This embed link has no target. Add ?ra=…&dec=… to the address.</p>
         )}
