@@ -1,7 +1,7 @@
 """Query parameter checks shared by the endpoints."""
 from fastapi import HTTPException
 
-from .config import DETECTORS
+from .config import DETECTORS, MODES
 
 
 def check_query(ra, dec, fov, det):
@@ -11,6 +11,11 @@ def check_query(ra, dec, fov, det):
         raise HTTPException(422, "fov must be between 0.005 and 0.5 degrees")
     if det not in DETECTORS:
         raise HTTPException(422, f"det must be one of {sorted(DETECTORS)}")
+
+
+def check_mode(mode):
+    if mode not in MODES:
+        raise HTTPException(422, f"mode must be one of {sorted(MODES)}")
 
 
 def check_wavelength(wmin, wmax):

@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from .. import jobs, spherex
 from ..cache import get_stacks
 from ..config import MOCK
-from ..validation import check_query, check_wavelength
+from ..validation import check_mode, check_query, check_wavelength
 from .images import image_url
 
 router = APIRouter()
@@ -25,15 +25,17 @@ IMAGES = Query("inline", pattern="^(inline|url)$",
 
 @router.get("/api/frames")
 def frames(ra: float, dec: float, fov: float = 0.1, det: str = "D3",
-           wmin: float | None = None, wmax: float | None = None, images: str = IMAGES):
+           wmin: float | None = None, wmax: float | None = None, mode: str = "epoch",
+           images: str = IMAGES):
     check_query(ra, dec, fov, det)
     check_wavelength(wmin, wmax)
+    check_mode(mode)
     info = jobs.pending(ra, dec, fov, det)
     if info:
         return _pending(info)
-    stacks, meta, grid = get_stacks(ra, dec, fov, det, wmin, wmax)
+    stacks, meta, grid = get_stacks(ra, dec, fov, det, wmin, wmax, mode)
     if images == "url":
-        out = [{"index": i, **m, "url": image_url("f", ra, dec, fov, det, wmin, wmax, i=i)}
+        out = [{"index": i, **m, "url": image_url("f", ra, dec, fov, det, wmin, wmax, mode=mode, i=i)}
                for i, m in enumerate(meta)]
     else:
         vmin, vmax = spherex.shared_limits(stacks)
@@ -41,7 +43,7 @@ def frames(ra: float, dec: float, fov: float = 0.1, det: str = "D3",
                for i, (s, m) in enumerate(zip(stacks, meta))]
     return {
         "query": {"ra": ra, "dec": dec, "fov": fov, "det": det, "wmin": wmin, "wmax": wmax,
-                  "release": "mock" if MOCK else spherex.RELEASE},
+                  "mode": mode, "release": "mock" if MOCK else spherex.RELEASE},
         "grid": grid,
         "frames": out,
     }
@@ -49,20 +51,22 @@ def frames(ra: float, dec: float, fov: float = 0.1, det: str = "D3",
 
 @router.get("/api/diff")
 def diff(ra: float, dec: float, fov: float = 0.1, det: str = "D3",
-         wmin: float | None = None, wmax: float | None = None,
+         wmin: float | None = None, wmax: float | None = None, mode: str = "epoch",
          a: int = 0, b: int = -1, op: str = Query("sub", pattern="^(sub|add)$"), images: str = IMAGES):
     check_query(ra, dec, fov, det)
     check_wavelength(wmin, wmax)
+    check_mode(mode)
     info = jobs.pending(ra, dec, fov, det)
     if info:
         return _pending(info)
-    stacks, _, _ = get_stacks(ra, dec, fov, det, wmin, wmax)
+    stacks, _, _ = get_stacks(ra, dec, fov, det, wmin, wmax, mode)
     n = len(stacks)
     b = b if b >= 0 else n - 1
     if not (0 <= a < n and 0 <= b < n):
         raise HTTPException(422, f"a and b must be frame indices 0..{n - 1}")
     if images == "url":
-        return {"a": a, "b": b, "op": op, "url": image_url("d", ra, dec, fov, det, wmin, wmax, a=a, b=b, op=op)}
+        return {"a": a, "b": b, "op": op,
+                "url": image_url("d", ra, dec, fov, det, wmin, wmax, mode=mode, a=a, b=b, op=op)}
     if op == "sub":
         img = spherex.to_png_diverging(stacks[b] - stacks[a])
     else:

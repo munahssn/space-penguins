@@ -3,7 +3,7 @@
 Instead of base64 inside the JSON, /api/frames?images=url returns a short URL per frame and the
 browser fetches the images itself (smaller JSON, browser caching, <img src> works directly).
 
-The token is the request itself (position, fov, detector, wavelength range and which frame),
+The token is the request itself (position, fov, detector, wavelength range, mode and which frame),
 base64-encoded. That makes the URL stateless: after a restart or a wiped PNG cache, the image is
 simply rendered again from the cached exposures. It never starts a download: if the exposures are
 not cached yet, ask /api/frames first (404 here)."""
@@ -17,7 +17,7 @@ from fastapi.responses import FileResponse
 
 from .. import spherex
 from ..cache import CACHE_VERSION, get_stacks, is_cached
-from ..config import CACHE_DIR, DETECTORS, MOCK
+from ..config import CACHE_DIR, DETECTORS, MOCK, MODES
 from ..validation import check_query, check_wavelength
 
 router = APIRouter()
@@ -39,7 +39,7 @@ def _decode(token):
         p = json.loads(raw)
         num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)  # noqa: E731
         ok = (isinstance(p, dict) and p.get("k") in ("f", "d") and num(p["ra"]) and num(p["dec"])
-              and num(p["fov"]) and p["det"] in DETECTORS
+              and num(p["fov"]) and p["det"] in DETECTORS and p.get("mode", "epoch") in MODES
               and all(p[w] is None or num(p[w]) for w in ("wmin", "wmax")))
         if ok and p["k"] == "f":
             ok = isinstance(p["i"], int)
@@ -63,7 +63,7 @@ def _render(p):
     check_wavelength(wmin, wmax)
     if not (MOCK or is_cached(ra, dec, fov, det)):  # mock data is instant; never start a download here
         raise HTTPException(404, "These images are not downloaded yet: ask /api/frames for this position first")
-    stacks, _, _ = get_stacks(ra, dec, fov, det, wmin, wmax)
+    stacks, _, _ = get_stacks(ra, dec, fov, det, wmin, wmax, p.get("mode", "epoch"))
     n = len(stacks)
     if p["k"] == "f":
         if not 0 <= p["i"] < n:
