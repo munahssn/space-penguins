@@ -11,3 +11,11 @@ def check_query(ra, dec, fov, det):
         raise HTTPException(422, "fov must be between 0.005 and 0.5 degrees")
     if det not in DETECTORS:
         raise HTTPException(422, f"det must be one of {sorted(DETECTORS)}")
+
+
+def check_wavelength(wmin, wmax):
+    for name, v in (("wmin", wmin), ("wmax", wmax)):
+        if v is not None and not (0 < v < 10):
+            raise HTTPException(422, f"{name} is a wavelength in micrometres (SPHEREx covers 0.75-5.0)")
+    if wmin is not None and wmax is not None and wmin > wmax:
+        raise HTTPException(422, "wmin must not be larger than wmax")
