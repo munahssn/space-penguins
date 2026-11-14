@@ -1,9 +1,10 @@
 // Shared view state, synced to the URL so every view is a shareable link.
 //
-//   const { ra, dec, fov, det, mode, wmin, wmax, selected, embed, setView, setRa, ... } = useViewState();
+//   const { ra, dec, fov, det, mode, display, wmin, wmax, selected, embed, setView, setRa, ... } = useViewState();
 //
 // - Wrap the app in <ViewStateProvider> once (done in main.jsx).
-// - URL keys: ?ra&dec&fov&det&mode&wmin&wmax&embed=1
+// - URL keys: ?ra&dec&fov&det&mode&display&wmin&wmax&embed=1
+// - Values outside the allowed ones (e.g. det=D9, fov=5) fall back to the default.
 // - `selected` (the clicked {ra, dec}) is NOT put in the URL.
 // - `embed` is read from the URL only (?embed=1). Components hide chrome when it's true.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
@@ -13,16 +14,35 @@ export const DEFAULTS = {
   dec: null,         // degrees
   fov: 0.1,          // degrees, max 0.5
   det: "D3",         // "D1".."D6" or "all"
-  mode: "epoch",     // "epoch" | "exposure"
+  mode: "epoch",     // which data: "epoch" (stack per survey pass) | "exposure" (every exposure)
+  display: "blink",  // what the player shows: "blink" | "diff" | "rgb"
   wmin: null,        // µm, null = no wavelength filter
   wmax: null,        // µm
   selected: null,    // { ra, dec } of the clicked source, or null
   embed: false,      // true when the page is loaded with ?embed=1
 };
 
-const NUMBER_KEYS = ["ra", "dec", "fov", "wmin", "wmax"];
-const STRING_KEYS = ["det", "mode"];
+// Allowed values per string key, and valid range per number key.
+const CHOICES = {
+  det: ["D1", "D2", "D3", "D4", "D5", "D6", "all"],
+  mode: ["epoch", "exposure"],
+  display: ["blink", "diff", "rgb"],
+};
+const RANGES = {
+  ra: [0, 360],
+  dec: [-90, 90],
+  fov: [0.005, 0.5],
+  wmin: [0.75, 5.0],
+  wmax: [0.75, 5.0],
+};
+const NUMBER_KEYS = Object.keys(RANGES);
+const STRING_KEYS = Object.keys(CHOICES);
 const URL_KEYS = [...NUMBER_KEYS, ...STRING_KEYS];
+
+function inRange(key, value) {
+  const [min, max] = RANGES[key];
+  return Number.isFinite(value) && value >= min && value <= max;
+}
 
 function readUrl() {
   const p = new URLSearchParams(window.location.search);
@@ -30,10 +50,12 @@ function readUrl() {
   for (const k of NUMBER_KEYS) {
     if (p.has(k) && p.get(k) !== "") {
       const v = Number(p.get(k));
-      if (Number.isFinite(v)) state[k] = v;
+      if (inRange(k, v)) state[k] = v;
     }
   }
-  for (const k of STRING_KEYS) if (p.get(k)) state[k] = p.get(k);
+  for (const k of STRING_KEYS) {
+    if (CHOICES[k].includes(p.get(k))) state[k] = p.get(k);
+  }
   state.embed = p.get("embed") === "1";
   return state;
 }
@@ -84,6 +106,7 @@ export function ViewStateProvider({ children }) {
     setFov: (fov) => setView({ fov }),
     setDet: (det) => setView({ det }),
     setMode: (mode) => setView({ mode }),
+    setDisplay: (display) => setView({ display }),
     setWmin: (wmin) => setView({ wmin }),
     setWmax: (wmax) => setView({ wmax }),
     setSelected: (selected) => setView({ selected }),

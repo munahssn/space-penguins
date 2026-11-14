@@ -6,7 +6,7 @@ import * as api from "../api/api.js";
 
 export default function DevCheck() {
   const view = useViewState();
-  const { ra, dec, fov, det, mode, wmin, wmax, selected, embed, setView, setSelected } = view;
+  const { ra, dec, fov, det, mode, display, wmin, wmax, selected, embed, setView, setSelected } = view;
   const [out, setOut] = useState(null);
   const [progress, setProgress] = useState(null);
   const [name, setName] = useState("WISE 0855");
@@ -49,11 +49,12 @@ export default function DevCheck() {
 
       <section>
         <h2>useViewState</h2>
-        <pre>{JSON.stringify({ ra, dec, fov, det, mode, wmin, wmax, selected, embed }, null, 2)}</pre>
+        <pre>{JSON.stringify({ ra, dec, fov, det, mode, display, wmin, wmax, selected, embed }, null, 2)}</pre>
         <div className="row">
           <button onClick={() => setView({ ra: 269.446297, dec: 4.767943 })}>Barnard's Star</button>
           <button onClick={() => setView({ det: det === "D3" ? "D6" : "D3" })}>Toggle det</button>
           <button onClick={() => setView({ mode: mode === "epoch" ? "exposure" : "epoch" })}>Toggle mode</button>
+          <button onClick={() => setView({ display: { blink: "diff", diff: "rgb", rgb: "blink" }[display] })}>Next display</button>
           <button onClick={() => setView({ wmin: 1.5, wmax: 2.5 })}>wmin/wmax 1.5–2.5</button>
           <button onClick={() => setSelected({ ra: pos.ra, dec: pos.dec })}>Select centre</button>
           <button onClick={view.reset}>Reset</button>

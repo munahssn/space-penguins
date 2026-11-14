@@ -25,9 +25,11 @@ Touching the other person's files: small fixes OK, tell them. Bigger changes go 
 
 ## Shared contract (agree in phase 0, then don't change without talking)
 
-- `useViewState()` returns `{ra, dec, fov, det, mode, wmin, wmax, selected, embed}` plus a setter,
+- `useViewState()` returns `{ra, dec, fov, det, mode, display, wmin, wmax, selected, embed}` plus setters,
   synced to the URL (`selected` is the clicked RA/Dec; it's not put in the URL).
   `embed` is in from the start, so embed mode later is just "hide things when `embed` is true".
+  `mode` = which data (`epoch` | `exposure`); `display` = what the player shows (`blink` | `diff` | `rgb`).
+  Bad URL values (e.g. `det=D9`) fall back to the defaults.
 - `api.js` exports one function per endpoint: `getHealth, resolve, getFrames, getDiff, getRgb,
   getContext, getExplain, getTrack, getSpectrum, getLightcurve`. Components never call `fetch` directly.
 - Every function returns the JSON shape from `docs/DESIGN.md` §6, in mock mode too.
