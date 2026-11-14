@@ -1,6 +1,6 @@
-// Context sky map (#12): Aladin Lite v3 centred on the target, with a square showing the player's field.
-// Not yet: WISE layer toggle (phase 4).
-import { useEffect, useRef } from "react";
+// Context sky map (#12): Aladin Lite v3 centred on the target, with a square showing the player's field,
+// and a switch between the optical sky (DSS) and the infrared sky (WISE) for comparison.
+import { useEffect, useRef, useState } from "react";
 import { useViewState } from "../../hooks/useViewState.jsx";
 import { useAladin } from "./useAladin.js";
 import { useReachable } from "./useReachable.js";
@@ -14,7 +14,7 @@ const MIN_MAP_FOV_DEG = 0.5;
 const FIELD_STYLE = { color: "#ffffff", lineWidth: 2 };
 
 const ALADIN_OPTIONS = {
-  survey: SURVEY,
+  survey: SKY_LAYERS[0].survey,
   cooFrame: "equatorial",
   showReticle: false,          // the field square marks the target instead
   showLayersControl: false,    // WISE toggle comes in phase 4
@@ -73,7 +73,7 @@ export default function SkyMap() {
       <div ref={containerRef} className="skymap-view" />
       {!aladin && <div className="skymap-overlay-message">{statusMessage(reachable, error)}</div>}
       <p className="skymap-caption">
-        <span className="skymap-key" aria-hidden="true" /> Field shown in the player · Sky: DSS2 colour via Aladin Lite (CDS)
+        <span className="skymap-key" aria-hidden="true" /> Field shown in the player · Sky: {layer.credit} via Aladin Lite (CDS)
       </p>
     </section>
   );

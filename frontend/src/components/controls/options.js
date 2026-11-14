@@ -1,18 +1,12 @@
 // Choices shown in the ControlPanel. Values must match what useViewState allows.
+import { DETECTORS, WAVELENGTH_RANGE_UM } from "../../api/spherex.js";
 
-/** SPHEREx detector arrays and the wavelengths each one sees (µm). */
-export const DETECTORS = [
-  { value: "D1", minUm: 0.75, maxUm: 1.11 },
-  { value: "D2", minUm: 1.11, maxUm: 1.64 },
-  { value: "D3", minUm: 1.64, maxUm: 2.42 },
-  { value: "D4", minUm: 2.42, maxUm: 3.82 },
-  { value: "D5", minUm: 3.82, maxUm: 4.42 },
-  { value: "D6", minUm: 4.42, maxUm: 5.0 },
-];
+export const formatUm = (um) => um.toFixed(2);
+const rangeLabel = ([min, max]) => `${formatUm(min)}–${formatUm(max)} µm`;
 
 export const DETECTOR_OPTIONS = [
-  ...DETECTORS.map((d) => ({ value: d.value, label: `${d.value} · ${d.minUm.toFixed(2)}–${d.maxUm.toFixed(2)} µm` })),
-  { value: "all", label: "All · 0.75–5.00 µm" },
+  ...DETECTORS.map((d) => ({ value: d.value, label: `${d.value} · ${rangeLabel([d.minUm, d.maxUm])}` })),
+  { value: "all", label: `All · ${rangeLabel(WAVELENGTH_RANGE_UM)}` },
 ];
 
 /** Field of view in degrees, labelled in arcminutes (backend max is 0.5°). */

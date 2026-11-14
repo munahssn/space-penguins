@@ -15,11 +15,13 @@
 //
 // The same progress updates also go to subscribeActivity(listener), so the status bar can show
 // them without every caller passing callbacks around.
+//
+// Identical requests made at the same time share one fetch (see sharedRequest), so two components
+// that need the same frames (player + wavelength slider) don't double the backend's work.
 
 import healthMock from "./mock/health.json";
 import resolveMock from "./mock/resolve.json";
 import targetsMock from "./mock/targets.json";
-import framesMock from "./mock/frames.json";
 import diffMock from "./mock/diff.json";
 import rgbMock from "./mock/rgb.json";
 import contextMock from "./mock/context.json";
@@ -27,6 +29,10 @@ import explainMock from "./mock/explain.json";
 import trackMock from "./mock/track.json";
 import spectrumMock from "./mock/spectrum.json";
 import lightcurveMock from "./mock/lightcurve.json";
+import { mockFrames } from "./mock/mockFrames.js";
+import { ApiError } from "./errors.js";
+
+export { ApiError };
 
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
 export const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
@@ -37,14 +43,6 @@ const GAVE_UP_STATUS = 504;
 const MAX_RETRIES = 4; // for 429 / 503
 const RETRY_STATUSES = [429, 503];
 const IMAGES_AS_URLS = "url"; // backend sends base64 images inside the JSON unless asked for URLs
-
-export class ApiError extends Error {
-  constructor(message, status) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status; // 404 no data · 422 bad params · 429 rate limited · 502 IRSA failed · 503 IRSA busy
-  }
-}
 
 // ---------- endpoints ----------
 
@@ -70,7 +68,7 @@ export function resolve(name, opts) {
 /** {ra, dec, fov, det, mode, wmin, wmax} → {frames: [...], grid} */
 export function getFrames({ ra, dec, fov, det, mode, wmin, wmax }, opts) {
   return call("/api/frames", { ra, dec, fov, det, mode, wmin, wmax, images: IMAGES_AS_URLS },
-    { ...opts, poll: true }, () => framesMock, withImageUrls);
+    { ...opts, poll: true }, () => mockFrames({ det, wmin, wmax }), withImageUrls);
 }
 
 /** Difference (op "sub", b − a) or sum (op "add") of frames a and b → {url} */
@@ -144,7 +142,9 @@ function createReporter(onProgress) {
 async function call(path, params, opts = {}, mock, transform = (x) => x) {
   const reporter = createReporter(opts.onProgress);
   try {
-    const body = USE_MOCK ? await fakeCall(mock, opts, reporter) : await request(path, params, opts, reporter);
+    const body = USE_MOCK
+      ? await fakeCall(mock, opts, reporter)
+      : await sharedRequest(buildUrl(path, params), opts, reporter);
     return transform(body, { mock: USE_MOCK });
   } finally {
     reporter.settle();
