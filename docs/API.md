@@ -255,12 +255,62 @@ Brightness against time: one point per survey pass. Same measurement as `/api/sp
 - `wavelength_um`: median wavelength of the exposures used. If it differs a lot between passes, part of the
   change in `flux` is colour, not variability: narrow it with `wmin`/`wmax`.
 
-## `GET /api/catalog`  *(Phase 2, returns 501 until built)*
-Gaia DR3 stars in the field.
+## `GET /api/catalog`
+Gaia DR3 stars in the field, for the overlay, moved to the frame's date with their proper motion.
+
+| param | type | default | notes |
+|---|---|---|---|
+| `ra`, `dec` | float | required | degrees, centre of the field |
+| `fov` | float | `0.1` | degrees |
+| `mjd` | float | 2025.9 | the frame's `mjd` |
+
 ```json
-{ "stars": [ { "source_id": "4472832130942575872", "ra": 269.45, "dec": 4.69,
+{ "epoch": 2025.9, "source": "Gaia DR3",
+  "stars": [ { "source_id": "4472832130942575872", "ra": 269.4463, "dec": 4.7679,
                "pmra": -801.6, "pmdec": 10362.4, "gmag": 8.19 } ] }
 ```
+- At most 2000 stars, brightest first. 502 if Gaia does not answer. In mock mode only the test targets.
+
+## `GET /api/context`
+"Is it new?": is the thing at (`ra`, `dec`) in a frame taken at `mjd` already known? Fixed rules, no LLM.
+
+| param | type | default | notes |
+|---|---|---|---|
+| `ra`, `dec` | float | required | degrees: the clicked position |
+| `mjd` | float | required | the frame's `mjd` |
+| `fov` | float | `0.1` | degrees: how much of the field `stars` and `asteroids` cover |
+| `artifact_fraction` | float | none | the frame's value from `/api/frames`, for the artifact warning |
+
+```json
+{ "query": { "ra": 133.759895, "dec": -7.242249, "mjd": 61157.93, "fov": 0.1, "epoch": 2026.302 },
+  "verdict": "known_other",
+  "match": { "name": "WISEA J085510.74-071442.5", "type": "BD*", "source": "SIMBAD", "distance_arcsec": 1.17 },
+  "other_matches": [ { "name": "Gaia DR3 5756956644387831296", "type": "star", "source": "Gaia DR3",
+                       "gmag": 16.31, "distance_arcsec": 3.53, "verdict": "known_star" } ],
+  "match_radius_arcsec": 12.3,
+  "stars": [ { "source_id": "...", "ra": 133.75, "dec": -7.24, "pmra": -3.1, "pmdec": 1.2, "gmag": 17.2 } ],
+  "asteroids": [ { "name": "Ceres", "number": 1, "type": "MB>Middle", "ra": 0, "dec": 0, "vmag": 8.1,
+                   "posunc_arcsec": 0.1 } ],
+  "warnings": [] }
+```
+- `verdict`: `known_star` (Gaia DR3), `known_asteroid` (SkyBoT), `known_other` (SIMBAD), `unexplained`
+  (nothing within `match_radius_arcsec`, ~2 px), or `unknown` (nothing found, but a catalogue did not answer:
+  see `warnings`).
+- Every catalogue is moved to the frame's date first: Gaia from epoch 2016.0 with its proper motion; SkyBoT
+  computes where asteroids and comets were at that time; SIMBAD from J2000 with its own proper motion.
+- The **closest** object within the radius wins; if two are within 0.5" of each other (the same object in two
+  catalogues, e.g. Barnard's Star in Gaia and SIMBAD) the order is Gaia, SkyBoT, SIMBAD. Taking the rule order
+  strictly would let any faint Gaia star within 12" beat the real match. `other_matches` lists the rest: show
+  them, because SPHEREx pixels are 6" and two objects a few arcsec apart cannot be told apart by position.
+  Example: on 2026-04-21 WISE 0855 is ~3" from a background star.
+- `warnings`: `"may be an artifact"` when `artifact_fraction` > 0.05. A catalogue that fails is reported
+  here (`"Gaia unavailable: ..."`) instead of failing the request. SIMBAD is asked at its main site
+  (Strasbourg) and, if that is down, at its official mirror (Harvard). Failed answers are not cached.
+- `stars`: Gaia stars in the field at the frame's date (as `/api/catalog`). `asteroids`: SkyBoT objects in the
+  field at that moment.
+- Answers are cached on disk by position and date, so clicking the same spot again is instant. The first
+  click asks three services and can take several seconds.
+- Mock mode: no network; the test targets stand in for the catalogues (WISE 0855 as a SIMBAD object).
 
 ## Errors
 ```json
