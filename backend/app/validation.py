@@ -13,6 +13,12 @@ def check_query(ra, dec, fov, det):
         raise HTTPException(422, f"det must be one of {sorted(DETECTORS)}")
 
 
+def check_photometry_fov(fov, min_pixels, pixscale_deg):
+    if fov / pixscale_deg < min_pixels:
+        raise HTTPException(422, f"fov must be at least {min_pixels * pixscale_deg:.3f} degrees "
+                                 "to measure brightness (room for the sky annulus)")
+
+
 def check_mode(mode):
     if mode not in MODES:
         raise HTTPException(422, f"mode must be one of {sorted(MODES)}")
