@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useViewState } from "../../hooks/useViewState.jsx";
 import { useAladin } from "./useAladin.js";
+import { useReachable } from "./useReachable.js";
 import "./skymap.css";
 
-const SKY_LAYERS = [
-  { id: "optical", label: "Optical (DSS)", survey: "P/DSS2/color", credit: "DSS2 colour" },
-  { id: "infrared", label: "Infrared (WISE)", survey: "P/allWISE/color", credit: "AllWISE colour" },
-];
+const SURVEY = "P/DSS2/color";
+/** Small file on the CDS server behind SURVEY: if it answers, the sky tiles will load too. */
+const SURVEY_CHECK_URL = "https://alasky.cds.unistra.fr/DSS/DSSColor/properties";
 const MAP_FOV_PER_FIELD = 6; // the map shows ~6× the player's field, so the square has context around it
 const MIN_MAP_FOV_DEG = 0.5;
 const FIELD_STYLE = { color: "#ffffff", lineWidth: 2 };
@@ -42,37 +42,19 @@ function fieldCorners(ra, dec, fov) {
   ];
 }
 
-function LayerSwitch({ value, onChange }) {
-  return (
-    <div className="skymap-layers" role="group" aria-label="Sky layer">
-      {SKY_LAYERS.map((layer) => (
-        <button
-          key={layer.id}
-          type="button"
-          className={layer.id === value.id ? "is-active" : ""}
-          aria-pressed={layer.id === value.id}
-          onClick={() => onChange(layer)}
-        >
-          {layer.label}
-        </button>
-      ))}
-    </div>
-  );
+/** What to show while there's no viewer yet. */
+function statusMessage(reachable, error) {
+  if (reachable === "unreachable") return "Sky map unavailable: can't reach the CDS sky servers.";
+  if (error) return "The sky map couldn't load.";
+  return "Loading sky map…";
 }
 
 export default function SkyMap() {
   const { ra, dec, fov } = useViewState();
   const containerRef = useRef(null);
   const overlayRef = useRef(null);
-  const { A, aladin, error } = useAladin(containerRef, ALADIN_OPTIONS);
-  const [layer, setLayer] = useState(SKY_LAYERS[0]);
-  const shownSurveyRef = useRef(ALADIN_OPTIONS.survey); // what Aladin displays now
-
-  useEffect(() => {
-    if (!aladin || shownSurveyRef.current === layer.survey) return;
-    aladin.setBaseImageLayer(layer.survey);
-    shownSurveyRef.current = layer.survey;
-  }, [aladin, layer]);
+  const reachable = useReachable(SURVEY_CHECK_URL);
+  const { A, aladin, error } = useAladin(containerRef, ALADIN_OPTIONS, reachable === "ok");
 
   useEffect(() => {
     if (!aladin || ra === null || dec === null) return;
@@ -88,15 +70,8 @@ export default function SkyMap() {
 
   return (
     <section className="skymap" aria-label="Sky map around the target">
-      <LayerSwitch value={layer} onChange={setLayer} />
-      <div className="skymap-frame">
-        <div ref={containerRef} className="skymap-view" />
-        {!aladin && (
-          <div className="skymap-overlay-message">
-            {error ? "The sky map couldn't load." : "Loading sky map…"}
-          </div>
-        )}
-      </div>
+      <div ref={containerRef} className="skymap-view" />
+      {!aladin && <div className="skymap-overlay-message">{statusMessage(reachable, error)}</div>}
       <p className="skymap-caption">
         <span className="skymap-key" aria-hidden="true" /> Field shown in the player · Sky: {layer.credit} via Aladin Lite (CDS)
       </p>

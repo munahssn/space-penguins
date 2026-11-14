@@ -3,10 +3,12 @@
 import { useEffect, useRef } from "react";
 
 /**
- * @param {{image: HTMLImageElement|null, width: number, height: number, label: string, children?: React.ReactNode}} props
+ * @param {{image: HTMLImageElement|null, width: number, height: number, label: string,
+ *          stretch?: string, children?: React.ReactNode}} props
  *   width/height: the frame grid in pixels (same for every frame). children are drawn on top (scale bar etc.).
+ *   stretch: display-only brightness boost ("normal" | "faint" | "contrast"), see FramePlayer.css.
  */
-export default function FrameCanvas({ image, width, height, label, children }) {
+export default function FrameCanvas({ image, width, height, label, stretch = "normal", children }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -24,7 +26,7 @@ export default function FrameCanvas({ image, width, height, label, children }) {
         ref={canvasRef}
         width={width}
         height={height}
-        className="fp-canvas"
+        className={`fp-canvas fp-canvas--${stretch}`}
         role="img"
         aria-label={label}
       />

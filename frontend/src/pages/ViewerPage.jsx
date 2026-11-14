@@ -8,7 +8,6 @@ import IsItNewPanel from "../components/verdict/IsItNewPanel.jsx";
 import ChartsPanel from "../components/charts/ChartsPanel.jsx";
 import SearchBar from "../components/search/SearchBar.jsx";
 import ControlPanel from "../components/controls/ControlPanel.jsx";
-import StretchFrame from "../components/controls/StretchFrame.jsx";
 import SkyMap from "../components/skymap/SkyMap.jsx";
 
 /** Main viewer page: search + status on top, player and controls on the left, details on the right. */
@@ -25,9 +24,7 @@ export default function ViewerPage() {
       statusBar={<StatusBar />}
       viewer={
         <>
-          <StretchFrame>
-            <FramePlayer />
-          </StretchFrame>
+          <FramePlayer />
           <ControlPanel />
         </>
       }

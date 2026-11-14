@@ -37,6 +37,7 @@
 
   /* layout */
   --header-height: 64px;
-  --side-panel-width: 380px;
+  --side-panel-width: 380px;      /* minimum; on wide screens the side panel grows */
+  --viewer-max-width: 760px;      /* player column: wide enough to see detail, short enough to fit a screen */
   --page-gutter: 16px;
 }

@@ -38,6 +38,8 @@ export const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
 export const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
 
 const POLL_MS = 2000;
+const MAX_POLL_MS = 10 * 60 * 1000; // stop waiting on a 202 after 10 minutes
+const GAVE_UP_STATUS = 504;
 const MAX_RETRIES = 4; // for 429 / 503
 const RETRY_STATUSES = [429, 503];
 const IMAGES_AS_URLS = "url"; // backend sends base64 images inside the JSON unless asked for URLs
@@ -158,56 +160,9 @@ function buildUrl(path, params) {
   return `${API_URL}${path}${qs ? `?${qs}` : ""}`;
 }
 
-// ---------- shared requests ----------
-
-const inFlight = new Map(); // url → { promise, controller, reporters }
-
-/**
- * Callers asking for the same URL while it's still loading join the same fetch + polling loop.
- * Each caller's own signal only stops *its* wait; the fetch is cancelled once nobody is waiting.
- * Every caller gets its own copy of the body, so one can't change another's data.
- */
-function sharedRequest(url, { signal, poll = false }, reporter) {
-  const joined = inFlight.get(url) ?? startShared(url, poll);
-  joined.reporters.add(reporter);
-  const leave = () => {
-    joined.reporters.delete(reporter);
-    if (joined.reporters.size > 0) return;
-    if (inFlight.get(url) === joined) inFlight.delete(url);
-    joined.controller.abort(); // nobody is waiting any more (harmless if it already finished)
-  };
-  return untilDone(joined.promise, signal)
-    .then((body) => structuredClone(body))
-    .finally(leave);
-}
-
-function startShared(url, poll) {
-  const controller = new AbortController();
-  const reporters = new Set();
-  const progress = (info) => reporters.forEach((r) => r.progress(info));
-  const job = { controller, reporters, promise: request(url, { signal: controller.signal, poll }, { progress }) };
-  inFlight.set(url, job);
-  const forget = () => {
-    if (inFlight.get(url) === job) inFlight.delete(url);
-  };
-  job.promise.then(forget, forget);
-  return job;
-}
-
-/** Resolves/rejects with `promise`, or rejects early when `signal` aborts. */
-function untilDone(promise, signal) {
-  if (!signal) return promise;
-  return new Promise((resolve, reject) => {
-    const onAbort = () => reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
-    if (signal.aborted) return onAbort();
-    signal.addEventListener("abort", onAbort, { once: true });
-    promise.then(resolve, reject).finally(() => signal.removeEventListener("abort", onAbort));
-  });
-}
-
-// ---------- fetch + poll + retry ----------
-
-async function request(url, { signal, poll = false }, reporter) {
+async function request(path, params, { signal, poll = false }, reporter) {
+  const url = buildUrl(path, params);
+  const giveUpAt = Date.now() + MAX_POLL_MS;
   let retries = 0;
   for (;;) {
     const res = await fetch(url, { signal });
@@ -215,6 +170,9 @@ async function request(url, { signal, poll = false }, reporter) {
 
     if (res.status === 202 && poll) {
       reporter.progress(body); // { status: "queued", position } | { status: "processing", done, total }
+      if (Date.now() > giveUpAt) {
+        throw new ApiError("The server is still working on this after 10 minutes. Try again later.", GAVE_UP_STATUS);
+      }
       await sleep(POLL_MS, signal);
       continue;
     }
@@ -267,13 +225,20 @@ async function fakeCall(mock, { signal, poll = false }, reporter) {
   return structuredClone(mock());
 }
 
+/** Waits `ms`, or rejects as soon as `signal` aborts. Removes its abort listener either way. */
 function sleep(ms, signal) {
   return new Promise((resolve, reject) => {
-    if (signal?.aborted) return reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
-    const t = setTimeout(resolve, ms);
-    signal?.addEventListener("abort", () => {
-      clearTimeout(t);
-      reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
-    }, { once: true });
+    const abortReason = () => signal.reason ?? new DOMException("Aborted", "AbortError");
+    if (signal?.aborted) return reject(abortReason());
+
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(abortReason());
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal?.addEventListener("abort", onAbort, { once: true });
   });
 }
