@@ -294,24 +294,35 @@ def shared_limits(stacks):
     return ZScaleInterval().get_limits(pix)
 
 
-def to_png_gray(arr, vmin, vmax):
+def gray_image(arr, vmin, vmax):
     a = np.clip((arr - vmin) / (vmax - vmin + 1e-12), 0, 1)
     a = np.nan_to_num(a, nan=0.0)
-    img = Image.fromarray((np.flipud(a) * 255).astype(np.uint8), "L")  # FITS y-up -> image y-down
-    return _data_url(img)
+    return Image.fromarray((np.flipud(a) * 255).astype(np.uint8), "L")  # FITS y-up -> image y-down
 
 
-def to_png_diverging(arr):
+def diverging_image(arr):
     lim = np.nanpercentile(np.abs(arr), 99) or 1.0
     a = np.nan_to_num(np.clip(arr / lim, -1, 1))
     r = np.where(a > 0, 255, 255 * (1 + a))
     b = np.where(a < 0, 255, 255 * (1 - a))
     g = 255 * (1 - np.abs(a))
     rgb = np.flipud(np.stack([r, g, b], axis=-1)).astype(np.uint8)
-    return _data_url(Image.fromarray(rgb, "RGB"))
+    return Image.fromarray(rgb, "RGB")
+
+
+def png_bytes(img):
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def to_png_gray(arr, vmin, vmax):
+    return _data_url(gray_image(arr, vmin, vmax))
+
+
+def to_png_diverging(arr):
+    return _data_url(diverging_image(arr))
 
 
 def _data_url(img):
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
+    return "data:image/png;base64," + base64.b64encode(png_bytes(img)).decode()
