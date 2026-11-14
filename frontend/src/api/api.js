@@ -197,7 +197,7 @@ function withImageUrls(body, { mock }) {
   if (Array.isArray(body.frames)) {
     const frames = body.frames.map((f) => {
       const url = absolute(f.url);
-      return { ...f, url, id: f.id ?? url };
+      return { ...f, url, flags_url: absolute(f.flags_url), id: f.id ?? url };
     });
     return { ...body, frames };
   }

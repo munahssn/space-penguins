@@ -1,5 +1,9 @@
 {
-  "grid": { "width": 59, "height": 59, "pixscale_arcsec": 6.15 },
+  "grid": {
+    "width": 59,
+    "height": 59,
+    "pixscale_arcsec": 6.15
+  },
   "frames": [
     {
       "id": "mock-epoch-0",
@@ -11,7 +15,8 @@
       "n_exposures": 14,
       "n_exposures_total": 14,
       "flagged_fraction": 0.04,
-      "artifact_fraction": 0.01
+      "artifact_fraction": 0.01,
+      "flags_url": "/mock/flags.svg"
     },
     {
       "id": "mock-epoch-1",
@@ -23,7 +28,8 @@
       "n_exposures": 11,
       "n_exposures_total": 12,
       "flagged_fraction": 0.02,
-      "artifact_fraction": 0.08
+      "artifact_fraction": 0.08,
+      "flags_url": "/mock/flags.svg"
     },
     {
       "id": "mock-epoch-2",
@@ -35,7 +41,8 @@
       "n_exposures": 16,
       "n_exposures_total": 16,
       "flagged_fraction": 0.03,
-      "artifact_fraction": 0.0
+      "artifact_fraction": 0.0,
+      "flags_url": "/mock/flags.svg"
     }
   ]
 }

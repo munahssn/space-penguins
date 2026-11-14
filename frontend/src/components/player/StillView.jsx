@@ -3,6 +3,7 @@ import FrameCanvas from "./FrameCanvas.jsx";
 import { DiffLegend, RgbLegend } from "./Legend.jsx";
 import { PlayerPlaceholder, errorMessage, progressMessage } from "./PlayerStatus.jsx";
 import ScaleBar from "./ScaleBar.jsx";
+import SelectionLayer from "./SelectionLayer.jsx";
 import { usePreloadedImages } from "./usePreloadedImages.js";
 import { useStillImage } from "./useStillImage.js";
 
@@ -27,6 +28,12 @@ export default function StillView({ kind, view, frames, grid }) {
   return (
     <div className="fp-view">
       <FrameCanvas image={image.images[0]} width={grid.width} height={grid.height} label={`SPHEREx ${badge}`}>
+        <SelectionLayer
+          grid={grid}
+          center={{ ra: view.ra, dec: view.dec }}
+          selected={view.selected}
+          onSelect={view.setSelected}
+        />
         <span className="fp-badge">{badge}</span>
         <ScaleBar grid={grid} />
       </FrameCanvas>
