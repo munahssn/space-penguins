@@ -185,6 +185,32 @@ Infrared colour picture: `D1` (0.75-1.1 um) blue, `D3` (1.6-2.4 um) green, `D6` 
 - Needs three downloads (one per detector). While they run it answers 202 with `status`, `done`, `total` (summed
   over the running ones) and `detectors` (each detector's own status).
 
+## `GET /api/explain`
+The "Is it new?" answer in plain words, for the panel.
+
+| param | type | default | notes |
+|---|---|---|---|
+| `ra`, `dec`, `mjd`, `artifact_fraction` | | | same as `/api/context` |
+| `motion` | bool | `true` | also describe how the source moves (uses `/api/track` at this position) |
+| `det`, `fov` | | `D6`, `0.05` | for the motion measurement, as in `/api/track` |
+
+```json
+{ "text": "This matches WISEA J085510.74-071442.5, a brown dwarf listed in SIMBAD, 1.2\" away once its proper motion is applied for 2026-04-21. ...",
+  "source": "template",
+  "facts": { "date": "2026-04-21", "verdict": "known_other", "match": { "...": "..." }, "nearby": [ ],
+             "artifact_warning": false, "unavailable": [], "motion_status": "measured",
+             "motion": { "arcsec_per_year": 6.7, "error": 3.2, "passes": 2, "years": 0.44, "saturated": false,
+                         "det": "D6", "catalog_arcsec_per_year": 8.1, "sigma": 0.5 } } }
+```
+- Always answers **200** (no 202). If the data for the motion is still downloading, the text says so,
+  `facts.motion_status` is `"pending"`, and the download runs in the background: ask again in a minute.
+  `motion_status` is otherwise `measured`, `too_few_detections`, `unavailable` or `not_requested`.
+- `source`: `template` (built from `facts` only, always available) or `llm`.
+- LLM rewording is optional and off unless the server has `EXPLAIN_LLM_API_KEY` set (OpenAI-compatible
+  endpoint, `EXPLAIN_LLM_URL` / `EXPLAIN_LLM_MODEL`). It gets only the facts and the template, has 5 s, and its
+  reply is thrown away if it contains any number that is not in the template.
+- Answers are cached by a hash of the facts.
+
 ## `GET /img/{token}.png`
 The PNG behind a `url` from `/api/frames?images=url`, `/api/diff?images=url` or `/api/rgb`. Use the link exactly as given and
 put the API address in front of it: `<img src="http://localhost:8000/img/eyJr....png">`.
