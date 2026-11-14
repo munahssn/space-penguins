@@ -138,11 +138,63 @@ put the API address in front of it: `<img src="http://localhost:8000/img/eyJr...
 - `Cache-Control: public, max-age=86400`.
 - Errors: 404 not downloaded yet or no such frame, 422 not a valid link.
 
-## `GET /api/spectrum`  *(Phase 3, returns 501 until built)*
+## `GET /api/spectrum`
+Brightness of whatever sits at (`ra`, `dec`) against wavelength: one point per exposure.
+
+| param | type | default | notes |
+|---|---|---|---|
+| `ra`, `dec` | float | required | degrees; the source must be at this position |
+| `det` | string | `all` | `all` covers 0.75-5.0 um; one detector is faster |
+| `fov` | float | `0.05` | degrees, min `0.026`. Pass the `fov` and `det` of your `/api/frames` call to reuse its data |
+| `wmin`, `wmax` | float | none | micrometres |
+
 ```json
-{ "ra": 0, "dec": 0,
-  "points": [ { "wavelength_um": 1.23, "flux": 45.1, "error": 3.2, "mjd": 60816.4, "det": "D2" } ] }
+{ "query": { "ra": 269.4463, "dec": 4.7679, "fov": 0.05, "det": "all", "wmin": null, "wmax": null, "release": "dr1+qr3" },
+  "ra": 269.4463, "dec": 4.7679, "flux_unit": "mJy", "n_skipped": 2,
+  "points": [ { "wavelength_um": 1.23, "flux": 45.1, "error": 3.2, "mjd": 60816.40012, "det": "D2", "flags": [] } ] }
 ```
+- Points are sorted by wavelength. `flux` and `error` are in mJy.
+- Measured on zodi-subtracted data: pixels within 2 px (about 12") of the position, minus the local sky from a
+  ring around it (bad pixels masked in the ring). `error` comes from the VARIANCE extension. No aperture
+  correction, so fluxes are a few per cent low. A neighbour inside the 12" circle is included.
+- `flags`: bad-pixel flags found under the source in that exposure. Empty = clean. Bright stars saturate the
+  detector, so their points carry `OVERFLOW`, `NONLINEAR` or `PERSIST`: the flux is then unreliable (too low if
+  saturated). Draw flagged points differently, or hide them.
+- `n_skipped`: exposures with no value under the source at all. Very bright stars (Barnard's Star, R Dra)
+  saturate so badly that most or all exposures are skipped; a spectrum then covers only part of the range, or
+  the call answers 404.
+- The points are taken at different times (`mjd`). For a variable source the spectrum mixes both.
+- Answers 202 while a new position downloads, like `/api/frames`. 404 if nothing usable.
+
+## `GET /api/lightcurve`
+Brightness against time: one point per survey pass. Same measurement as `/api/spectrum`.
+
+| param | type | default | notes |
+|---|---|---|---|
+| `ra`, `dec` | float | required | degrees |
+| `det` | string | `D3` | `D1`..`D6`, or `all` |
+| `fov` | float | `0.05` | degrees, min `0.026` |
+| `wmin`, `wmax` | float | none | micrometres; a narrow range compares like with like between passes |
+
+```json
+{ "query": { "ra": 76.9567, "dec": 30.4011, "fov": 0.05, "det": "D3", "wmin": null, "wmax": null, "release": "dr1+qr3" },
+  "ra": 76.9567, "dec": 30.4011, "flux_unit": "mJy", "method": "aperture",
+  "points": [ { "mjd": 60993.21, "date": "2025-11-14", "flux": 512.3, "error": 20.1,
+                "n_exposures": 14, "n_exposures_total": 14, "wavelength_um": 2.01,
+                "flagged": false, "flags": [] } ] }
+```
+- A pass uses its clean exposures if it has any (`n_exposures` of `n_exposures_total`). If every exposure is
+  flagged, they are used anyway and the point has `"flagged": true` with the `flags` met: treat that flux as
+  unreliable (bright stars saturate).
+- `flux` is the median over the pass's exposures; `error` is their scatter divided by sqrt(n). The exposures of a
+  pass are at different wavelengths, so the scatter includes the slope of the spectrum.
+- `method`: `aperture` is the normal measurement. `wings` is used when the star is so bright that its core has
+  no usable pixels in most exposures: the brightness is then taken from a ring 8-11 px out, which scales with
+  the star. Those values are **relative** (a fraction of the star's light, fine for seeing it brighten or
+  fade, not comparable with catalogue fluxes or with `aperture` values), every point has `"flagged": true`
+  and `flags: ["SATURATED"]`, and `fov` must be at least `0.05`.
+- `wavelength_um`: median wavelength of the exposures used. If it differs a lot between passes, part of the
+  change in `flux` is colour, not variability: narrow it with `wmin`/`wmax`.
 
 ## `GET /api/catalog`  *(Phase 2, returns 501 until built)*
 Gaia DR3 stars in the field.
