@@ -45,3 +45,13 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 .dev pre.error { color: var(--color-danger); }
 .dev .thumb { width: 160px; height: 160px; image-rendering: pixelated; border: 1px solid var(--color-border); }
+
+/* Text for screen readers only (headings, labels); invisible but still read out. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

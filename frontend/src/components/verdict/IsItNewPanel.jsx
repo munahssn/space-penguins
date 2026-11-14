@@ -25,7 +25,7 @@ function PanelShell({ children }) {
 }
 
 export default function IsItNewPanel() {
-  const { selected, fov } = useViewState();
+  const { selected, fov, ra, dec, setSelected } = useViewState();
   const key = requestKey(selected, fov);
 
   const context = useRequest(key, (signal) =>
@@ -38,6 +38,10 @@ export default function IsItNewPanel() {
     return (
       <PanelShell>
         <p className="verdict-muted">Click a dot on the image to check whether it's already known.</p>
+        {/* Keyboard (and screen-reader) route: clicking the image needs a pointer. */}
+        <button type="button" className="btn-ghost verdict-check-target" onClick={() => setSelected({ ra, dec })}>
+          Check the target
+        </button>
       </PanelShell>
     );
   }

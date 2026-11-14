@@ -24,6 +24,8 @@ export default function ViewerPage() {
       statusBar={<StatusBar />}
       viewer={
         <>
+          {/* Screen readers navigate by headings; the page's look doesn't need a visible one. */}
+          <h1 className="visually-hidden">SPHEREx Blink viewer</h1>
           <FramePlayer />
           <ControlPanel />
         </>

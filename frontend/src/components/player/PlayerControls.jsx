@@ -38,7 +38,7 @@ function FrameButtons({ frames, index, onPick }) {
 function FrameSlider({ count, index, onPick }) {
   return (
     <label className="fp-slider">
-      <span className="fp-visually-hidden">Frame</span>
+      <span className="visually-hidden">Frame</span>
       <input
         type="range"
         min={0}

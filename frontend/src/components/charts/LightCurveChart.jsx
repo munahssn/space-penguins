@@ -21,30 +21,33 @@ export default function LightCurveChart({ lightcurve, det }) {
 
   return (
     <figure className="chart" aria-label={`Light curve in detector ${det}: brightness over time`}>
-      <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-        <ScatterChart margin={CHART_MARGIN}>
-          <CartesianGrid stroke={INK.grid} vertical={false} />
-          <XAxis
-            {...AXIS_PROPS}
-            type="number"
-            dataKey="mjd"
-            domain={["dataMin - 30", "dataMax + 30"]}
-            tickFormatter={(mjd) => mjdToDate(mjd).slice(0, 7)}
-            label={{ ...AXIS_LABEL_STYLE, value: "Date", position: "insideBottom", offset: -12 }}
-          />
-          <YAxis {...AXIS_PROPS} type="number" dataKey="flux" width={44} />
-          <Tooltip content={<ChartTooltip rows={tooltipRows} />} cursor={false} />
-          <Scatter
-            data={rows}
-            fill={SERIES.measured}
-            line={{ stroke: SERIES.measured, strokeWidth: 2 }}
-            shape={<Dot />}
-            isAnimationActive={false}
-          >
-            <ErrorBar dataKey="error" direction="y" stroke={SERIES.measured} strokeWidth={1} width={0} />
-          </Scatter>
-        </ScatterChart>
-      </ResponsiveContainer>
+      {/* The drawing is hidden from screen readers: the label above and the table below carry the data. */}
+      <div aria-hidden="true">
+        <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+          <ScatterChart margin={CHART_MARGIN}>
+            <CartesianGrid stroke={INK.grid} vertical={false} />
+            <XAxis
+              {...AXIS_PROPS}
+              type="number"
+              dataKey="mjd"
+              domain={["dataMin - 30", "dataMax + 30"]}
+              tickFormatter={(mjd) => mjdToDate(mjd).slice(0, 7)}
+              label={{ ...AXIS_LABEL_STYLE, value: "Date", position: "insideBottom", offset: -12 }}
+            />
+            <YAxis {...AXIS_PROPS} type="number" dataKey="flux" width={44} />
+            <Tooltip content={<ChartTooltip rows={tooltipRows} />} cursor={false} />
+            <Scatter
+              data={rows}
+              fill={SERIES.measured}
+              line={{ stroke: SERIES.measured, strokeWidth: 2 }}
+              shape={<Dot />}
+              isAnimationActive={false}
+            >
+              <ErrorBar dataKey="error" direction="y" stroke={SERIES.measured} strokeWidth={1} width={0} />
+            </Scatter>
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
       <figcaption className="chart-caption">
         Detector {det}, one point per survey pass. A variable star rises and falls; a steady one stays flat.
       </figcaption>

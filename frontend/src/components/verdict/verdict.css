@@ -55,3 +55,5 @@
 .verdict-links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin: 0; padding: 0; list-style: none; }
 .verdict-links a { color: var(--color-text); text-underline-offset: 3px; }
 .verdict-links a:hover { color: var(--color-accent-hover); }
+
+.verdict-check-target { align-self: flex-start; }

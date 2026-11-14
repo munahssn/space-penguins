@@ -21,9 +21,12 @@ export default function ScaleBar({ grid }) {
   const widthPercent = (barArcsec / fieldArcsec) * 100;
 
   return (
-    <div className="fp-scale" aria-label={`Scale: bar is ${formatArcsec(barArcsec)}. North up, east left.`}>
+    <div className="fp-scale">
       <span className="fp-scale-bar" style={{ width: `${widthPercent}%` }} aria-hidden="true" />
-      <span aria-hidden="true">{formatArcsec(barArcsec)} · N up, E left</span>
+      <span>
+        <span className="visually-hidden">Scale bar: </span>
+        {formatArcsec(barArcsec)} · N up, E left
+      </span>
     </div>
   );
 }

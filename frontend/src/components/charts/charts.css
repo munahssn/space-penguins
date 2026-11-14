@@ -57,7 +57,13 @@
 .chart-tooltip-row span { color: var(--color-text-muted); }
 
 /* table view */
-.chart-table summary { cursor: pointer; color: var(--color-text-muted); font-size: var(--text-xs); }
+.chart-table summary {
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  /* Big enough to tap on a phone (24px minimum target). */
+  line-height: 24px;
+}
 .chart-table table { width: 100%; margin-top: var(--space-2); border-collapse: collapse; font-size: var(--text-xs); }
 .chart-table th,
 .chart-table td { padding: var(--space-1) var(--space-2); border-bottom: 1px solid var(--color-border); text-align: right; }
