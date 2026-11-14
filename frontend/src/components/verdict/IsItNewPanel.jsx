@@ -6,6 +6,7 @@
 import { getContext, getExplain, getTrack } from "../../api/api.js";
 import { useViewState } from "../../hooks/useViewState.jsx";
 import { useRequest } from "../../hooks/useRequest.js";
+import { useFrames } from "../player/useFrames.js"; // same request as the player: api.js shares it
 import { templateText } from "./verdicts.js";
 import { Explanation, ExternalLinks, MotionComparison, VerdictBadge, Warnings } from "./VerdictParts.jsx";
 import "./verdict.css";
@@ -25,7 +26,11 @@ function PanelShell({ children }) {
 }
 
 export default function IsItNewPanel() {
-  const { selected, fov, ra, dec, setSelected } = useViewState();
+  const view = useViewState();
+  const { selected, fov, ra, dec, setSelected } = view;
+  // The verdict is "at a frame's date": the keyboard route checks the target on the latest pass.
+  const { frames } = useFrames(view);
+  const latest = frames.at(-1);
   const key = requestKey(selected, fov);
 
   const context = useRequest(key, (signal) =>
@@ -39,7 +44,12 @@ export default function IsItNewPanel() {
       <PanelShell>
         <p className="verdict-muted">Click a dot on the image to check whether it's already known.</p>
         {/* Keyboard (and screen-reader) route: clicking the image needs a pointer. */}
-        <button type="button" className="btn-ghost verdict-check-target" onClick={() => setSelected({ ra, dec })}>
+        <button
+          type="button"
+          className="btn-ghost verdict-check-target"
+          disabled={!latest}
+          onClick={() => setSelected({ ra, dec, mjd: latest.mjd, date: latest.date })}
+        >
           Check the target
         </button>
       </PanelShell>

@@ -23,6 +23,10 @@ from ..validation import check_query, check_wavelength
 router = APIRouter()
 
 PNG_DIR = CACHE_DIR / "png"
+# Bump when the way PNGs are drawn changes (2: saturated star cores drawn white). It is part of the
+# PNG cache name and of every image link, so old pictures are redrawn and browsers fetch the new ones,
+# while the downloaded exposures (CACHE_VERSION) are kept.
+RENDER_VERSION = 2
 MAX_TOKEN_LEN = 400
 
 
@@ -31,7 +35,7 @@ def image_url(kind, ra, dec, fov, det, wmin, wmax, **extra):
     "c" = colour image (D1/D3/D6; det, wmin, wmax are ignored)."""
     p = {"k": kind, "ra": ra, "dec": dec, "fov": fov, "det": det, "wmin": wmin, "wmax": wmax, **extra}
     token = base64.urlsafe_b64encode(json.dumps(p, separators=(",", ":")).encode()).decode().rstrip("=")
-    return f"/img/{token}.png"
+    return f"/img/{token}.png?r={RENDER_VERSION}"
 
 
 def _decode(token):
@@ -54,7 +58,7 @@ def _decode(token):
 
 
 def _png_path(token):
-    tag = f"{token}|v{CACHE_VERSION}|{'mock' if MOCK else spherex.RELEASE}"
+    tag = f"{token}|v{CACHE_VERSION}|r{RENDER_VERSION}|{'mock' if MOCK else spherex.RELEASE}"
     return PNG_DIR / (hashlib.sha1(tag.encode()).hexdigest()[:24] + ".png")
 
 

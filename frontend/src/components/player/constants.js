@@ -37,6 +37,10 @@ export const OVERLAYS = [
 ];
 export const DEFAULT_OVERLAYS = { stars: true, asteroids: true, flags: false };
 
+/** Crowded fields (e.g. near the Milky Way) have hundreds of Gaia stars; only the brightest are drawn,
+ * which are also the ones SPHEREx's 6″ pixels show clearly. */
+export const MAX_STAR_MARKERS = 50;
+
 /** Marker sizes in image pixels (1 px ≈ 6″), so they scale with the image. */
 export const MARKER_SIZES = {
   starRing: 1.6,      // radius of a Gaia circle

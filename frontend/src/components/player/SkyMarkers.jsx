@@ -1,7 +1,7 @@
 // Gaia stars (blue circles) and known asteroids (purple dot + name) drawn over the image.
 // Shapes are SVG in image-pixel units (so they line up with the canvas); names are HTML so the
 // text stays readable at any player size.
-import { MARKER_SIZES } from "./constants.js";
+import { MARKER_SIZES, MAX_STAR_MARKERS } from "./constants.js";
 import { isOnImage, pixelToPercent, skyToPixel } from "./skyProjection.js";
 
 /** Puts each item on the image, dropping those outside it. */
@@ -11,12 +11,17 @@ function placeOnImage(items, center, grid) {
     .filter(({ pixel }) => isOnImage(pixel, grid));
 }
 
+/** The brightest stars first (lowest G magnitude; stars without one go last). */
+function brightestFirst(stars) {
+  return [...stars].sort((a, b) => (a.gmag ?? Infinity) - (b.gmag ?? Infinity));
+}
+
 /**
  * @param {{grid: object, center: {ra:number, dec:number}, stars: object[], asteroids: object[],
  *          showStars: boolean, showAsteroids: boolean}} props
  */
 export default function SkyMarkers({ grid, center, stars, asteroids, showStars, showAsteroids }) {
-  const placedStars = showStars ? placeOnImage(stars, center, grid) : [];
+  const placedStars = showStars ? placeOnImage(brightestFirst(stars), center, grid).slice(0, MAX_STAR_MARKERS) : [];
   const placedAsteroids = showAsteroids ? placeOnImage(asteroids, center, grid) : [];
 
   return (

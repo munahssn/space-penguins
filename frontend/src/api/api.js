@@ -3,7 +3,7 @@
 //
 // .env:  VITE_USE_MOCK=true|false   VITE_API_URL=http://localhost:8000
 //
-// Slow endpoints (getFrames, getDiff, getRgb) may answer 202 while the backend works.
+// Slow endpoints (frames, diff, rgb, track, spectrum, lightcurve) may answer 202 while the backend works.
 // These functions hide that: they poll every 2 s and resolve with the final result.
 // Pass { onProgress } to see progress, e.g. for the status bar:
 //   onProgress({ status: "queued", position: 1 })
@@ -94,17 +94,17 @@ export function getExplain({ ra, dec, mjd }, opts) {
 
 /** Measured positions vs. catalog motion → {measured: [...], catalog_pm, fit} */
 export function getTrack({ ra, dec }, opts) {
-  return call("/api/track", { ra, dec }, opts, () => trackMock);
+  return call("/api/track", { ra, dec }, { ...opts, poll: true }, () => trackMock);
 }
 
 /** {points: [{wavelength_um, flux, error, mjd, det}]} */
 export function getSpectrum({ ra, dec }, opts) {
-  return call("/api/spectrum", { ra, dec }, opts, () => spectrumMock);
+  return call("/api/spectrum", { ra, dec }, { ...opts, poll: true }, () => spectrumMock);
 }
 
 /** {points: [{mjd, flux, error}]} */
 export function getLightcurve({ ra, dec, det }, opts) {
-  return call("/api/lightcurve", { ra, dec, det }, opts, () => lightcurveMock);
+  return call("/api/lightcurve", { ra, dec, det }, { ...opts, poll: true }, () => lightcurveMock);
 }
 
 // ---------- activity feed (for the status bar) ----------
@@ -231,7 +231,7 @@ async function request(url, { signal, poll = false }, reporter) {
       await sleep(retryInMs, signal);
       continue;
     }
-    if (!res.ok) throw new ApiError(body.detail || `HTTP ${res.status}`, res.status);
+    if (!res.ok) throw new ApiError(detailMessage(body.detail) || `HTTP ${res.status}`, res.status);
     return body;
   }
 }
@@ -244,6 +244,12 @@ function retryDelayMs(res, attempt) {
 }
 
 // Backend image URLs are relative ("/img/abc.png"): make them absolute so they work from Vercel.
+/** FastAPI errors: `detail` is a string, or for invalid queries a list of {loc, msg}. */
+function detailMessage(detail) {
+  if (!Array.isArray(detail)) return detail;
+  return detail.map((d) => `${d.loc?.at(-1) ?? "request"}: ${d.msg}`).join("; ");
+}
+
 // Mock URLs point at frontend/public/mock/ and stay relative to the frontend.
 // Frames without an id (the backend sends only `index`) get their URL as id, which is unique per image.
 function withImageUrls(body, { mock }) {

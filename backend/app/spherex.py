@@ -16,6 +16,7 @@ from astropy.utils.data import conf
 from astropy.visualization import ZScaleInterval
 from astropy.wcs import WCS
 from PIL import Image
+from scipy.ndimage import binary_fill_holes
 
 conf.remote_timeout = 120
 
@@ -607,6 +608,15 @@ def deep_stack(e):
         return np.nanmedian([r[0] for r in e["results"]], axis=0)
 
 
+def fill_missing(a, arr):
+    """Replace NaN pixels in the normalised image `a` (0..1) of `arr` for drawing.
+    A NaN hole enclosed by real pixels is the saturated core of a bright star, so it is drawn
+    white; NaN reaching the image edge is sky without coverage, so it stays black."""
+    missing = ~np.isfinite(arr)
+    saturated = missing & binary_fill_holes(~missing)
+    return np.where(saturated, 1.0, np.nan_to_num(a, nan=0.0))
+
+
 def colour_image(red, green, blue):
     """Infrared colour picture from three images on the same grid.
     Each channel is normalised on its own (sky subtracted, divided by its 99.5th
@@ -622,7 +632,7 @@ def colour_image(red, green, blue):
         top = np.percentile(v[np.isfinite(v)], 99.5)
         v = v / (top if top > 0 else 1.0)
         v = np.arcsinh(np.clip(v, 0, None) / 0.1) / np.arcsinh(1 / 0.1)
-        chans.append(np.nan_to_num(np.clip(v, 0, 1)))
+        chans.append(fill_missing(np.clip(v, 0, 1), a))
     rgb = (np.flipud(np.stack(chans, axis=-1)) * 255).astype(np.uint8)  # FITS y-up -> image y-down
     return Image.fromarray(rgb, "RGB")
 
@@ -674,8 +684,7 @@ def shared_limits(stacks):
 
 
 def gray_image(arr, vmin, vmax):
-    a = np.clip((arr - vmin) / (vmax - vmin + 1e-12), 0, 1)
-    a = np.nan_to_num(a, nan=0.0)
+    a = fill_missing(np.clip((arr - vmin) / (vmax - vmin + 1e-12), 0, 1), arr)
     return Image.fromarray((np.flipud(a) * 255).astype(np.uint8), "L")  # FITS y-up -> image y-down
 
 
