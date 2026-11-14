@@ -9,9 +9,16 @@
 //   onProgress({ status: "queued", position: 1 })
 //   onProgress({ status: "processing", done: 40, total: 120 })
 // Pass { signal } (an AbortController signal) to stop polling when the user changes target.
+//
+// 429 / 503 are retried up to 4 times (waiting Retry-After, else 2, 4, 8, 16 s), reported as
+//   onProgress({ status: "retrying", httpStatus: 503, attempt: 1, retryInMs: 2000 })
+//
+// The same progress updates also go to subscribeActivity(listener), so the status bar can show
+// them without every caller passing callbacks around.
 
 import healthMock from "./mock/health.json";
 import resolveMock from "./mock/resolve.json";
+import targetsMock from "./mock/targets.json";
 import framesMock from "./mock/frames.json";
 import diffMock from "./mock/diff.json";
 import rgbMock from "./mock/rgb.json";
@@ -26,6 +33,8 @@ export const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000")
 
 const POLL_MS = 2000;
 const MAX_RETRIES = 4; // for 429 / 503
+const RETRY_STATUSES = [429, 503];
+const IMAGES_AS_URLS = "url"; // backend sends base64 images inside the JSON unless asked for URLs
 
 export class ApiError extends Error {
   constructor(message, status) {
@@ -42,6 +51,11 @@ export function getHealth(opts) {
   return call("/api/health", {}, opts, () => healthMock);
 }
 
+/** The challenge's test objects, positions moved to the SPHEREx era → [{id, name, ra, dec, note}] */
+export function getTargets(opts) {
+  return call("/api/targets", {}, opts, () => targetsMock);
+}
+
 /** "WISE 0855" → {name, ra, dec} */
 export function resolve(name, opts) {
   return call("/api/resolve", { name }, opts, () => {
@@ -53,14 +67,14 @@ export function resolve(name, opts) {
 
 /** {ra, dec, fov, det, mode, wmin, wmax} → {frames: [...], grid} */
 export function getFrames({ ra, dec, fov, det, mode, wmin, wmax }, opts) {
-  return call("/api/frames", { ra, dec, fov, det, mode, wmin, wmax }, { ...opts, poll: true },
-    () => framesMock, withImageUrls);
+  return call("/api/frames", { ra, dec, fov, det, mode, wmin, wmax, images: IMAGES_AS_URLS },
+    { ...opts, poll: true }, () => framesMock, withImageUrls);
 }
 
 /** Difference (op "sub", b − a) or sum (op "add") of frames a and b → {url} */
 export function getDiff({ ra, dec, fov, det, mode, wmin, wmax, a, b, op = "sub" }, opts) {
-  return call("/api/diff", { ra, dec, fov, det, mode, wmin, wmax, a, b, op }, { ...opts, poll: true },
-    () => diffMock, withImageUrls);
+  return call("/api/diff", { ra, dec, fov, det, mode, wmin, wmax, a, b, op, images: IMAGES_AS_URLS },
+    { ...opts, poll: true }, () => diffMock, withImageUrls);
 }
 
 /** Infrared colour image (D1 blue, D3 green, D6 red) → {url} */
@@ -93,11 +107,46 @@ export function getLightcurve({ ra, dec, det }, opts) {
   return call("/api/lightcurve", { ra, dec, det }, opts, () => lightcurveMock);
 }
 
+// ---------- activity feed (for the status bar) ----------
+
+const activityListeners = new Set();
+let lastRequestId = 0;
+
+/**
+ * listener({ id, status, ... }) is called with every progress update of every request
+ * (same objects as onProgress, plus a request id), and with { id, status: "settled" } at the end.
+ * Returns an unsubscribe function.
+ */
+export function subscribeActivity(listener) {
+  activityListeners.add(listener);
+  return () => {
+    activityListeners.delete(listener);
+  };
+}
+
+/** One reporter per request: sends each update to the caller's onProgress and to the feed. */
+function createReporter(onProgress) {
+  const id = ++lastRequestId;
+  const emit = (event) => activityListeners.forEach((listener) => listener({ id, ...event }));
+  return {
+    progress(info) {
+      onProgress?.(info);
+      emit(info);
+    },
+    settle: () => emit({ status: "settled" }),
+  };
+}
+
 // ---------- internals ----------
 
 async function call(path, params, opts = {}, mock, transform = (x) => x) {
-  if (USE_MOCK) return transform(await fakeCall(mock, opts), { mock: true });
-  return transform(await request(path, params, opts), { mock: false });
+  const reporter = createReporter(opts.onProgress);
+  try {
+    const body = USE_MOCK ? await fakeCall(mock, opts, reporter) : await request(path, params, opts, reporter);
+    return transform(body, { mock: USE_MOCK });
+  } finally {
+    reporter.settle();
+  }
 }
 
 function buildUrl(path, params) {
@@ -109,7 +158,7 @@ function buildUrl(path, params) {
   return `${API_URL}${path}${qs ? `?${qs}` : ""}`;
 }
 
-async function request(path, params, { onProgress, signal, poll = false } = {}) {
+async function request(path, params, { signal, poll = false }, reporter) {
   const url = buildUrl(path, params);
   let retries = 0;
   for (;;) {
@@ -117,14 +166,15 @@ async function request(path, params, { onProgress, signal, poll = false } = {}) 
     const body = await res.json().catch(() => ({}));
 
     if (res.status === 202 && poll) {
-      onProgress?.(body);
+      reporter.progress(body); // { status: "queued", position } | { status: "processing", done, total }
       await sleep(POLL_MS, signal);
       continue;
     }
-    if ((res.status === 429 || res.status === 503) && retries < MAX_RETRIES) {
+    if (RETRY_STATUSES.includes(res.status) && retries < MAX_RETRIES) {
       retries += 1;
-      onProgress?.({ status: "retrying", attempt: retries, httpStatus: res.status });
-      await sleep(POLL_MS * 2 ** (retries - 1), signal); // 2, 4, 8, 16 s
+      const retryInMs = retryDelayMs(res, retries);
+      reporter.progress({ status: "retrying", httpStatus: res.status, attempt: retries, retryInMs });
+      await sleep(retryInMs, signal);
       continue;
     }
     if (!res.ok) throw new ApiError(body.detail || `HTTP ${res.status}`, res.status);
@@ -132,24 +182,35 @@ async function request(path, params, { onProgress, signal, poll = false } = {}) 
   }
 }
 
+/** Server's Retry-After (seconds) if given, else exponential backoff: 2, 4, 8, 16 s. */
+function retryDelayMs(res, attempt) {
+  const seconds = Number(res.headers.get("Retry-After"));
+  if (Number.isFinite(seconds) && seconds > 0) return seconds * 1000;
+  return POLL_MS * 2 ** (attempt - 1);
+}
+
 // Backend image URLs are relative ("/img/abc.png"): make them absolute so they work from Vercel.
 // Mock URLs point at frontend/public/mock/ and stay relative to the frontend.
+// Frames without an id (the backend sends only `index`) get their URL as id, which is unique per image.
 function withImageUrls(body, { mock }) {
-  if (mock) return structuredClone(body);
-  const abs = (u) => (u && u.startsWith("/") ? API_URL + u : u);
+  const absolute = (u) => (!mock && u?.startsWith("/") ? API_URL + u : u);
   if (Array.isArray(body.frames)) {
-    return { ...body, frames: body.frames.map((f) => ({ ...f, url: abs(f.url) })) };
+    const frames = body.frames.map((f) => {
+      const url = absolute(f.url);
+      return { ...f, url, id: f.id ?? url };
+    });
+    return { ...body, frames };
   }
-  return { ...body, url: abs(body.url) };
+  return { ...body, url: absolute(body.url) };
 }
 
 // Mock: short delay, and a fake queued → processing phase for polling endpoints.
-async function fakeCall(mock, { onProgress, signal, poll = false } = {}) {
+async function fakeCall(mock, { signal, poll = false }, reporter) {
   if (poll) {
-    onProgress?.({ status: "queued", position: 1 });
+    reporter.progress({ status: "queued", position: 1 });
     await sleep(300, signal);
     for (let done = 1; done <= 3; done++) {
-      onProgress?.({ status: "processing", done, total: 3 });
+      reporter.progress({ status: "processing", done, total: 3 });
       await sleep(200, signal);
     }
   } else {

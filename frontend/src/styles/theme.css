@@ -14,6 +14,7 @@
   --color-on-accent: #000000;     /* text on the accent */
   --color-danger: #ff7a7a;
   --color-success: #5ad19a;
+  --color-warning: #ffd166;
 
   /* type */
   --font-display: "Space Grotesk", system-ui, sans-serif;

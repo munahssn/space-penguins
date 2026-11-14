@@ -2,8 +2,12 @@ import AppLayout from "../components/layout/AppLayout.jsx";
 import Header from "../components/layout/Header.jsx";
 import Placeholder from "../components/layout/Placeholder.jsx";
 import DataChip from "../components/status/DataChip.jsx";
+import StatusBar from "../components/status/StatusBar.jsx";
 import ShareActions from "../components/share/ShareActions.jsx";
 import FramePlayer from "../components/player/FramePlayer.jsx";
+import SearchBar from "../components/search/SearchBar.jsx";
+import ControlPanel from "../components/controls/ControlPanel.jsx";
+import StretchFrame from "../components/controls/StretchFrame.jsx";
 
 const PERSON_1 = "Person 1";
 const PERSON_2 = "Person 2";
@@ -14,15 +18,18 @@ export default function ViewerPage() {
     <AppLayout
       header={
         <Header
-          search={<Placeholder name="SearchBar" issue={7} owner={PERSON_2} className="placeholder-inline" />}
+          search={<SearchBar />}
           status={<DataChip />}
           actions={<ShareActions />}
         />
       }
+      statusBar={<StatusBar />}
       viewer={
         <>
-          <FramePlayer />
-          <Placeholder name="ControlPanel" issue={9} owner={PERSON_2} />
+          <StretchFrame>
+            <FramePlayer />
+          </StretchFrame>
+          <ControlPanel />
         </>
       }
       side={
