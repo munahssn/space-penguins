@@ -28,3 +28,18 @@ export const RGB_CHANNELS = [
   { channel: "Green", det: "D3", range: "1.6–2.4 µm" },
   { channel: "Blue", det: "D1", range: "0.75–1.1 µm" },
 ];
+
+/** Overlays drawn on the image, in the order of their toggles. */
+export const OVERLAYS = [
+  { id: "stars", label: "Gaia stars" },
+  { id: "asteroids", label: "Known asteroids" },
+  { id: "flags", label: "Flagged pixels" },
+];
+export const DEFAULT_OVERLAYS = { stars: true, asteroids: true, flags: false };
+
+/** Marker sizes in image pixels (1 px ≈ 6″), so they scale with the image. */
+export const MARKER_SIZES = {
+  starRing: 1.6,      // radius of a Gaia circle
+  asteroidDot: 0.7,   // radius of an asteroid dot
+  selectedRing: 2.6,  // radius of the selection ring
+};
