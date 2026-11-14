@@ -126,15 +126,24 @@ def group_epochs(mjds):
     return groups
 
 
-def build_stacks(ra, dec, fov, det):
-    """Main pipeline. Returns (stacks, meta, grid) with raw float arrays."""
+def build_stacks(ra, dec, fov, det, progress=None):
+    """Main pipeline. Returns (stacks, meta, grid) with raw float arrays.
+
+    progress(done, total) is called after every image, so a job can report progress."""
     rows = find_images(ra, dec, fov, det)
     if not rows:
         raise NoData("No SPHEREx images cover this position")
 
     wcs_out, shape = target_grid(ra, dec, fov)
+    if progress:
+        progress(0, len(rows))
+    results = [None] * len(rows)
     with cf.ThreadPoolExecutor(max_workers=8) as ex:
-        results = list(ex.map(lambda r: fetch_cutout(r["uri"], wcs_out, shape), rows))
+        futures = {ex.submit(fetch_cutout, r["uri"], wcs_out, shape): i for i, r in enumerate(rows)}
+        for n, fut in enumerate(cf.as_completed(futures), start=1):
+            results[futures[fut]] = fut.result()
+            if progress:
+                progress(n, len(rows))
 
     keep = [(r, res) for r, res in zip(rows, results) if res is not None]
     if not keep:

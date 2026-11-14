@@ -1,18 +1,28 @@
-"""Blink frames and difference/sum images."""
-from fastapi import APIRouter, HTTPException, Query
+"""Blink frames and difference/sum images.
 
-from .. import spherex
-from ..cache import get_stacks
+Both endpoints answer 202 while a new spot of sky is still being prepared
+(see jobs.py); the client polls the same URL until it gets 200."""
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import JSONResponse
+
+from .. import jobs, spherex
 from ..config import MOCK
 from ..validation import check_query
 
 router = APIRouter()
 
 
+def _pending(info):
+    return JSONResponse(status_code=202, content=info, headers={"Retry-After": "2"})
+
+
 @router.get("/api/frames")
 def frames(ra: float, dec: float, fov: float = 0.1, det: str = "D3"):
     check_query(ra, dec, fov, det)
-    stacks, meta, grid = get_stacks(ra, dec, fov, det)
+    state, payload = jobs.result(ra, dec, fov, det)
+    if state == "pending":
+        return _pending(payload)
+    stacks, meta, grid = payload
     vmin, vmax = spherex.shared_limits(stacks)
     return {
         "query": {"ra": ra, "dec": dec, "fov": fov, "det": det,
@@ -27,7 +37,10 @@ def frames(ra: float, dec: float, fov: float = 0.1, det: str = "D3"):
 def diff(ra: float, dec: float, fov: float = 0.1, det: str = "D3",
          a: int = 0, b: int = -1, op: str = Query("sub", pattern="^(sub|add)$")):
     check_query(ra, dec, fov, det)
-    stacks, _, _ = get_stacks(ra, dec, fov, det)
+    state, payload = jobs.result(ra, dec, fov, det)
+    if state == "pending":
+        return _pending(payload)
+    stacks, _, _ = payload
     n = len(stacks)
     b = b if b >= 0 else n - 1
     if not (0 <= a < n and 0 <= b < n):

@@ -9,7 +9,7 @@ Run from backend/:
 import argparse
 import time
 
-from app.main import get_stacks
+from app.cache import get_stacks
 from app.targets import targets_now
 
 ap = argparse.ArgumentParser()
