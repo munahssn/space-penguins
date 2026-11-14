@@ -46,6 +46,7 @@ The main endpoint: one stacked image per survey pass (epoch), ready to blink.
 | `wmin` | float | none | micrometres; use only exposures that saw the target at `>= wmin` |
 | `wmax` | float | none | micrometres; use only exposures that saw the target at `<= wmax` |
 | `mode` | string | `epoch` | `epoch`: one stacked frame per survey pass. `exposure`: one frame per single exposure |
+| `images` | string | `inline` | `inline`: each frame has `image`, a base64 PNG data URL (large JSON). `url`: each frame has `url` instead, a short link to the PNG (see `GET /img/...` below). Use `url` with `mode=exposure`: up to 400 frames |
 
 ```json
 {
@@ -123,6 +124,19 @@ also answers 202 while the data downloads), plus:
 { "a": 0, "b": 2, "op": "sub", "image": "data:image/png;base64,..." }
 ```
 In `sub` mode: red = brighter in b, blue = brighter in a. A moving source shows up as a red/blue pair.
+With `images=url` the answer has `"url": "/img/<token>.png"` instead of `image`.
+
+## `GET /img/{token}.png`
+The PNG behind a `url` from `/api/frames?images=url` or `/api/diff?images=url`. Use the link exactly as given and
+put the API address in front of it: `<img src="http://localhost:8000/img/eyJr....png">`.
+- The JSON is about 4x smaller (WISE 0855, 3 frames: 1.2 KB instead of 4.6 KB; much more for big fields) and the browser
+  caches and decodes the images itself. The image is pixel-identical to the inline one.
+- Same stretch for every frame of a request, so the blink stays fair.
+- The link contains the request itself (position, fov, detector, wavelength range, frame), so it keeps working after a
+  server restart: the PNG is rendered again from the cached exposures. It **never starts a download**: if the position
+  has not been fetched yet it answers 404, so call `/api/frames` first.
+- `Cache-Control: public, max-age=86400`.
+- Errors: 404 not downloaded yet or no such frame, 422 not a valid link.
 
 ## `GET /api/spectrum`  *(Phase 3, returns 501 until built)*
 ```json
