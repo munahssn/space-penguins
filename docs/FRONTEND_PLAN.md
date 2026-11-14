@@ -18,7 +18,7 @@ Issue numbers below match the GitHub issues (#1–#17).
 | `src/components/charts/` (spectrum, motion track, light curve) | `src/api/api.js` (fetch, polling, mock switch), `src/api/mock/` |
 | `src/components/verdict/` ("Is it new?" panel) | `src/hooks/useViewState.jsx` (URL state incl. `embed`) |
 | | `src/components/search/`, `controls/`, `status/`, `skymap/` |
-| | `src/pages/Start.jsx` |
+| | `src/pages/StartPage.jsx` |
 | | `vercel.json`, `README.md`, demo video, submission text |
 
 Touching the other person's files: small fixes OK, tell them. Bigger changes go through a PR they review.

@@ -1,6 +1,5 @@
 import AppLayout from "../components/layout/AppLayout.jsx";
 import Header from "../components/layout/Header.jsx";
-import Placeholder from "../components/layout/Placeholder.jsx";
 import DataChip from "../components/status/DataChip.jsx";
 import StatusBar from "../components/status/StatusBar.jsx";
 import ShareActions from "../components/share/ShareActions.jsx";
@@ -10,10 +9,9 @@ import ChartsPanel from "../components/charts/ChartsPanel.jsx";
 import SearchBar from "../components/search/SearchBar.jsx";
 import ControlPanel from "../components/controls/ControlPanel.jsx";
 import StretchFrame from "../components/controls/StretchFrame.jsx";
+import SkyMap from "../components/skymap/SkyMap.jsx";
 
-const PERSON_2 = "Person 2";
-
-/** Main viewer page. Placeholders mark components that later issues will drop in. */
+/** Main viewer page: search + status on top, player and controls on the left, details on the right. */
 export default function ViewerPage() {
   return (
     <AppLayout
@@ -37,7 +35,7 @@ export default function ViewerPage() {
         <>
           <IsItNewPanel />
           <ChartsPanel />
-          <Placeholder name="SkyMap" issue={12} owner={PERSON_2} className="placeholder-square" />
+          <SkyMap />
         </>
       }
     />

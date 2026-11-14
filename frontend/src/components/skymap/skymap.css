@@ -1,0 +1,32 @@
+.skymap { position: relative; display: flex; flex-direction: column; gap: var(--space-2); }
+
+.skymap-view {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.skymap-overlay-message {
+  position: absolute;
+  inset: 0 0 auto 0;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  pointer-events: none;
+}
+
+.skymap-caption {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.skymap-key { width: 10px; height: 10px; flex: none; border: 2px solid var(--color-text); }

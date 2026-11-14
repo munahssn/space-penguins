@@ -17,8 +17,32 @@ function isAt(target, ra, dec) {
   return Math.abs(target.ra - ra) < SAME_POSITION_DEG && Math.abs(target.dec - dec) < SAME_POSITION_DEG;
 }
 
-/** Search by name (→ /api/resolve), decimal degrees or hh:mm:ss dd:mm:ss, or pick a test target. */
-export default function SearchBar() {
+function TargetSelect({ targets, value, onChange }) {
+  return (
+    <select
+      className="search-targets"
+      value={value}
+      onChange={onChange}
+      disabled={targets.length === 0}
+      aria-label="Test targets"
+    >
+      <option value="" disabled>
+        {targets.length ? "Test targets" : "Loading targets…"}
+      </option>
+      {targets.map((t) => (
+        <option key={t.id} value={t.id} title={t.note}>
+          {t.name}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+/**
+ * Search by name (→ /api/resolve), decimal degrees or hh:mm:ss dd:mm:ss, or pick a test target.
+ * large: bigger version for the start page. showTargets: false hides the test-target dropdown.
+ */
+export default function SearchBar({ large = false, showTargets = true }) {
   const { ra, dec, setView } = useViewState();
   const targets = useTargets();
   const [text, setText] = useState(() => (ra !== null && dec !== null ? formatCoords(ra, dec) : ""));
@@ -63,7 +87,7 @@ export default function SearchBar() {
   }
 
   return (
-    <form className="search" role="search" onSubmit={handleSubmit} noValidate>
+    <form className={`search ${large ? "search--large" : ""}`.trim()} role="search" onSubmit={handleSubmit} noValidate>
       <div className="search-row">
         <input
           className="search-input"
@@ -83,22 +107,9 @@ export default function SearchBar() {
         <button type="submit" className="btn-primary" disabled={lookingUp}>
           {lookingUp ? "Looking up…" : "Go"}
         </button>
-        <select
-          className="search-targets"
-          value={currentTarget?.id ?? ""}
-          onChange={handlePickTarget}
-          disabled={targets.length === 0}
-          aria-label="Test targets"
-        >
-          <option value="" disabled>
-            {targets.length ? "Test targets" : "Loading targets…"}
-          </option>
-          {targets.map((t) => (
-            <option key={t.id} value={t.id} title={t.note}>
-              {t.name}
-            </option>
-          ))}
-        </select>
+        {showTargets && (
+          <TargetSelect targets={targets} value={currentTarget?.id ?? ""} onChange={handlePickTarget} />
+        )}
       </div>
       {error && (
         <p id={errorId} className="search-error" role="alert">
