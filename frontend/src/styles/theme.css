@@ -14,6 +14,7 @@
   --color-on-accent: #000000;     /* text on the accent */
   --color-danger: #ff7a7a;
   --color-success: #5ad19a;
+  --color-warning: #ffd166;
 
   /* type */
   --font-display: "Space Grotesk", system-ui, sans-serif;
@@ -36,6 +37,7 @@
 
   /* layout */
   --header-height: 64px;
-  --side-panel-width: 380px;
+  --side-panel-width: 380px;      /* minimum; on wide screens the side panel grows */
+  --viewer-max-width: 760px;      /* player column: wide enough to see detail, short enough to fit a screen */
   --page-gutter: 16px;
 }

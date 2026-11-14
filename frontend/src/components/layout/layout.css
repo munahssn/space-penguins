@@ -4,7 +4,7 @@
 .app-main {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--side-panel-width);
+  grid-template-columns: minmax(0, var(--viewer-max-width)) minmax(var(--side-panel-width), 1fr);
   gap: var(--space-6);
   width: 100%;
   max-width: 1400px;
@@ -62,7 +62,6 @@
 .placeholder-meta { font-size: var(--text-xs); }
 
 .placeholder-inline { min-height: 0; flex-direction: row; padding: var(--space-2) var(--space-3); }
-.placeholder-player { aspect-ratio: 1; width: 100%; max-width: 680px; align-self: center; }
 .placeholder-square { aspect-ratio: 1; }
 
 /* ---------- phone / narrow ---------- */

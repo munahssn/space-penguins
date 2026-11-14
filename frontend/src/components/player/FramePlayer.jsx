@@ -35,6 +35,15 @@ export default function FramePlayer() {
   if (frames.length === 0) {
     return <PlayerPlaceholder>No SPHEREx images cover this position yet.</PlayerPlaceholder>;
   }
+  if (frames.length === 0) {
+    return <PlayerPlaceholder>No SPHEREx images cover this position yet.</PlayerPlaceholder>;
+  }
+
+  const unavailable = unavailableDisplays(frames.length);
+  const display = unavailable[view.display] ? "blink" : view.display;
+  const missingOverlays = unavailableOverlays(frames);
+  const activeOverlays = { ...overlays, flags: overlays.flags && !missingOverlays.flags };
+  const toggleOverlay = (id, on) => setOverlays((current) => ({ ...current, [id]: on }));
 
   const unavailable = unavailableDisplays(frames.length);
   const display = unavailable[view.display] ? "blink" : view.display;

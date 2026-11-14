@@ -1,9 +1,9 @@
 // Shared view state, synced to the URL so every view is a shareable link.
 //
-//   const { ra, dec, fov, det, mode, display, wmin, wmax, selected, embed, setView, setRa, ..., shareUrl } = useViewState();
+//   const { ra, dec, fov, det, mode, display, stretch, wmin, wmax, selected, embed, setView, setRa, ..., shareUrl } = useViewState();
 //
 // - Wrap the app in <ViewStateProvider> once (done in main.jsx).
-// - URL keys: ?ra&dec&fov&det&mode&display&wmin&wmax&embed=1
+// - URL keys: ?ra&dec&fov&det&mode&display&stretch&wmin&wmax&embed=1
 // - Values outside the allowed ones (e.g. det=D9, fov=5) fall back to the default.
 // - `selected` (the clicked {ra, dec}) is NOT put in the URL.
 // - `embed` is read from the URL only (?embed=1). Components hide chrome when it's true.
@@ -16,9 +16,10 @@ export const DEFAULTS = {
   det: "D3",         // "D1".."D6" or "all"
   mode: "epoch",     // which data: "epoch" (stack per survey pass) | "exposure" (every exposure)
   display: "blink",  // what the player shows: "blink" | "diff" | "rgb"
+  stretch: "normal", // brightness, applied in the browser: "normal" | "faint" | "contrast"
   wmin: null,        // µm, null = no wavelength filter
   wmax: null,        // µm
-  selected: null,    // { ra, dec } of the clicked source, or null
+  selected: null,    // { ra, dec, mjd, date } of the clicked spot and the frame it was clicked on, or null
   embed: false,      // true when the page is loaded with ?embed=1
 };
 
@@ -27,6 +28,7 @@ const CHOICES = {
   det: ["D1", "D2", "D3", "D4", "D5", "D6", "all"],
   mode: ["epoch", "exposure"],
   display: ["blink", "diff", "rgb"],
+  stretch: ["normal", "faint", "contrast"],
 };
 const RANGES = {
   ra: [0, 360],
@@ -126,6 +128,7 @@ export function ViewStateProvider({ children }) {
     setDet: (det) => setView({ det }),
     setMode: (mode) => setView({ mode }),
     setDisplay: (display) => setView({ display }),
+    setStretch: (stretch) => setView({ stretch }),
     setWmin: (wmin) => setView({ wmin }),
     setWmax: (wmax) => setView({ wmax }),
     setSelected: (selected) => setView({ selected }),

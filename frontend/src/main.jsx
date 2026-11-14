@@ -1,13 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
+import { ServerStatusProvider } from "./hooks/useServerStatus.jsx";
 import { ViewStateProvider } from "./hooks/useViewState.jsx";
 import "./styles/global.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <ViewStateProvider>
-      <App />
-    </ViewStateProvider>
+    <ServerStatusProvider>
+      <ViewStateProvider>
+        <App />
+      </ViewStateProvider>
+    </ServerStatusProvider>
   </React.StrictMode>,
 );

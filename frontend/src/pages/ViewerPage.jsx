@@ -1,35 +1,40 @@
 import AppLayout from "../components/layout/AppLayout.jsx";
 import Header from "../components/layout/Header.jsx";
-import Placeholder from "../components/layout/Placeholder.jsx";
 import DataChip from "../components/status/DataChip.jsx";
+import StatusBar from "../components/status/StatusBar.jsx";
 import ShareActions from "../components/share/ShareActions.jsx";
 import FramePlayer from "../components/player/FramePlayer.jsx";
+import IsItNewPanel from "../components/verdict/IsItNewPanel.jsx";
+import ChartsPanel from "../components/charts/ChartsPanel.jsx";
+import SearchBar from "../components/search/SearchBar.jsx";
+import ControlPanel from "../components/controls/ControlPanel.jsx";
+import SkyMap from "../components/skymap/SkyMap.jsx";
 
-const PERSON_1 = "Person 1";
-const PERSON_2 = "Person 2";
-
-/** Main viewer page. Placeholders mark components that later issues will drop in. */
+/** Main viewer page: search + status on top, player and controls on the left, details on the right. */
 export default function ViewerPage() {
   return (
     <AppLayout
       header={
         <Header
-          search={<Placeholder name="SearchBar" issue={7} owner={PERSON_2} className="placeholder-inline" />}
+          search={<SearchBar />}
           status={<DataChip />}
           actions={<ShareActions />}
         />
       }
+      statusBar={<StatusBar />}
       viewer={
         <>
+          {/* Screen readers navigate by headings; the page's look doesn't need a visible one. */}
+          <h1 className="visually-hidden">SPHEREx Blink viewer</h1>
           <FramePlayer />
-          <Placeholder name="ControlPanel" issue={9} owner={PERSON_2} />
+          <ControlPanel />
         </>
       }
       side={
         <>
-          <Placeholder name="“Is it new?” panel" issue={10} owner={PERSON_1} />
-          <Placeholder name="Charts" issue={11} owner={PERSON_1} />
-          <Placeholder name="SkyMap" issue={12} owner={PERSON_2} className="placeholder-square" />
+          <IsItNewPanel />
+          <ChartsPanel />
+          <SkyMap />
         </>
       }
     />
