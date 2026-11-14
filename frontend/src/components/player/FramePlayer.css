@@ -2,14 +2,10 @@
    Colours, fonts and radii come from the theme tokens in styles/theme.css. */
 
 .fp {
-  --fp-warning: var(--color-warning);
+  --fp-warning: #ffd666; /* no theme token for warnings yet */
   /* data colours: they mean something, so they stay coloured whatever the theme */
   --fp-before: #4c7dff;   /* difference: was here */
   --fp-after: #ff4b3a;    /* difference: is here now */
-  --fp-star: #5cc8ff;     /* Gaia star circles */
-  --fp-asteroid: #b79cff; /* known asteroids */
-  --fp-flag: var(--color-warning); /* flagged pixels */
-  --fp-selected: #ff9a3d; /* the clicked spot */
   --fp-overlay: color-mix(in srgb, var(--color-bg) 80%, transparent);
 
   display: flex;
@@ -22,9 +18,6 @@
 /* one view (blink or still) under the switch */
 .fp-view { display: flex; flex-direction: column; gap: var(--space-3); outline: none; }
 .fp-view:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); border-radius: var(--radius-md); }
-
-/* toolbar above the image: view switch + overlay toggles */
-.fp-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); }
 
 /* Blink / Difference / IR colour switch */
 .fp-display {
@@ -204,22 +197,16 @@
   white-space: nowrap;
 }
 
-.fp-select-layer { pointer-events: auto; cursor: crosshair; }
-.fp-selected-ring {
-  position: absolute;
-  aspect-ratio: 1 / 1;
-  transform: translate(-50%, -50%);
-  border: 2px dashed var(--fp-selected);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-/* overlay toggles */
-.fp-overlays { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin: 0; padding: 0; border: 0; }
-.fp-overlay-toggle { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 32px; font-size: var(--text-sm); cursor: pointer; }
-.fp-overlay-toggle:has(input:disabled) { color: var(--color-text-muted); cursor: not-allowed; }
-.fp-overlay-toggle input { width: 16px; height: 16px; padding: 0; accent-color: var(--color-accent); }
-.fp-overlay-swatch { width: 12px; height: 12px; border-radius: 50%; }
-.fp-overlay-swatch--stars { border: 2px solid var(--fp-star); }
-.fp-overlay-swatch--asteroids { background: var(--fp-asteroid); }
-.fp-overlay-swatch--flags { background: var(--fp-flag); border-radius: 2px; }
+/* legend under the Difference / IR colour image */
+.fp-legend { display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
+.fp-legend p { margin: 0; }
+.fp-legend-title { font-weight: 600; }
+.fp-legend-note { color: var(--color-text-muted); }
+.fp-legend-items { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin: 0; padding: 0; list-style: none; }
+.fp-legend-items li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.fp-swatch { width: 12px; height: 12px; border-radius: 50%; }
+.fp-swatch--before { background: var(--fp-before); }
+.fp-swatch--after { background: var(--fp-after); }
+.fp-swatch--red { background: #ff4b3a; }
+.fp-swatch--green { background: #3ddc84; }
+.fp-swatch--blue { background: #4c7dff; }
