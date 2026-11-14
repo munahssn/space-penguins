@@ -128,7 +128,8 @@ def context(ra: float, dec: float, mjd: float, fov: float = 0.1,
         try:
             for o in catalogs.simbad_cone(ra, dec, _margin(year, catalogs.SIMBAD_EPOCH)):
                 d = catalogs.simbad_distance(o, ra, dec, year)
-                cands.append((d, 2, "known_other", {"name": o["name"], "type": o["otype"], "source": "SIMBAD"}))
+                name = o["name"][5:] if o["name"].startswith("NAME ") else o["name"]   # SIMBAD's prefix for common names
+                cands.append((d, 2, "known_other", {"name": name, "type": o["otype"], "source": "SIMBAD"}))
         except Exception as e:
             warnings.append(f"SIMBAD unavailable: {str(e)[:120]}")
 
@@ -142,6 +143,6 @@ def context(ra: float, dec: float, mjd: float, fov: float = 0.1,
         verdict, match = ("unknown" if failed else "unexplained"), None
     return {"query": {"ra": ra, "dec": dec, "mjd": mjd, "fov": fov, "epoch": round(year, 3)},
             "verdict": verdict, "match": match,
-            "other_matches": [{**c[3], "distance_arcsec": round(c[0], 2), "verdict": c[2]} for c in hits[1:6]],
+            "other_matches": [{**c[3], "distance_arcsec": round(c[0], 2), "verdict": c[2]} for c in hits[1:11]],
             "match_radius_arcsec": round(MATCH_ARCSEC, 2),
             "stars": stars, "asteroids": asteroids, "warnings": warnings}

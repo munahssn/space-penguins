@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import FRONTEND_DIR
-from .routers import analysis, context, frames, images, resolve, system
+from .routers import analysis, context, explain, frames, images, resolve, system
 
 app = FastAPI(title="SPHEREx Blink API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET"], allow_headers=["*"])
@@ -30,6 +30,7 @@ app.include_router(frames.router)
 app.include_router(images.router)
 app.include_router(analysis.router)
 app.include_router(context.router)
+app.include_router(explain.router)
 
 # Serve the frontend from the same server (must be mounted last)
 if FRONTEND_DIR.exists():
