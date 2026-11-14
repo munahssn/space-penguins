@@ -1,6 +1,6 @@
 // Shared view state, synced to the URL so every view is a shareable link.
 //
-//   const { ra, dec, fov, det, mode, display, wmin, wmax, selected, embed, setView, setRa, ... } = useViewState();
+//   const { ra, dec, fov, det, mode, display, wmin, wmax, selected, embed, setView, setRa, ..., shareUrl } = useViewState();
 //
 // - Wrap the app in <ViewStateProvider> once (done in main.jsx).
 // - URL keys: ?ra&dec&fov&det&mode&display&wmin&wmax&embed=1
@@ -60,17 +60,36 @@ function readUrl() {
   return state;
 }
 
-function writeUrl(state) {
-  const p = new URLSearchParams(window.location.search);
+/** Puts the view keys of `state` into `params`. Defaults are left out so links stay short. */
+function setViewParams(params, state) {
   for (const k of URL_KEYS) {
     const v = state[k];
-    // Leave defaults out so links stay short.
-    if (v === null || v === undefined || v === DEFAULTS[k]) p.delete(k);
-    else p.set(k, String(v));
+    if (v === null || v === undefined || v === DEFAULTS[k]) params.delete(k);
+    else params.set(k, String(v));
   }
-  const qs = p.toString();
-  const url = window.location.pathname + (qs ? `?${qs}` : "") + window.location.hash;
-  window.history.replaceState(null, "", url);
+}
+
+function withQuery(base, params) {
+  const qs = params.toString();
+  return base + (qs ? `?${qs}` : "");
+}
+
+/** Keeps the address bar in sync. Other params already there (e.g. embed, dev) are kept. */
+function writeUrl(state) {
+  const params = new URLSearchParams(window.location.search);
+  setViewParams(params, state);
+  window.history.replaceState(null, "", withQuery(window.location.pathname, params) + window.location.hash);
+}
+
+/**
+ * Full link that reopens this view: only the view keys, nothing else from the current URL.
+ * buildShareUrl(state, { embed: true }) gives the iframe version (#14).
+ */
+export function buildShareUrl(state, { embed = false } = {}) {
+  const params = new URLSearchParams();
+  setViewParams(params, state);
+  if (embed) params.set("embed", "1");
+  return withQuery(window.location.origin + window.location.pathname, params);
 }
 
 const ViewStateContext = createContext(null);
@@ -110,6 +129,7 @@ export function ViewStateProvider({ children }) {
     setWmin: (wmin) => setView({ wmin }),
     setWmax: (wmax) => setView({ wmax }),
     setSelected: (selected) => setView({ selected }),
+    shareUrl: (options) => buildShareUrl(state, options),
     reset: () => setState({ ...DEFAULTS, embed: state.embed }),
   }), [state, setView]);
 
