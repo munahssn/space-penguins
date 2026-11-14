@@ -157,7 +157,7 @@ Wording (Explain service):
 | `GET /img/{id}.png` | PNG, `Cache-Control: immutable` |
 | `GET /api/diff?…&a&b&op=sub\|add` | `{url}` (same 202 rules) |
 | `GET /api/rgb?ra&dec&fov` | `{url}` (same 202 rules) |
-| `GET /api/context?ra&dec&fov&mjd` | `{verdict, match:{name, type, source}, stars:[{gaia_id, ra, dec, gmag, pmra, pmdec}], asteroids:[{name, ra, dec, vmag}], warnings:[…]}` |
+| `GET /api/context?ra&dec&fov&mjd` | `{verdict, match:{name, type, source}, stars:[{source_id, ra, dec, gmag, pmra, pmdec}], asteroids:[{name, ra, dec, vmag}], warnings:[…]}` |
 | `GET /api/explain?ra&dec&mjd` | `{text, source:"template"\|"llm"}` |
 | `GET /api/track?ra&dec` | `{measured:[{mjd, ra, dec, err}], catalog_pm:{pmra, pmdec}, fit:{pmra, pmdec}}` |
 | `GET /api/spectrum?ra&dec` | `{points:[{wavelength_um, flux, error, mjd, det}]}` |

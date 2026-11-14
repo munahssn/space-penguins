@@ -24,7 +24,7 @@ export default function SkyMarkers({ grid, center, stars, asteroids, showStars, 
       <svg className="fp-layer" viewBox={`0 0 ${grid.width} ${grid.height}`} preserveAspectRatio="none">
         {placedStars.map(({ item, pixel }) => (
           <circle
-            key={item.gaia_id}
+            key={item.source_id}
             className="fp-marker-star"
             cx={pixel.x}
             cy={pixel.y}

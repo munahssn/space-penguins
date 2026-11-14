@@ -6,6 +6,8 @@ from the cached exposures on every request, so changing them is instant.
 """
 import hashlib
 import json
+import os
+import threading
 from functools import lru_cache
 
 import numpy as np
@@ -30,6 +32,14 @@ def _load(k):
     info["results"] = [(imgs[i].astype(float), b, a, w) for i, (b, a, w) in
                        enumerate(zip(info.pop("flagged"), info.pop("artifact"), info.pop("wavelength_um")))]
     return info
+
+
+def _write_atomically(path, write):
+    """write(tmp_path) fills a temporary file, which then replaces `path` in one step.
+    Requests that run at the same time never read a half-written cache file."""
+    tmp = path.with_name(f"{path.stem}.{os.getpid()}-{threading.get_ident()}.tmp{path.suffix}")
+    write(tmp)
+    os.replace(tmp, path)
 
 
 def cache_key(ra, dec, fov, det):
@@ -63,14 +73,15 @@ def get_exposures(ra, dec, fov, det, progress=None):
             except Exception as err:
                 raise HTTPException(502, f"IRSA request failed: {err}")
         res = e["results"]
-        np.savez_compressed(npz, imgs=np.array([r[0] for r in res], dtype=np.float32))
-        js.write_text(json.dumps({
+        # npz first, json last: is_cached() and the check above need both files.
+        _write_atomically(npz, lambda tmp: np.savez_compressed(tmp, imgs=np.array([r[0] for r in res], dtype=np.float32)))
+        _write_atomically(js, lambda tmp: tmp.write_text(json.dumps({
             "query": {"ra": ra, "dec": dec, "fov": fov, "det": det},
             "grid": e["grid"], "mjds": e["mjds"], "bands": e["bands"],
             "flagged": [r[1] for r in res], "artifact": [r[2] for r in res],
             "wavelength_um": [r[3] for r in res], "n_failed": e.get("n_failed", 0),
             "phot": e["phot"],
-        }))
+        })))
     return _load(k)
 
 
