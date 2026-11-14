@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useViewState } from "../hooks/useViewState.jsx";
 import * as api from "../api/api.js";
+import FramePlayer from "../components/player/FramePlayer.jsx";
 
 export default function DevCheck() {
   const view = useViewState();
@@ -46,6 +47,11 @@ export default function DevCheck() {
         Mode: <b>{api.USE_MOCK ? "mock data (VITE_USE_MOCK=true)" : `real backend at ${api.API_URL}`}</b>
         {embed && " · embed=1"}
       </p>
+
+      <section>
+        <h2>FramePlayer (#4)</h2>
+        <FramePlayer />
+      </section>
 
       <section>
         <h2>useViewState</h2>
