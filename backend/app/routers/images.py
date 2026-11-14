@@ -16,7 +16,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
 from .. import spherex
-from ..cache import CACHE_VERSION, get_stacks, is_cached
+from ..cache import CACHE_VERSION, get_exposures, get_stacks, is_cached
 from ..config import CACHE_DIR, DETECTORS, MOCK, MODES
 from ..validation import check_query, check_wavelength
 
@@ -27,7 +27,8 @@ MAX_TOKEN_LEN = 400
 
 
 def image_url(kind, ra, dec, fov, det, wmin, wmax, **extra):
-    """URL of one image. kind "f" = blink frame (extra: i), "d" = difference (extra: a, b, op)."""
+    """URL of one image. kind "f" = blink frame (extra: i), "d" = difference (extra: a, b, op),
+    "c" = colour image (D1/D3/D6; det, wmin, wmax are ignored)."""
     p = {"k": kind, "ra": ra, "dec": dec, "fov": fov, "det": det, "wmin": wmin, "wmax": wmax, **extra}
     token = base64.urlsafe_b64encode(json.dumps(p, separators=(",", ":")).encode()).decode().rstrip("=")
     return f"/img/{token}.png"
@@ -38,7 +39,7 @@ def _decode(token):
         raw = base64.urlsafe_b64decode(token + "=" * (-len(token) % 4))
         p = json.loads(raw)
         num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)  # noqa: E731
-        ok = (isinstance(p, dict) and p.get("k") in ("f", "d") and num(p["ra"]) and num(p["dec"])
+        ok = (isinstance(p, dict) and p.get("k") in ("f", "d", "c") and num(p["ra"]) and num(p["dec"])
               and num(p["fov"]) and p["det"] in DETECTORS and p.get("mode", "epoch") in MODES
               and all(p[w] is None or num(p[w]) for w in ("wmin", "wmax")))
         if ok and p["k"] == "f":
@@ -61,6 +62,12 @@ def _render(p):
     ra, dec, fov, det, wmin, wmax = p["ra"], p["dec"], p["fov"], p["det"], p["wmin"], p["wmax"]
     check_query(ra, dec, fov, det)
     check_wavelength(wmin, wmax)
+    if p["k"] == "c":
+        dets = spherex.RGB_CHANNELS.values()
+        if not (MOCK or all(is_cached(ra, dec, fov, d) for d in dets)):
+            raise HTTPException(404, "These images are not downloaded yet: ask /api/rgb for this position first")
+        ch = {c: spherex.deep_stack(get_exposures(ra, dec, fov, d)) for c, d in spherex.RGB_CHANNELS.items()}
+        return spherex.colour_image(ch["red"], ch["green"], ch["blue"])
     if not (MOCK or is_cached(ra, dec, fov, det)):  # mock data is instant; never start a download here
         raise HTTPException(404, "These images are not downloaded yet: ask /api/frames for this position first")
     stacks, _, _ = get_stacks(ra, dec, fov, det, wmin, wmax, p.get("mode", "epoch"))

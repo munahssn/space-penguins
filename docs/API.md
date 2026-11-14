@@ -126,8 +126,67 @@ also answers 202 while the data downloads), plus:
 In `sub` mode: red = brighter in b, blue = brighter in a. A moving source shows up as a red/blue pair.
 With `images=url` the answer has `"url": "/img/<token>.png"` instead of `image`.
 
+## `GET /api/track`
+Where the source at (`ra`, `dec`) is in each survey pass, and its proper motion fitted to that.
+
+| param | type | default | notes |
+|---|---|---|---|
+| `ra`, `dec` | float | required | degrees; the source must be within ~18" (3 px) of this in the first pass |
+| `det` | string | `D6` | brown dwarfs are brightest in `D5`/`D6`; normal stars show in every detector |
+| `fov` | float | `0.05` | degrees, min `0.029` |
+
+```json
+{ "query": { "ra": 133.759895, "dec": -7.242249, "fov": 0.05, "det": "D6", "release": "dr1+qr3" },
+  "unit": "mas/yr",
+  "measured": [ { "mjd": 60800.7453, "date": "2025-05-05", "detected": false },
+                { "mjd": 60995.8173, "date": "2025-11-10", "detected": true, "ra": 133.7597217, "dec": -7.2419946,
+                  "err": 1189.7, "snr": 15.0, "n_exposures": 21, "saturated": false } ],
+  "fit": { "pmra": -7032.5, "pmra_err": 3817.0, "pmdec": 1696.8, "pmdec_err": 3817.0, "n_epochs": 2, "years": 0.44,
+           "saturated": false },
+  "catalog_pm": { "id": "wise0855", "name": "WISE 0855-0714", "pmra": -8118.0, "pmdec": 673.0,
+                  "source": "targets.py", "separation_arcsec": 0.0 },
+  "compare": { "pmra_diff": 1085.5, "pmra_sigma": 0.3, "pmdec_diff": 1023.8, "pmdec_sigma": 0.3 } }
+```
+- `measured`: one entry per survey pass, the centroid of the source in that pass's stacked image. `err` is the
+  position error in mas: the larger of the centroid's own error and the scatter between the pass's single
+  exposures. A pass where nothing is found at S/N 5 has `"detected": false` and no position.
+- The first pass is searched around (`ra`, `dec`), each later pass around the previous position, so a fast mover
+  is followed. `saturated`: the core had no data, so the centre comes from the ring around it, which is often
+  lopsided; such points get an error of at least 0.5 px (~3"). The fit skips them when there are 2+ clean ones,
+  and `fit.saturated` says if any were used.
+- `fit`: straight line through the positions, in mas/yr (`pmra` includes cos(dec)). `null` with fewer than two
+  detections. Parallax is not fitted: passes are ~6 months apart, so a nearby object's parallax (WISE 0855:
+  ~0.45") adds an alternating offset, which shows up in the errors.
+- `catalog_pm`: the catalogue proper motion if the position is one of the test targets, from our own list
+  (`targets.py`), else `null`. No external catalogue is queried. `compare`: fit minus catalogue, and how many
+  errors apart.
+- Faint sources: WISE 0855 reaches S/N ~15 per pass in `D6` and is not found in a pass with only a few
+  exposures. It also passes ~6" from a background star, which pulls the centroid a little.
+- Answers 202 while the data downloads, like `/api/frames`.
+
+## `GET /api/rgb`
+Infrared colour picture: `D1` (0.75-1.1 um) blue, `D3` (1.6-2.4 um) green, `D6` (4.4-5.0 um) red.
+
+| param | type | default | notes |
+|---|---|---|---|
+| `ra`, `dec` | float | required | degrees |
+| `fov` | float | `0.1` | degrees, max `0.5` |
+| `images` | string | `url` | `url`: a link to the PNG (`GET /img/...`). `inline`: a base64 data URL in `image` |
+
+```json
+{ "query": { "ra": 133.759895, "dec": -7.242249, "fov": 0.1, "release": "dr1+qr3" },
+  "channels": { "red": "D6", "green": "D3", "blue": "D1" },
+  "n_exposures": { "red": 45, "green": 45, "blue": 44 },
+  "url": "/img/eyJr....png" }
+```
+- Every exposure of each detector is stacked (median), so the picture is deep but has no time information.
+- Each channel is stretched on its own, so colour compares a source with the rest of the field: red sources are
+  bright at 4-5 um compared with 1-2 um, e.g. cold brown dwarfs (WISE 0855 is red).
+- Needs three downloads (one per detector). While they run it answers 202 with `status`, `done`, `total` (summed
+  over the running ones) and `detectors` (each detector's own status).
+
 ## `GET /img/{token}.png`
-The PNG behind a `url` from `/api/frames?images=url` or `/api/diff?images=url`. Use the link exactly as given and
+The PNG behind a `url` from `/api/frames?images=url`, `/api/diff?images=url` or `/api/rgb`. Use the link exactly as given and
 put the API address in front of it: `<img src="http://localhost:8000/img/eyJr....png">`.
 - The JSON is about 4x smaller (WISE 0855, 3 frames: 1.2 KB instead of 4.6 KB; much more for big fields) and the browser
   caches and decodes the images itself. The image is pixel-identical to the inline one.
