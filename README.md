@@ -6,7 +6,11 @@ Since 2025, NASA’s SPHEREx mission has been mapping the entire sky every six m
 space_penguins/
 ├── docs/API.md          <- the contract between frontend and backend. Read first.
 ├── backend/             <- Python, FastAPI (team: backend)
-│   ├── app/main.py        endpoints + disk cache
+│   ├── app/main.py        creates the app, includes the routers
+│   ├── app/routers/       endpoints, one file per group (system, frames, analysis, context)
+│   ├── app/config.py      settings: mock mode, paths, detectors
+│   ├── app/cache.py       disk cache of stacked images
+│   ├── app/validation.py  query parameter checks
 │   ├── app/spherex.py     IRSA query, cutouts, stacking, PNG rendering
 │   ├── app/targets.py     the 5 test targets (with proper motion)
 │   ├── app/mock.py        fake data for frontend dev
@@ -38,6 +42,10 @@ uvicorn app.main:app --reload
 # Fake data (frontend team uses this)
 $env:SPHEREX_MOCK=1; uvicorn app.main:app --reload
 ```
+Where the pixels come from (`SPHEREX_SOURCE`): by default the backend reads only the small pixel box it needs
+from IRSA's public S3 bucket (`nasa-irsa-spherex`, no credentials) and falls back to IRSA's cutout service if S3
+fails. Set `$env:SPHEREX_SOURCE="irsa"` to use the cutout service only.
+
 Open http://localhost:8000/docs for the interactive API.
 
 ## Frontend
