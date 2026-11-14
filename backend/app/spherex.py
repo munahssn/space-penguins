@@ -250,6 +250,40 @@ def stack_epochs(mjds, results, wmin=None, wmax=None):
     return stacks, meta
 
 
+def single_exposures(mjds, bands, results, wmin=None, wmax=None, limit=None):
+    """Exposure ("asteroid") mode: one frame per single exposure, in time order.
+    Fast movers shift within one survey pass, so stacking the pass would smear them.
+
+    Every exposure sees a different wavelength, so sky level and noise differ from
+    frame to frame. Each frame is normalised to its own background: median
+    subtracted, then divided by its robust noise (MAD), so frames are in units of
+    background sigma and can share one stretch.
+    Returns (frames, meta, n_total); n_total counts frames before `limit`."""
+    order = sorted((i for i in range(len(mjds))
+                    if in_range(results[i][3], wmin, wmax) and np.isfinite(results[i][0]).any()),
+                   key=lambda i: mjds[i])
+    n_total = len(order)
+    frames, meta = [], []
+    for i in order[:limit]:
+        img, bad, art, wl = results[i]
+        bg = np.nanmedian(img)
+        sigma = 1.4826 * np.nanmedian(np.abs(img - bg))
+        frames.append((img - bg) / (sigma if sigma > 0 else 1.0))
+        wl = None if wl is None else round(wl, 4)
+        meta.append({
+            "date": Time(mjds[i], format="mjd").iso[:10],
+            "time": Time(mjds[i], format="mjd").isot[:19],
+            "mjd": round(mjds[i], 5),
+            "det": bands[i],
+            "n_exposures": 1,
+            "n_exposures_total": 1,
+            "wavelength_um": wl, "wavelength_min_um": wl, "wavelength_max_um": wl,
+            "flagged_fraction": round(bad, 3),
+            "artifact_fraction": round(art, 3),
+        })
+    return frames, meta, n_total
+
+
 def fetch_exposures(ra, dec, fov, det):
     """Download every exposure covering the position, on one common grid.
     Returns {mjds, bands, results, grid, n_failed}; results[i] is fetch_cutout's

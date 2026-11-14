@@ -12,7 +12,7 @@ import numpy as np
 from fastapi import HTTPException
 
 from . import spherex
-from .config import CACHE_DIR, MOCK
+from .config import CACHE_DIR, MAX_EXPOSURES_PER_JOB, MOCK
 
 CACHE_VERSION = 3  # bump when the cached format changes (3: per-exposure cache)
 
@@ -60,10 +60,16 @@ def get_exposures(ra, dec, fov, det):
     return _load(k)
 
 
-def get_stacks(ra, dec, fov, det, wmin=None, wmax=None):
-    """One stacked image per survey pass, from exposures inside [wmin, wmax] um."""
+def get_stacks(ra, dec, fov, det, wmin=None, wmax=None, mode="epoch"):
+    """The frames to blink, from exposures inside [wmin, wmax] um.
+    mode="epoch": one stacked image per survey pass.
+    mode="exposure": one background-normalised image per single exposure."""
     e = get_exposures(ra, dec, fov, det)
-    stacks, meta = spherex.stack_epochs(e["mjds"], e["results"], wmin, wmax)
+    if mode == "exposure":
+        stacks, meta, _ = spherex.single_exposures(e["mjds"], e["bands"], e["results"], wmin, wmax,
+                                                   limit=MAX_EXPOSURES_PER_JOB)
+    else:
+        stacks, meta = spherex.stack_epochs(e["mjds"], e["results"], wmin, wmax)
     if not stacks:
         raise HTTPException(404, f"None of the {len(e['mjds'])} exposures see this position "
                                  f"between {wmin} and {wmax} um")

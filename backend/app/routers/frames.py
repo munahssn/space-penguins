@@ -4,21 +4,22 @@ from fastapi import APIRouter, HTTPException, Query
 from .. import spherex
 from ..cache import get_stacks
 from ..config import MOCK
-from ..validation import check_query, check_wavelength
+from ..validation import check_mode, check_query, check_wavelength
 
 router = APIRouter()
 
 
 @router.get("/api/frames")
 def frames(ra: float, dec: float, fov: float = 0.1, det: str = "D3",
-           wmin: float | None = None, wmax: float | None = None):
+           wmin: float | None = None, wmax: float | None = None, mode: str = "epoch"):
     check_query(ra, dec, fov, det)
     check_wavelength(wmin, wmax)
-    stacks, meta, grid = get_stacks(ra, dec, fov, det, wmin, wmax)
+    check_mode(mode)
+    stacks, meta, grid = get_stacks(ra, dec, fov, det, wmin, wmax, mode)
     vmin, vmax = spherex.shared_limits(stacks)
     return {
         "query": {"ra": ra, "dec": dec, "fov": fov, "det": det, "wmin": wmin, "wmax": wmax,
-                  "release": "mock" if MOCK else spherex.RELEASE},
+                  "mode": mode, "release": "mock" if MOCK else spherex.RELEASE},
         "grid": grid,
         "frames": [{"index": i, **m, "image": spherex.to_png_gray(s, vmin, vmax)}
                    for i, (s, m) in enumerate(zip(stacks, meta))],
@@ -27,11 +28,12 @@ def frames(ra: float, dec: float, fov: float = 0.1, det: str = "D3",
 
 @router.get("/api/diff")
 def diff(ra: float, dec: float, fov: float = 0.1, det: str = "D3",
-         wmin: float | None = None, wmax: float | None = None,
+         wmin: float | None = None, wmax: float | None = None, mode: str = "epoch",
          a: int = 0, b: int = -1, op: str = Query("sub", pattern="^(sub|add)$")):
     check_query(ra, dec, fov, det)
     check_wavelength(wmin, wmax)
-    stacks, _, _ = get_stacks(ra, dec, fov, det, wmin, wmax)
+    check_mode(mode)
+    stacks, _, _ = get_stacks(ra, dec, fov, det, wmin, wmax, mode)
     n = len(stacks)
     b = b if b >= 0 else n - 1
     if not (0 <= a < n and 0 <= b < n):

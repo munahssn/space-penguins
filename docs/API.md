@@ -30,11 +30,12 @@ The main endpoint: one stacked image per survey pass (epoch), ready to blink.
 | `det` | string | `D3` | `D1`..`D6`, or `all` |
 | `wmin` | float | none | micrometres; use only exposures that saw the target at `>= wmin` |
 | `wmax` | float | none | micrometres; use only exposures that saw the target at `<= wmax` |
+| `mode` | string | `epoch` | `epoch`: one stacked frame per survey pass. `exposure`: one frame per single exposure |
 
 ```json
 {
   "query":   { "ra": 133.79, "dec": -7.25, "fov": 0.1, "det": "D3", "wmin": null, "wmax": null,
-               "release": "dr1+qr3" },
+               "mode": "epoch", "release": "dr1+qr3" },
   "grid":    { "width": 59, "height": 59, "pixscale_arcsec": 6.15 },
   "frames": [
     {
@@ -66,12 +67,20 @@ The main endpoint: one stacked image per survey pass (epoch), ready to blink.
   - A survey pass with no exposure in range has no frame, so a narrow range can return fewer frames.
     If no pass is left: 404.
   - Exposures are cached per position, so changing `wmin`/`wmax` does not download anything again.
+- Exposure mode (`mode=exposure`, "asteroid mode"): one frame per single exposure, in time order.
+  Use it for fast movers, which shift within one survey pass and get smeared by stacking.
+  - Every exposure is at a different wavelength, so each frame is normalised to its own background
+    (median subtracted, divided by its noise). Pixel values are in units of background sigma.
+  - Frames have the same fields as in epoch mode, with `n_exposures` = 1, plus `time`
+    (`"2025-11-07T05:47:02"`) and `det` (`"D3"`). `mjd` has 5 decimals.
+  - `wmin`/`wmax` work the same way. At most 400 frames are returned (the earliest ones).
+  - Frames are noisier than in epoch mode and there are many more of them.
 - `flagged_fraction`: share of pixels hidden as bad (hot, cold, cosmic-ray transient, persistence, ...).
 - `artifact_fraction`: share of pixels hit by ghosts, halos, streaks, crosstalk, bloom or snowballs. These are kept
   visible but can look like fake movers, so show this as a warning in the UI.
 
 ## `GET /api/diff`
-Same params as `/api/frames` (including `wmin`/`wmax`), plus:
+Same params as `/api/frames` (including `wmin`/`wmax` and `mode`, so `a`/`b` index the same frames), plus:
 
 | param | type | default | notes |
 |---|---|---|---|
