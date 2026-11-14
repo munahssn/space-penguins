@@ -3,6 +3,9 @@
 
 .fp {
   --fp-warning: #ffd666; /* no theme token for warnings yet */
+  /* data colours: they mean something, so they stay coloured whatever the theme */
+  --fp-before: #4c7dff;   /* difference: was here */
+  --fp-after: #ff4b3a;    /* difference: is here now */
   --fp-overlay: color-mix(in srgb, var(--color-bg) 80%, transparent);
 
   display: flex;
@@ -12,7 +15,31 @@
   max-width: 640px;
   outline: none;
 }
-.fp:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); border-radius: var(--radius-md); }
+
+/* one view (blink or still) under the switch */
+.fp-view { display: flex; flex-direction: column; gap: var(--space-3); outline: none; }
+.fp-view:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); border-radius: var(--radius-md); }
+
+/* Blink / Difference / IR colour switch */
+.fp-display {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+.fp-display button {
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.fp-display button[aria-pressed="true"] { background: var(--color-accent); color: var(--color-on-accent); font-weight: 600; }
+.fp-display button:hover:not(:disabled):not([aria-pressed="true"]) { color: var(--color-text); }
 
 /* stage: square, image scaled up with hard pixel edges */
 .fp-stage {
@@ -141,3 +168,17 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* legend under the Difference / IR colour image */
+.fp-legend { display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
+.fp-legend p { margin: 0; }
+.fp-legend-title { font-weight: 600; }
+.fp-legend-note { color: var(--color-text-muted); }
+.fp-legend-items { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin: 0; padding: 0; list-style: none; }
+.fp-legend-items li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.fp-swatch { width: 12px; height: 12px; border-radius: 50%; }
+.fp-swatch--before { background: var(--fp-before); }
+.fp-swatch--after { background: var(--fp-after); }
+.fp-swatch--red { background: #ff4b3a; }
+.fp-swatch--green { background: #3ddc84; }
+.fp-swatch--blue { background: #4c7dff; }
