@@ -1,7 +1,6 @@
 # SPHEREx Blink (Space Penguins) - NASA Space Apps 2026
 
-Type in a patch of sky, see every SPHEREx image of it as a looping "blink",
-so moving objects (brown dwarfs, fast stars, asteroids) jump out.
+Since 2025, NASA’s SPHEREx mission has been mapping the entire sky every six months in 102 bands of near-infrared light, returning images of more than a billion objects. Comets, asteroids, stars, brown dwarfs, and even new planets reveal themselves by shifting position between images, but no one person can sift through all that data alone. The challenge is to create a public-facing web tool to display images of the sky from SPHEREx mission, making it easy for anyone to quickly see how they change over time.
 
 ```
 space_penguins/
