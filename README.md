@@ -6,7 +6,11 @@ Since 2025, NASA’s SPHEREx mission has been mapping the entire sky every six m
 space_penguins/
 ├── docs/API.md          <- the contract between frontend and backend. Read first.
 ├── backend/             <- Python, FastAPI (team: backend)
-│   ├── app/main.py        endpoints + disk cache
+│   ├── app/main.py        creates the app, includes the routers
+│   ├── app/routers/       endpoints, one file per group (system, frames, analysis, context)
+│   ├── app/config.py      settings: mock mode, paths, detectors
+│   ├── app/cache.py       disk cache of stacked images
+│   ├── app/validation.py  query parameter checks
 │   ├── app/spherex.py     IRSA query, cutouts, stacking, PNG rendering
 │   ├── app/targets.py     the 5 test targets (with proper motion)
 │   ├── app/mock.py        fake data for frontend dev
