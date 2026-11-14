@@ -1,15 +1,16 @@
 """
 Background jobs, so a request for a new spot of sky never waits on a slow download.
 
-- A job = "download, align and stack this (ra, dec, fov, det)"; its key is the cache key.
+- A job = "download every exposure for this (ra, dec, fov, det) into the cache". That is the only
+  slow step; wavelength filtering, stacking and diffs are fast and run per request afterwards.
 - Identical requests share one job (nobody starts the same work twice).
 - At most MAX_RUNNING jobs run at once; the rest wait in a FIFO queue and see their position.
-- The API answers 202 {"status": "queued", "position": n} or
-  {"status": "processing", "done": d, "total": t} until the result is on disk, then 200.
+- While the data is not ready the API answers 202 {"status": "queued", "position": n} or
+  {"status": "processing", "done": d, "total": t}, then 200 once it is on disk.
 
 State lives in memory, so run exactly ONE uvicorn worker (several workers would each have
-their own queue and the limits would not hold). Finished results are on disk and survive a restart;
-running jobs do not.
+their own queue and the limits would not hold). Finished downloads are on disk and survive a
+restart; running jobs do not.
 """
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -45,7 +46,7 @@ def _run(job, args):
         job.done, job.total = done, total
 
     try:
-        cache.compute_and_save(*args, progress=progress)
+        cache.get_exposures(*args, progress=progress)
     except HTTPException as e:
         job.error = (e.status_code, e.detail)
     except Exception as e:  # never let a job die silently
@@ -61,15 +62,16 @@ def _info(job):
     return {"status": "processing", "done": job.done, "total": job.total}
 
 
-def result(ra, dec, fov, det):
-    """('done', (stacks, meta, grid)) when the data is ready, else ('pending', info).
-    Raises HTTPException when the job failed (404 no data, 502 IRSA failed) or the queue is full (503)."""
+def pending(ra, dec, fov, det):
+    """None when the data is ready (read it with cache.get_stacks), otherwise a status dict
+    for a 202 answer. Starts a job if needed. Raises HTTPException when the job failed
+    (404 no data, 502 IRSA failed, reported once) or too many requests are waiting (503)."""
     global _counter
-    ready = cache.load_cached(ra, dec, fov, det)
-    if ready:
-        return "done", ready
+    if cache.is_cached(ra, dec, fov, det):
+        return None
     if MOCK:  # fake data is instant: no job needed
-        return "done", cache.compute_and_save(ra, dec, fov, det)
+        cache.get_exposures(ra, dec, fov, det)
+        return None
 
     key = cache.cache_key(ra, dec, fov, det)
     with _lock:
@@ -81,7 +83,7 @@ def result(ra, dec, fov, det):
             del _jobs[key]
             job = None
         if job:
-            return "pending", _info(job)
+            return _info(job)
         queued = sum(1 for j in _jobs.values() if j.status == "queued")
         if queued >= MAX_QUEUED:
             raise HTTPException(503, "Too many requests waiting, please try again in a minute")
@@ -90,8 +92,7 @@ def result(ra, dec, fov, det):
         _pool.submit(_run, job, (ra, dec, fov, det))
         info = _info(job)
     # a job that finished between our first check and now
-    ready = cache.load_cached(ra, dec, fov, det)
-    return ("done", ready) if ready else ("pending", info)
+    return None if cache.is_cached(ra, dec, fov, det) else info
 
 
 def stats():

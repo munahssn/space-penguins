@@ -16,25 +16,11 @@ function writeUrl(q) {
 }
 
 // ---------- API ----------
-// A new spot of sky takes a while: the API answers 202 with {status, position | done, total}
-// until the data is ready, so we ask again every 2 s (onStatus lets the page show progress).
-async function api(path, params, onStatus) {
-  for (;;) {
-    const res = await fetch(`${API}${path}?${new URLSearchParams(params)}`);
-    const body = await res.json().catch(() => ({}));
-    if (res.status === 202) {
-      if (onStatus) onStatus(body);
-      await new Promise((r) => setTimeout(r, 2000));
-      continue;
-    }
-    if (!res.ok) throw new Error(body.detail || `HTTP ${res.status}`);
-    return body;
-  }
-}
-
-function jobText(s) {
-  if (s.status === "queued") return `Waiting in line (position ${s.position})…`;
-  return s.total ? `Fetching SPHEREx images… ${s.done}/${s.total}` : "Finding SPHEREx images…";
+async function api(path, params) {
+  const res = await fetch(`${API}${path}?${new URLSearchParams(params)}`);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.detail || `HTTP ${res.status}`);
+  return body;
 }
 
 async function loadTargets() {
@@ -55,7 +41,7 @@ async function load() {
   stop();
   setBusy(true, "Fetching SPHEREx images… (first load of a new spot can take a minute)");
   try {
-    const data = await api("/api/frames", q, (s) => setBusy(true, jobText(s)));
+    const data = await api("/api/frames", q);
     state.frames = data.frames;
     state.query = q;
     state.i = 0;
