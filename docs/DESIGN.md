@@ -152,6 +152,7 @@ Wording (Explain service):
 |---|---|
 | `GET /api/health` | `{ok, release, latest_data_date, pipeline_version, jobs_running, jobs_queued}` |
 | `GET /api/resolve?name=` | `{name, ra, dec}` |
+| `GET /api/targets` | `[{id, name, ra, dec, note}]` (test targets, positions moved to the SPHEREx era) |
 | `GET /api/frames?ra&dec&fov&det&mode=epoch\|exposure&wmin&wmax` | 200 `{frames:[…], grid}` · 202 `{status:"queued", position}` · 202 `{status:"processing", done, total}` |
 | `GET /img/{id}.png` | PNG, `Cache-Control: immutable` |
 | `GET /api/diff?…&a&b&op=sub\|add` | `{url}` (same 202 rules) |
