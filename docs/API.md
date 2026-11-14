@@ -158,10 +158,11 @@ Gaia DR3 stars in the field.
 with HTTP 404 (nothing found), 422 (bad params), 429 (you are asking too often), 502 (IRSA failed) or 503 (too many
 requests waiting, try again).
 
-- **429** has a `Retry-After` header (seconds). Limits per client IP and minute: 60 for `/api/frames` + `/api/diff`,
-  30 for `/api/resolve`, 600 for `/img/...`, 120 for the other `/api/...` calls. `/api/health` and static files are
-  not limited. Polling a pending job every 2 s costs 30 of the 60 `/api/frames` requests a minute, so do not poll
-  faster than that, and show the `Retry-After` wait if you do get a 429.
-- **422** also when a position is covered by more than 400 exposures (the message says to choose one detector or a
-  smaller field).
-- Browsers on other websites can only call the API if the site is in the server's `CORS_ORIGINS` (see README).
+- **429** only appears if the server runs with `RATE_LIMIT=on` (off by default). It has a `Retry-After` header
+  (seconds); limits are per client IP and minute and very generous (600 for `/api/frames` + `/api/diff`, 300 for
+  `/api/resolve`, 6000 for `/img/...`, 1200 for the other `/api/...` calls). `/api/health` and static files are never
+  limited. Polling a pending job every 2 s costs 30 requests a minute; do not poll faster, and show the
+  `Retry-After` wait if you do get a 429.
+- **422** also when the server sets `MAX_DOWNLOAD_EXPOSURES` and a position is covered by more exposures than that
+  (default: no limit).
+- Any website may call the API from a browser unless the server sets `CORS_ORIGINS` (see README).

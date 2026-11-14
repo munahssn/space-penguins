@@ -17,7 +17,7 @@ from astropy.visualization import ZScaleInterval
 from astropy.wcs import WCS
 from PIL import Image
 
-from .config import MAX_EXPOSURES_PER_JOB
+from .config import MAX_DOWNLOAD_EXPOSURES
 
 conf.remote_timeout = 120
 
@@ -48,7 +48,7 @@ class NoData(Exception):
 
 
 class TooMany(Exception):
-    """More exposures than one request may download (MAX_EXPOSURES_PER_JOB)."""
+    """More exposures than MAX_DOWNLOAD_EXPOSURES (only when that limit is set; default: no limit)."""
 
 
 # ---------- query ----------
@@ -300,9 +300,9 @@ def fetch_exposures(ra, dec, fov, det, progress=None):
     rows = find_images(ra, dec, fov, det)
     if not rows:
         raise NoData("No SPHEREx images cover this position")
-    if len(rows) > MAX_EXPOSURES_PER_JOB:
+    if MAX_DOWNLOAD_EXPOSURES and len(rows) > MAX_DOWNLOAD_EXPOSURES:  # 0 = no limit (default)
         raise TooMany(f"{len(rows)} exposures cover this position, more than the limit of "
-                      f"{MAX_EXPOSURES_PER_JOB}. Choose one detector or a smaller field.")
+                      f"{MAX_DOWNLOAD_EXPOSURES}. Choose one detector or a smaller field.")
 
     wcs_out, shape = target_grid(ra, dec, fov)
     if progress:

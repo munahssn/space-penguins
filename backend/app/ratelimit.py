@@ -1,5 +1,6 @@
 """
-Per-IP rate limit, so one visitor (or script) cannot use up the free server or hammer IRSA.
+Optional per-IP rate limit (OFF by default; set RATE_LIMIT=on), so one runaway script cannot use up
+the free server or hammer IRSA.
 
 A sliding window in memory: at most N requests per route group per client per minute, then
 HTTP 429 with a Retry-After header. Like jobs.py it lives in memory, so it assumes ONE uvicorn
@@ -17,14 +18,14 @@ WINDOW = 60  # seconds
 
 # (path prefix, group name, max requests per WINDOW). The first match wins.
 LIMITS = [
-    # may start a download job. A page polling a pending job every 2 s makes 30 requests a minute,
-    # so this must stay well above 30; the job queue (jobs.py) bounds the real work.
-    ("/api/frames", "heavy", 60),
-    ("/api/diff", "heavy", 60),
-    ("/api/explain", "explain", 10),  # will call an LLM
-    ("/api/resolve", "resolve", 30),  # calls an outside name service
-    ("/img/", "img", 600),            # exposure mode can show 400 images at once
-    ("/api/", "other", 120),
+    # Generous on purpose: this is off by default (RATE_LIMIT=on to enable) and only meant to stop a
+    # runaway script. A page polling a pending job every 2 s makes 30 requests a minute.
+    ("/api/frames", "heavy", 600),    # may start a download job
+    ("/api/diff", "heavy", 600),
+    ("/api/explain", "explain", 100), # will call an LLM
+    ("/api/resolve", "resolve", 300), # calls an outside name service
+    ("/img/", "img", 6000),           # exposure mode can show 400 images at once
+    ("/api/", "other", 1200),
 ]
 
 _hits = {}  # (group, ip) -> deque of request times
