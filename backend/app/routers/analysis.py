@@ -1,7 +1,8 @@
 """Spectrum and light curve of whatever sits at (ra, dec).
 
 Both read the same cached exposures as /api/frames, so a position that was
-already blinked with the same fov and det answers at once. A new position
+already blinked with the same fov and det answers at once. A position within one pixel of a
+test target is snapped to that target (targets.snap_to_target), so its precached data is used. A new position
 answers 202 while it downloads (see jobs.py); poll the same URL.
 Also the motion track and the infrared colour image."""
 from fastapi import APIRouter, HTTPException, Query
@@ -10,7 +11,7 @@ from fastapi.responses import JSONResponse
 from .. import jobs, spherex
 from ..cache import get_exposures
 from ..config import MOCK
-from ..targets import catalog_match
+from ..targets import catalog_match, snap_to_target
 from ..validation import check_photometry_fov, check_query, check_wavelength
 from .images import image_url
 
@@ -41,6 +42,7 @@ def _pending(info):
 def spectrum(ra: float, dec: float, fov: float = 0.05, det: str = "all",
              wmin: float | None = None, wmax: float | None = None):
     """Brightness against wavelength: one point per exposure."""
+    ra, dec = snap_to_target(ra, dec)
     e, pending = _exposures(ra, dec, fov, det, wmin, wmax)
     if pending:
         return pending
@@ -56,6 +58,7 @@ def spectrum(ra: float, dec: float, fov: float = 0.05, det: str = "all",
 def lightcurve(ra: float, dec: float, det: str = "D3", fov: float = 0.05,
                wmin: float | None = None, wmax: float | None = None):
     """Brightness against time: one point per survey pass."""
+    ra, dec = snap_to_target(ra, dec)
     e, pending = _exposures(ra, dec, fov, det, wmin, wmax)
     if pending:
         return pending
@@ -70,6 +73,7 @@ def lightcurve(ra: float, dec: float, det: str = "D3", fov: float = 0.05,
 @router.get("/api/track")
 def track(ra: float, dec: float, det: str = "D6", fov: float = 0.05):
     """Where the target is in each survey pass, and the proper motion fitted to that."""
+    ra, dec = snap_to_target(ra, dec)
     check_query(ra, dec, fov, det)
     check_photometry_fov(fov, spherex.MIN_TRACK_PIXELS, spherex.PIXSCALE_DEG)
     info = jobs.pending(ra, dec, fov, det)

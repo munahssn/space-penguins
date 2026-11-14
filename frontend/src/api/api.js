@@ -93,18 +93,20 @@ export function getExplain({ ra, dec, mjd }, opts) {
 }
 
 /** Measured positions vs. catalog motion → {measured: [...], catalog_pm, fit} */
+// Track, spectrum and light curve also answer 202 while the backend downloads the data around
+// the clicked spot (a minute or two the first time), so they poll like getFrames.
 export function getTrack({ ra, dec }, opts) {
-  return call("/api/track", { ra, dec }, opts, () => trackMock);
+  return call("/api/track", { ra, dec }, { ...opts, poll: true }, () => trackMock);
 }
 
 /** {points: [{wavelength_um, flux, error, mjd, det}]} */
 export function getSpectrum({ ra, dec }, opts) {
-  return call("/api/spectrum", { ra, dec }, opts, () => spectrumMock);
+  return call("/api/spectrum", { ra, dec }, { ...opts, poll: true }, () => spectrumMock);
 }
 
 /** {points: [{mjd, flux, error}]} */
 export function getLightcurve({ ra, dec, det }, opts) {
-  return call("/api/lightcurve", { ra, dec, det }, opts, () => lightcurveMock);
+  return call("/api/lightcurve", { ra, dec, det }, { ...opts, poll: true }, () => lightcurveMock);
 }
 
 // ---------- activity feed (for the status bar) ----------

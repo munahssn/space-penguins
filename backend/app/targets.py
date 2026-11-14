@@ -87,3 +87,20 @@ def targets_now():
         out.append({"id": t["id"], "name": t["name"], "ra": round(ra, 6),
                     "dec": round(dec, 6), "note": t["note"]})
     return out
+
+
+SNAP_ARCSEC = 6.15  # one SPHEREx pixel
+
+
+def snap_to_target(ra, dec, radius_arcsec=SNAP_ARCSEC):
+    """(ra, dec) of the test target within one SPHEREx pixel of (ra, dec), exactly as /api/targets
+    gives it; otherwise (ra, dec) unchanged. A click on a target's dot lands an arcsecond or so off
+    its listed position, which would miss the precached data for that target and start new
+    downloads; snapping makes the charts for the test targets answer from the cache."""
+    best = None
+    for t in targets_now():
+        dra = ((ra - t["ra"] + 180) % 360 - 180) * math.cos(math.radians(dec))
+        d = math.hypot(dra, dec - t["dec"]) * 3600
+        if d <= radius_arcsec and (best is None or d < best[0]):
+            best = (d, t)
+    return (best[1]["ra"], best[1]["dec"]) if best else (ra, dec)
