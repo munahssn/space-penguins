@@ -1,17 +1,20 @@
-// Context sky map (#12): Aladin Lite v3 centred on the target, with a square showing the player's field.
-// Not yet: WISE layer toggle (phase 4).
-import { useEffect, useRef } from "react";
+// Context sky map (#12): Aladin Lite v3 centred on the target, with a square showing the player's field,
+// and a switch between the optical sky (DSS) and the infrared sky (WISE) for comparison.
+import { useEffect, useRef, useState } from "react";
 import { useViewState } from "../../hooks/useViewState.jsx";
 import { useAladin } from "./useAladin.js";
 import "./skymap.css";
 
-const SURVEY = "P/DSS2/color";
+const SKY_LAYERS = [
+  { id: "optical", label: "Optical (DSS)", survey: "P/DSS2/color", credit: "DSS2 colour" },
+  { id: "infrared", label: "Infrared (WISE)", survey: "P/allWISE/color", credit: "AllWISE colour" },
+];
 const MAP_FOV_PER_FIELD = 6; // the map shows ~6× the player's field, so the square has context around it
 const MIN_MAP_FOV_DEG = 0.5;
 const FIELD_STYLE = { color: "#ffffff", lineWidth: 2 };
 
 const ALADIN_OPTIONS = {
-  survey: SURVEY,
+  survey: SKY_LAYERS[0].survey,
   cooFrame: "equatorial",
   showReticle: false,          // the field square marks the target instead
   showLayersControl: false,    // WISE toggle comes in phase 4
@@ -39,11 +42,37 @@ function fieldCorners(ra, dec, fov) {
   ];
 }
 
+function LayerSwitch({ value, onChange }) {
+  return (
+    <div className="skymap-layers" role="group" aria-label="Sky layer">
+      {SKY_LAYERS.map((layer) => (
+        <button
+          key={layer.id}
+          type="button"
+          className={layer.id === value.id ? "is-active" : ""}
+          aria-pressed={layer.id === value.id}
+          onClick={() => onChange(layer)}
+        >
+          {layer.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function SkyMap() {
   const { ra, dec, fov } = useViewState();
   const containerRef = useRef(null);
   const overlayRef = useRef(null);
   const { A, aladin, error } = useAladin(containerRef, ALADIN_OPTIONS);
+  const [layer, setLayer] = useState(SKY_LAYERS[0]);
+  const shownSurveyRef = useRef(ALADIN_OPTIONS.survey); // what Aladin displays now
+
+  useEffect(() => {
+    if (!aladin || shownSurveyRef.current === layer.survey) return;
+    aladin.setBaseImageLayer(layer.survey);
+    shownSurveyRef.current = layer.survey;
+  }, [aladin, layer]);
 
   useEffect(() => {
     if (!aladin || ra === null || dec === null) return;
@@ -59,14 +88,17 @@ export default function SkyMap() {
 
   return (
     <section className="skymap" aria-label="Sky map around the target">
-      <div ref={containerRef} className="skymap-view" />
-      {!aladin && (
-        <div className="skymap-overlay-message">
-          {error ? "The sky map couldn't load." : "Loading sky map…"}
-        </div>
-      )}
+      <LayerSwitch value={layer} onChange={setLayer} />
+      <div className="skymap-frame">
+        <div ref={containerRef} className="skymap-view" />
+        {!aladin && (
+          <div className="skymap-overlay-message">
+            {error ? "The sky map couldn't load." : "Loading sky map…"}
+          </div>
+        )}
+      </div>
       <p className="skymap-caption">
-        <span className="skymap-key" aria-hidden="true" /> Field shown in the player · Sky: DSS2 colour via Aladin Lite (CDS)
+        <span className="skymap-key" aria-hidden="true" /> Field shown in the player · Sky: {layer.credit} via Aladin Lite (CDS)
       </p>
     </section>
   );

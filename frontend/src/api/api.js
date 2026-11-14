@@ -15,11 +15,13 @@
 //
 // The same progress updates also go to subscribeActivity(listener), so the status bar can show
 // them without every caller passing callbacks around.
+//
+// Identical requests made at the same time share one fetch (see sharedRequest), so two components
+// that need the same frames (player + wavelength slider) don't double the backend's work.
 
 import healthMock from "./mock/health.json";
 import resolveMock from "./mock/resolve.json";
 import targetsMock from "./mock/targets.json";
-import framesMock from "./mock/frames.json";
 import diffMock from "./mock/diff.json";
 import rgbMock from "./mock/rgb.json";
 import contextMock from "./mock/context.json";
@@ -27,6 +29,10 @@ import explainMock from "./mock/explain.json";
 import trackMock from "./mock/track.json";
 import spectrumMock from "./mock/spectrum.json";
 import lightcurveMock from "./mock/lightcurve.json";
+import { mockFrames } from "./mock/mockFrames.js";
+import { ApiError } from "./errors.js";
+
+export { ApiError };
 
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
 export const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
@@ -35,14 +41,6 @@ const POLL_MS = 2000;
 const MAX_RETRIES = 4; // for 429 / 503
 const RETRY_STATUSES = [429, 503];
 const IMAGES_AS_URLS = "url"; // backend sends base64 images inside the JSON unless asked for URLs
-
-export class ApiError extends Error {
-  constructor(message, status) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status; // 404 no data · 422 bad params · 429 rate limited · 502 IRSA failed · 503 IRSA busy
-  }
-}
 
 // ---------- endpoints ----------
 
@@ -68,7 +66,7 @@ export function resolve(name, opts) {
 /** {ra, dec, fov, det, mode, wmin, wmax} → {frames: [...], grid} */
 export function getFrames({ ra, dec, fov, det, mode, wmin, wmax }, opts) {
   return call("/api/frames", { ra, dec, fov, det, mode, wmin, wmax, images: IMAGES_AS_URLS },
-    { ...opts, poll: true }, () => framesMock, withImageUrls);
+    { ...opts, poll: true }, () => mockFrames({ det, wmin, wmax }), withImageUrls);
 }
 
 /** Difference (op "sub", b − a) or sum (op "add") of frames a and b → {url} */
@@ -142,7 +140,9 @@ function createReporter(onProgress) {
 async function call(path, params, opts = {}, mock, transform = (x) => x) {
   const reporter = createReporter(opts.onProgress);
   try {
-    const body = USE_MOCK ? await fakeCall(mock, opts, reporter) : await request(path, params, opts, reporter);
+    const body = USE_MOCK
+      ? await fakeCall(mock, opts, reporter)
+      : await sharedRequest(buildUrl(path, params), opts, reporter);
     return transform(body, { mock: USE_MOCK });
   } finally {
     reporter.settle();
@@ -158,8 +158,56 @@ function buildUrl(path, params) {
   return `${API_URL}${path}${qs ? `?${qs}` : ""}`;
 }
 
-async function request(path, params, { signal, poll = false }, reporter) {
-  const url = buildUrl(path, params);
+// ---------- shared requests ----------
+
+const inFlight = new Map(); // url → { promise, controller, reporters }
+
+/**
+ * Callers asking for the same URL while it's still loading join the same fetch + polling loop.
+ * Each caller's own signal only stops *its* wait; the fetch is cancelled once nobody is waiting.
+ * Every caller gets its own copy of the body, so one can't change another's data.
+ */
+function sharedRequest(url, { signal, poll = false }, reporter) {
+  const joined = inFlight.get(url) ?? startShared(url, poll);
+  joined.reporters.add(reporter);
+  const leave = () => {
+    joined.reporters.delete(reporter);
+    if (joined.reporters.size > 0) return;
+    if (inFlight.get(url) === joined) inFlight.delete(url);
+    joined.controller.abort(); // nobody is waiting any more (harmless if it already finished)
+  };
+  return untilDone(joined.promise, signal)
+    .then((body) => structuredClone(body))
+    .finally(leave);
+}
+
+function startShared(url, poll) {
+  const controller = new AbortController();
+  const reporters = new Set();
+  const progress = (info) => reporters.forEach((r) => r.progress(info));
+  const job = { controller, reporters, promise: request(url, { signal: controller.signal, poll }, { progress }) };
+  inFlight.set(url, job);
+  const forget = () => {
+    if (inFlight.get(url) === job) inFlight.delete(url);
+  };
+  job.promise.then(forget, forget);
+  return job;
+}
+
+/** Resolves/rejects with `promise`, or rejects early when `signal` aborts. */
+function untilDone(promise, signal) {
+  if (!signal) return promise;
+  return new Promise((resolve, reject) => {
+    const onAbort = () => reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
+    if (signal.aborted) return onAbort();
+    signal.addEventListener("abort", onAbort, { once: true });
+    promise.then(resolve, reject).finally(() => signal.removeEventListener("abort", onAbort));
+  });
+}
+
+// ---------- fetch + poll + retry ----------
+
+async function request(url, { signal, poll = false }, reporter) {
   let retries = 0;
   for (;;) {
     const res = await fetch(url, { signal });
