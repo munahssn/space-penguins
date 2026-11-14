@@ -60,6 +60,8 @@ def get_exposures(ra, dec, fov, det, progress=None):
                 e = spherex.fetch_exposures(ra, dec, fov, det, progress=progress)
             except spherex.NoData as err:
                 raise HTTPException(404, str(err))
+            except spherex.TooMany as err:
+                raise HTTPException(422, str(err))
             except Exception as err:
                 raise HTTPException(502, f"IRSA request failed: {err}")
         res = e["results"]
