@@ -5,7 +5,7 @@ import StartPage from "./pages/StartPage.jsx";
 import ViewerPage from "./pages/ViewerPage.jsx";
 
 // ?dev=1 opens the temporary API/view-state check page.
-const isDevCheck = new URLSearchParams(window.location.search).has("dev");
+const isDevCheck = new URLSearchParams(window.location.search).get("dev") === "1";
 
 /**
  * ?embed=1 → player only (inside someone else's page).
