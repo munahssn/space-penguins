@@ -13,6 +13,3 @@
 .field label { font-size: var(--text-xs); color: var(--color-text-muted); }
 .field select { width: 100%; }
 
-/* ---------- brightness stretch (display only, on the player's canvas) ---------- */
-.stretch-frame[data-stretch="faint"] .fp-canvas { filter: brightness(1.8) contrast(1.15); }
-.stretch-frame[data-stretch="contrast"] .fp-canvas { filter: contrast(1.9); }
