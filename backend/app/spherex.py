@@ -17,6 +17,8 @@ from astropy.visualization import ZScaleInterval
 from astropy.wcs import WCS
 from PIL import Image
 
+from .config import MAX_EXPOSURES_PER_JOB
+
 conf.remote_timeout = 120
 
 # SIA collections to search, in order of preference. DR1 and QR3 supersede QR2
@@ -43,6 +45,10 @@ _SIP_KEY = re.compile(r"^(A|B|AP|BP)_(ORDER|DMAX|\d+_\d+)$")
 
 class NoData(Exception):
     pass
+
+
+class TooMany(Exception):
+    """More exposures than one request may download (MAX_EXPOSURES_PER_JOB)."""
 
 
 # ---------- query ----------
@@ -294,6 +300,9 @@ def fetch_exposures(ra, dec, fov, det, progress=None):
     rows = find_images(ra, dec, fov, det)
     if not rows:
         raise NoData("No SPHEREx images cover this position")
+    if len(rows) > MAX_EXPOSURES_PER_JOB:
+        raise TooMany(f"{len(rows)} exposures cover this position, more than the limit of "
+                      f"{MAX_EXPOSURES_PER_JOB}. Choose one detector or a smaller field.")
 
     wcs_out, shape = target_grid(ra, dec, fov)
     if progress:

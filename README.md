@@ -41,6 +41,23 @@ Where the pixels come from (`SPHEREX_SOURCE`): by default the backend reads only
 from IRSA's public S3 bucket (`nasa-irsa-spherex`, no credentials) and falls back to IRSA's cutout service if S3
 fails. Set `$env:SPHEREX_SOURCE="irsa"` to use the cutout service only.
 
+### Protection (when the API is public)
+Settings are environment variables, listed at the top of `backend/app/config.py`:
+
+| variable | what for |
+|---|---|
+| `CORS_ORIGINS` | Websites whose browsers may call the API, comma separated, e.g. `https://our-site.vercel.app`. **Set this on the server**: the default allows only localhost dev servers (and replaces them when set). |
+| `TRUST_PROXY_HOPS=1` | Set on the server when a proxy sits in front (Hugging Face, ...) so the rate limit sees each visitor's own address. Leave unset locally. |
+| `RATE_LIMIT=off` | Turn the per-IP limit off (tests, precache). |
+| `MAX_EXPOSURES_PER_JOB` | Most exposures one request may download or return (default 400). |
+
+Per IP and minute: 60 `/api/frames` + `/api/diff`, 30 `/api/resolve`, 600 `/img/...`, 120 other API calls; more gets
+HTTP 429 with `Retry-After`. The health check and the frontend files are not limited.
+
+On the server start uvicorn as **`uvicorn app.main:app --workers 1 --no-proxy-headers`** (one worker: jobs and rate
+limit live in memory; `--no-proxy-headers`: otherwise uvicorn trusts `X-Forwarded-For` itself when the connection
+comes from localhost and the header can be forged).
+
 Open http://localhost:8000 for the app and http://localhost:8000/docs for the interactive API.
 Shareable links work: `http://localhost:8000/?ra=133.768&dec=-7.243&fov=0.1&det=D3`
 

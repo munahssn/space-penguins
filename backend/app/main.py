@@ -9,7 +9,8 @@ Run (from backend/):
 Open http://localhost:8000 for the frontend, http://localhost:8000/docs for the API.
 
 Layout:
-    config.py       settings (mock mode, paths, detectors)
+    config.py       settings (mock mode, paths, CORS, proxy, limits); env vars listed there
+    ratelimit.py    per-IP rate limit (429)
     cache.py        disk cache of stacked images
     validation.py   query parameter checks
     routers/        one file per group of endpoints
@@ -18,11 +19,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from .config import FRONTEND_DIR
+from .config import CORS_ORIGINS, FRONTEND_DIR
+from .ratelimit import RateLimitMiddleware
 from .routers import analysis, context, frames, images, resolve, system
 
 app = FastAPI(title="SPHEREx Blink API")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET"], allow_headers=["*"])
+# The last middleware added is the outermost: CORS wraps the rate limit, so a 429 still carries
+# the CORS headers and the browser lets the page read it.
+app.add_middleware(RateLimitMiddleware)
+app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_methods=["GET"], allow_headers=["*"])
 
 app.include_router(system.router)
 app.include_router(resolve.router)

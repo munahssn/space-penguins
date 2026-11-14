@@ -155,4 +155,13 @@ Gaia DR3 stars in the field.
 ```json
 { "detail": "No SPHEREx images cover this position" }
 ```
-with HTTP 404 (nothing found), 422 (bad params), 502 (IRSA failed) or 503 (too many requests waiting, try again).
+with HTTP 404 (nothing found), 422 (bad params), 429 (you are asking too often), 502 (IRSA failed) or 503 (too many
+requests waiting, try again).
+
+- **429** has a `Retry-After` header (seconds). Limits per client IP and minute: 60 for `/api/frames` + `/api/diff`,
+  30 for `/api/resolve`, 600 for `/img/...`, 120 for the other `/api/...` calls. `/api/health` and static files are
+  not limited. Polling a pending job every 2 s costs 30 of the 60 `/api/frames` requests a minute, so do not poll
+  faster than that, and show the `Retry-After` wait if you do get a 429.
+- **422** also when a position is covered by more than 400 exposures (the message says to choose one detector or a
+  smaller field).
+- Browsers on other websites can only call the API if the site is in the server's `CORS_ORIGINS` (see README).
