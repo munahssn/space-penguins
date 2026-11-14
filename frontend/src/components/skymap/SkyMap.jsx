@@ -3,9 +3,12 @@
 import { useEffect, useRef } from "react";
 import { useViewState } from "../../hooks/useViewState.jsx";
 import { useAladin } from "./useAladin.js";
+import { useReachable } from "./useReachable.js";
 import "./skymap.css";
 
 const SURVEY = "P/DSS2/color";
+/** Small file on the CDS server behind SURVEY: if it answers, the sky tiles will load too. */
+const SURVEY_CHECK_URL = "https://alasky.cds.unistra.fr/DSS/DSSColor/properties";
 const MAP_FOV_PER_FIELD = 6; // the map shows ~6× the player's field, so the square has context around it
 const MIN_MAP_FOV_DEG = 0.5;
 const FIELD_STYLE = { color: "#ffffff", lineWidth: 2 };
@@ -39,11 +42,19 @@ function fieldCorners(ra, dec, fov) {
   ];
 }
 
+/** What to show while there's no viewer yet. */
+function statusMessage(reachable, error) {
+  if (reachable === "unreachable") return "Sky map unavailable: can't reach the CDS sky servers.";
+  if (error) return "The sky map couldn't load.";
+  return "Loading sky map…";
+}
+
 export default function SkyMap() {
   const { ra, dec, fov } = useViewState();
   const containerRef = useRef(null);
   const overlayRef = useRef(null);
-  const { A, aladin, error } = useAladin(containerRef, ALADIN_OPTIONS);
+  const reachable = useReachable(SURVEY_CHECK_URL);
+  const { A, aladin, error } = useAladin(containerRef, ALADIN_OPTIONS, reachable === "ok");
 
   useEffect(() => {
     if (!aladin || ra === null || dec === null) return;
@@ -60,11 +71,7 @@ export default function SkyMap() {
   return (
     <section className="skymap" aria-label="Sky map around the target">
       <div ref={containerRef} className="skymap-view" />
-      {!aladin && (
-        <div className="skymap-overlay-message">
-          {error ? "The sky map couldn't load." : "Loading sky map…"}
-        </div>
-      )}
+      {!aladin && <div className="skymap-overlay-message">{statusMessage(reachable, error)}</div>}
       <p className="skymap-caption">
         <span className="skymap-key" aria-hidden="true" /> Field shown in the player · Sky: DSS2 colour via Aladin Lite (CDS)
       </p>

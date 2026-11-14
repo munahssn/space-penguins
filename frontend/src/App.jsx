@@ -4,7 +4,7 @@ import StartPage from "./pages/StartPage.jsx";
 import ViewerPage from "./pages/ViewerPage.jsx";
 
 // ?dev=1 opens the temporary API/view-state check page.
-const isDevCheck = new URLSearchParams(window.location.search).has("dev");
+const isDevCheck = new URLSearchParams(window.location.search).get("dev") === "1";
 
 /** No target in the URL → start page. A target (from a link, search or card) → viewer. */
 export default function App() {

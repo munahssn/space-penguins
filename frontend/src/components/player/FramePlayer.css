@@ -16,7 +16,6 @@
   flex-direction: column;
   gap: var(--space-3);
   width: 100%;
-  max-width: 640px;
   outline: none;
 }
 
@@ -65,6 +64,9 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
+/* Brightness setting (Blink only). The PNGs are already 8 bit, so this is a display-only boost. */
+.fp-canvas--faint { filter: brightness(1.8) contrast(1.15); }
+.fp-canvas--contrast { filter: contrast(1.9); }
 .fp-badge {
   position: absolute;
   pointer-events: none;
@@ -159,7 +161,6 @@
   display: grid;
   place-items: center;
   width: 100%;
-  max-width: 640px;
   aspect-ratio: 1 / 1;
   padding: var(--space-6);
   text-align: center;

@@ -54,6 +54,7 @@ export default function BlinkView({ frames, grid, images, view, overlays }) {
         width={grid.width}
         height={grid.height}
         label={`SPHEREx image, ${label}`}
+        stretch={view.stretch}
       >
         {overlays.flags && <FlagTint mask={mask} width={grid.width} height={grid.height} />}
         <SkyMarkers
