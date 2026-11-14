@@ -1,5 +1,5 @@
 // Phase 0 check page: shows the view state and lets you call every API function.
-// Not part of the product. Delete once the real layout (#2) is in.
+// Not part of the product: open with ?dev=1. Delete once every API call is used by a real component.
 import { useState } from "react";
 import { useViewState } from "../hooks/useViewState.jsx";
 import * as api from "../api/api.js";

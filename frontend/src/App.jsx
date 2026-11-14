@@ -1,7 +1,9 @@
-// App shell (Person 2). Phase 0 only shows the dev check page;
-// #2 replaces this with the real layout (search, player, controls, sky map, charts).
+import ViewerPage from "./pages/ViewerPage.jsx";
 import DevCheck from "./pages/DevCheck.jsx";
 
+// ?dev=1 opens the temporary API/view-state check page.
+const isDevCheck = new URLSearchParams(window.location.search).has("dev");
+
 export default function App() {
-  return <DevCheck />;
+  return isDevCheck ? <DevCheck /> : <ViewerPage />;
 }

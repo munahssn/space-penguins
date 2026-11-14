@@ -1,0 +1,76 @@
+/* ---------- page frame ---------- */
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+
+.app-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--side-panel-width);
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--page-gutter);
+}
+
+.app-viewer,
+.app-side { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+
+/* ---------- header ---------- */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: var(--header-height);
+  padding: var(--space-2) var(--page-gutter);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-header-search { flex: 1; min-width: 0; max-width: 560px; }
+.app-header-end { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; }
+
+/* ---------- logo ---------- */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text);
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  white-space: nowrap;
+}
+.logo-mark { width: 28px; height: 28px; }
+.logo-text strong { color: var(--color-accent); font-weight: 700; }
+
+/* ---------- placeholder ---------- */
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 120px;
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+.placeholder-name { font-family: var(--font-display); color: var(--color-text); }
+.placeholder-meta { font-size: var(--text-xs); }
+
+.placeholder-inline { min-height: 0; flex-direction: row; padding: var(--space-2) var(--space-3); }
+.placeholder-player { aspect-ratio: 1; width: 100%; max-width: 680px; align-self: center; }
+.placeholder-square { aspect-ratio: 1; }
+
+/* ---------- phone / narrow ---------- */
+@media (max-width: 900px) {
+  .app-main { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .app-header { flex-wrap: wrap; }
+  .app-header-search { order: 3; flex-basis: 100%; max-width: none; }
+}
