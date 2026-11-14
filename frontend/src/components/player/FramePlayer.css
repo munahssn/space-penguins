@@ -1,0 +1,184 @@
+/* Frame player. Classes are prefixed fp- so they can't clash with other components.
+   Colours, fonts and radii come from the theme tokens in styles/theme.css. */
+
+.fp {
+  --fp-warning: #ffd666; /* no theme token for warnings yet */
+  /* data colours: they mean something, so they stay coloured whatever the theme */
+  --fp-before: #4c7dff;   /* difference: was here */
+  --fp-after: #ff4b3a;    /* difference: is here now */
+  --fp-overlay: color-mix(in srgb, var(--color-bg) 80%, transparent);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 640px;
+  outline: none;
+}
+
+/* one view (blink or still) under the switch */
+.fp-view { display: flex; flex-direction: column; gap: var(--space-3); outline: none; }
+.fp-view:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); border-radius: var(--radius-md); }
+
+/* Blink / Difference / IR colour switch */
+.fp-display {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+.fp-display button {
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.fp-display button[aria-pressed="true"] { background: var(--color-accent); color: var(--color-on-accent); font-weight: 600; }
+.fp-display button:hover:not(:disabled):not([aria-pressed="true"]) { color: var(--color-text); }
+
+/* stage: square, image scaled up with hard pixel edges */
+.fp-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #000; /* the sky: always black, whatever the theme */
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.fp-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.fp-badge {
+  position: absolute;
+  left: var(--space-3);
+  top: var(--space-3);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--fp-overlay);
+  font-size: var(--text-xs);
+}
+.fp-scale {
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  text-shadow: 0 1px 2px #000;
+}
+.fp-scale-bar { display: block; height: 3px; background: var(--color-text); box-shadow: 0 1px 2px #000; }
+
+/* controls */
+.fp-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+.fp-controls .fp-play {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  border: 0;
+  display: grid;
+  place-items: center;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+.fp-controls .fp-play:hover:not(:disabled) { background: var(--color-accent-hover); }
+
+.fp-frames { flex: 1 1 260px; display: flex; gap: var(--space-2); min-width: 0; }
+.fp-frame-btn {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--space-1) var(--space-2);
+  background: transparent;
+  text-align: left;
+}
+.fp-frame-btn[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+.fp-frame-btn-num { display: block; font-weight: 600; font-size: var(--text-sm); }
+.fp-frame-btn-date { display: block; font-size: var(--text-xs); color: var(--color-text-muted); }
+
+.fp-slider { flex: 1 1 260px; display: flex; }
+.fp-slider input { width: 100%; padding: 0; border: 0; background: transparent; accent-color: var(--color-accent); }
+
+.fp-speed { display: flex; gap: var(--space-1); }
+.fp-speed button {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  background: transparent;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.fp-speed button[aria-pressed="true"] {
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  border-color: var(--color-text-muted);
+}
+
+/* info */
+.fp-info { display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--text-sm); }
+.fp-info p { margin: 0; }
+.fp-info-label { font-weight: 600; }
+.fp-info-meta { color: var(--color-text-muted); }
+.fp-info-warning { color: var(--fp-warning); }
+
+/* empty / loading / error states keep the same square footprint as the player */
+.fp-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 1 / 1;
+  padding: var(--space-6);
+  text-align: center;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+}
+.fp-placeholder--error { color: var(--color-danger); border-style: solid; }
+
+.fp-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* legend under the Difference / IR colour image */
+.fp-legend { display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
+.fp-legend p { margin: 0; }
+.fp-legend-title { font-weight: 600; }
+.fp-legend-note { color: var(--color-text-muted); }
+.fp-legend-items { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin: 0; padding: 0; list-style: none; }
+.fp-legend-items li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.fp-swatch { width: 12px; height: 12px; border-radius: 50%; }
+.fp-swatch--before { background: var(--fp-before); }
+.fp-swatch--after { background: var(--fp-after); }
+.fp-swatch--red { background: #ff4b3a; }
+.fp-swatch--green { background: #3ddc84; }
+.fp-swatch--blue { background: #4c7dff; }

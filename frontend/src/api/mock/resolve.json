@@ -1,0 +1,13 @@
+{
+  "_comment": "Mock /api/resolve. Keys are lower-case names with spaces/dashes removed. Positions moved to the SPHEREx era (2025.9) like backend/app/targets.py.",
+  "wise0855": { "name": "WISE 0855-0714", "ra": 133.768079, "dec": -7.242922 },
+  "wise08550714": { "name": "WISE 0855-0714", "ra": 133.768079, "dec": -7.242922 },
+  "barnardsstar": { "name": "Barnard's Star", "ra": 269.446297, "dec": 4.767943 },
+  "barnard": { "name": "Barnard's Star", "ra": 269.446297, "dec": 4.767943 },
+  "epsilonindib": { "name": "Epsilon Indi B", "ra": 331.095913, "dec": -56.800946 },
+  "epsindib": { "name": "Epsilon Indi B", "ra": 331.095913, "dec": -56.800946 },
+  "rwaur": { "name": "RW Aurigae", "ra": 76.956458, "dec": 30.401417 },
+  "rwaurigae": { "name": "RW Aurigae", "ra": 76.956458, "dec": 30.401417 },
+  "rdra": { "name": "R Draconis", "ra": 248.167417, "dec": 66.755083 },
+  "rdraconis": { "name": "R Draconis", "ra": 248.167417, "dec": 66.755083 }
+}

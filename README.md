@@ -11,7 +11,12 @@ space_penguins/
 │   ├── app/targets.py     the 5 test targets (with proper motion)
 │   ├── app/mock.py        fake data for frontend dev
 │   └── scripts/precache.py
-└── frontend/            <- plain HTML/CSS/JS, no build step (team: frontend)
+├── frontend/            <- React + Vite (team: frontend), see docs/FRONTEND_PLAN.md
+│   ├── src/api/api.js     every backend call + mock switch
+│   ├── src/api/mock/      fake responses (shapes from docs/DESIGN.md §6)
+│   ├── src/hooks/         useViewState (URL state)
+│   └── src/{components,pages,styles}/
+└── frontend-old/        <- Phase 0 plain-JS starter, kept for reference
 ```
 
 ## Setup (Windows, PowerShell)
@@ -33,8 +38,21 @@ uvicorn app.main:app --reload
 # Fake data (frontend team uses this)
 $env:SPHEREX_MOCK=1; uvicorn app.main:app --reload
 ```
-Open http://localhost:8000 for the app and http://localhost:8000/docs for the interactive API.
-Shareable links work: `http://localhost:8000/?ra=133.768&dec=-7.243&fov=0.1&det=D3`
+Open http://localhost:8000/docs for the interactive API.
+
+## Frontend
+
+```powershell
+cd frontend
+npm install
+npm run dev        # http://localhost:5173
+```
+`frontend/.env` sets `VITE_USE_MOCK=true` (no backend needed) and `VITE_API_URL=http://localhost:8000`.
+To use the real backend, create `frontend/.env.local` with `VITE_USE_MOCK=false` and restart `npm run dev`.
+Shareable links work: `http://localhost:5173/?ra=133.768&dec=-7.243&fov=0.1&det=D3`
+(`npm run build` also lets the backend serve the app at http://localhost:8000.)
+
+Deploying (Vercel + domain): see `docs/DEPLOY.md`.
 
 ## Git rules
 - `main` always works. Work on branches (`frontend/player`, `backend/spectrum`), merge via PR.

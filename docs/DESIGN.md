@@ -19,7 +19,7 @@ key, wavelength slider, WISE toggle, Explain service (rules decide, LLM only wor
 | | HTML `<canvas>` | Frame player: blink, zoom, overlay circles/labels |
 | | Aladin Lite v3 | Context sky map + WISE toggle (fetches its own tiles/catalogs from CDS) |
 | | Recharts | Spectrum, light curve, motion track charts |
-| | URL query params | Shareable/embeddable links (`?ra&dec&fov&det&mode&wmin&wmax`) |
+| | URL query params | Shareable/embeddable links (`?ra&dec&fov&det&mode&display&wmin&wmax`) |
 | | three.js (optional) | Small 3D sky globe on the start page only |
 | Backend | Python, FastAPI, Uvicorn (on **Hugging Face Spaces**, Docker) | Everyone knows Python; free auto docs at `/docs` |
 | | astroquery, pyvo | IRSA image search, SkyBoT asteroids, Gaia via VizieR, name lookup |
@@ -33,7 +33,7 @@ key, wavelength slider, WISE toggle, Explain service (rules decide, LLM only wor
 
 ```
 ┌──────────────────────────── BROWSER (React + Vite, on Vercel) ─────────────────┐
-│ SearchBar ─► URL state (?ra&dec&fov&det&mode&wmin&wmax) ◄── shareable/?embed=1 │
+│ SearchBar ─► URL state (?ra&dec&fov&det&mode&display&wmin&wmax&embed)        │
 │                                                                                │
 │ FramePlayer (canvas)   ControlPanel          Charts (Recharts)    SkyMap       │
 │  blink / diff / RGB     speed, FOV, det,      spectrum, light     (Aladin Lite)│
@@ -156,7 +156,7 @@ Wording (Explain service):
 | `GET /img/{id}.png` | PNG, `Cache-Control: immutable` |
 | `GET /api/diff?…&a&b&op=sub\|add` | `{url}` (same 202 rules) |
 | `GET /api/rgb?ra&dec&fov` | `{url}` (same 202 rules) |
-| `GET /api/context?ra&dec&fov&mjd` | `{verdict, match:{name, type, source}, stars:[…], asteroids:[…], warnings:[…]}` |
+| `GET /api/context?ra&dec&fov&mjd` | `{verdict, match:{name, type, source}, stars:[{gaia_id, ra, dec, gmag, pmra, pmdec}], asteroids:[{name, ra, dec, vmag}], warnings:[…]}` |
 | `GET /api/explain?ra&dec&mjd` | `{text, source:"template"\|"llm"}` |
 | `GET /api/track?ra&dec` | `{measured:[{mjd, ra, dec, err}], catalog_pm:{pmra, pmdec}, fit:{pmra, pmdec}}` |
 | `GET /api/spectrum?ra&dec` | `{points:[{wavelength_um, flux, error, mjd, det}]}` |
@@ -216,8 +216,8 @@ Rules:
 |---|---|
 | A (backend) | Finder, Fetcher (S3 test first!), cache, job runner + queue, rate limit, precache + GitHub Action |
 | B (backend) | Processor (stacks, diff, RGB, wavelength filter), Measure, Context, Spectrum, Explain, API layer |
-| C (frontend) | SearchBar, FramePlayer (canvas + overlays), ControlPanel (incl. wavelength slider), "Is it new?" panel, status bar |
-| D (frontend) | SkyMap (+ WISE toggle), charts, URL state + embed, Vercel + domain, README/GIFs, pitch |
+| C (frontend, Person 1) | FramePlayer (canvas + overlays), charts, "Is it new?" panel. See `FRONTEND_PLAN.md` |
+| D (frontend, Person 2) | App shell, `api.js` + mock switch, URL state + embed, SearchBar, ControlPanel (incl. wavelength slider), status bar, SkyMap (+ WISE toggle), Vercel + domain, README, video, submission |
 
 ## 11. Build order
 

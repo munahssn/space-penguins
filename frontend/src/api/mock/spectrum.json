@@ -1,0 +1,24 @@
+{
+  "points": [
+    { "wavelength_um": 0.82, "flux": 1.2, "error": 0.6, "mjd": 60816.4, "det": "D1" },
+    { "wavelength_um": 0.95, "flux": 1.8, "error": 0.6, "mjd": 60997.6, "det": "D1" },
+    { "wavelength_um": 1.08, "flux": 2.9, "error": 0.7, "mjd": 61180.3, "det": "D1" },
+    { "wavelength_um": 1.18, "flux": 3.6, "error": 0.7, "mjd": 60816.4, "det": "D2" },
+    { "wavelength_um": 1.31, "flux": 4.1, "error": 0.7, "mjd": 60997.6, "det": "D2" },
+    { "wavelength_um": 1.45, "flux": 3.0, "error": 0.8, "mjd": 61180.3, "det": "D2" },
+    { "wavelength_um": 1.62, "flux": 5.2, "error": 0.8, "mjd": 60816.4, "det": "D3" },
+    { "wavelength_um": 1.92, "flux": 4.4, "error": 0.8, "mjd": 60997.6, "det": "D3" },
+    { "wavelength_um": 2.18, "flux": 6.0, "error": 0.9, "mjd": 61180.3, "det": "D3" },
+    { "wavelength_um": 2.48, "flux": 7.9, "error": 0.9, "mjd": 60816.4, "det": "D4" },
+    { "wavelength_um": 2.76, "flux": 9.6, "error": 1.0, "mjd": 60997.6, "det": "D4" },
+    { "wavelength_um": 3.02, "flux": 8.1, "error": 1.1, "mjd": 61180.3, "det": "D4" },
+    { "wavelength_um": 3.35, "flux": 14.2, "error": 1.2, "mjd": 60816.4, "det": "D5" },
+    { "wavelength_um": 3.68, "flux": 22.5, "error": 1.4, "mjd": 60997.6, "det": "D5" },
+    { "wavelength_um": 3.94, "flux": 31.0, "error": 1.6, "mjd": 61180.3, "det": "D5" },
+    { "wavelength_um": 4.12, "flux": 36.8, "error": 1.9, "mjd": 60816.4, "det": "D6" },
+    { "wavelength_um": 4.27, "flux": 24.3, "error": 2.0, "mjd": 60997.6, "det": "D6" },
+    { "wavelength_um": 4.45, "flux": 41.7, "error": 2.2, "mjd": 61180.3, "det": "D6" },
+    { "wavelength_um": 4.67, "flux": 33.9, "error": 2.4, "mjd": 60816.4, "det": "D6" },
+    { "wavelength_um": 4.88, "flux": 44.2, "error": 2.7, "mjd": 60997.6, "det": "D6" }
+  ]
+}
