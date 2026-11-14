@@ -14,7 +14,7 @@ from fastapi import HTTPException
 from . import spherex
 from .config import CACHE_DIR, MAX_EXPOSURES_PER_JOB, MOCK
 
-CACHE_VERSION = 3  # bump when the cached format changes (3: per-exposure cache)
+CACHE_VERSION = 5  # bump when the cached format changes (5: target photometry per exposure)
 
 
 def _key(ra, dec, fov, det):
@@ -44,8 +44,9 @@ def is_cached(ra, dec, fov, det):
 
 
 def get_exposures(ra, dec, fov, det, progress=None):
-    """All exposures for a position: {mjds, bands, results, grid}.
-    results[i] = (image, flagged_fraction, artifact_fraction, wavelength_um).
+    """All exposures for a position: {mjds, bands, results, phot, grid}.
+    results[i] = (image, flagged_fraction, artifact_fraction, wavelength_um);
+    phot[i] = {flux, error, flags} of the target in that exposure, or None.
     progress(done, total) is passed on to the download (used by jobs.py)."""
     CACHE_DIR.mkdir(exist_ok=True)
     k = _key(ra, dec, fov, det)
@@ -70,6 +71,7 @@ def get_exposures(ra, dec, fov, det, progress=None):
             "grid": e["grid"], "mjds": e["mjds"], "bands": e["bands"],
             "flagged": [r[1] for r in res], "artifact": [r[2] for r in res],
             "wavelength_um": [r[3] for r in res], "n_failed": e.get("n_failed", 0),
+            "phot": e["phot"],
         }))
     return _load(k)
 

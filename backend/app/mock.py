@@ -5,7 +5,7 @@ Like the real pipeline it produces single exposures, each at its own wavelength.
 """
 import numpy as np
 
-from .spherex import DET_RANGE_UM, PIXSCALE_DEG
+from .spherex import DET_RANGE_UM, PIXSCALE_DEG, aperture_flux
 
 
 def mock_exposures(ra, dec, fov, det):
@@ -22,7 +22,7 @@ def mock_exposures(ra, dec, fov, det):
 
     passes = [60816.4, 60997.6, 61180.3]  # 2025-05-21, 2025-11-18, 2026-05-20
     dets = sorted(DET_RANGE_UM) if det == "all" else [det]
-    mjds, bands, results = [], [], []
+    mjds, bands, results, phot = [], [], [], []
     c = n / 2 - 0.5
     for k, mjd0 in enumerate(passes):
         sky = base + star(c + 1.5 * k, c + 0.4 * k, 60)  # the mover
@@ -30,8 +30,11 @@ def mock_exposures(ra, dec, fov, det):
             band = dets[j % len(dets)]
             mjds.append(round(mjd0 + 0.07 * j, 3))
             bands.append(band)
-            results.append((sky + rng.normal(0, 4, (n, n)),
+            img = sky + rng.normal(0, 4, (n, n))
+            f = aperture_flux(img, np.full((n, n), 16.0))
+            phot.append(f and {"flux": f[0], "error": f[1], "flags": []})
+            results.append((img,
                             float(rng.uniform(0, 0.08)), float(rng.uniform(0, 0.03)),
                             float(rng.uniform(*DET_RANGE_UM[band]))))
     grid = {"width": n, "height": n, "pixscale_arcsec": PIXSCALE_DEG * 3600}
-    return {"mjds": mjds, "bands": bands, "results": results, "grid": grid}
+    return {"mjds": mjds, "bands": bands, "results": results, "phot": phot, "grid": grid}

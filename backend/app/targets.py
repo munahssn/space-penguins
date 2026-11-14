@@ -33,7 +33,10 @@ TARGETS = [
     },
     {
         "id": "wise0855", "name": "WISE 0855-0714",
-        "ra": 133.795129, "dec": -7.245147, "epoch": 2014.0,
+        # The designation coordinates (08h55m10.83s -07d14m42.5s, as given in the challenge) are
+        # its position in the 2010 WISE images (Luhman 2014), not J2000 or 2014. With epoch 2014
+        # the predicted position was ~22" (3.6 px) off and /api/track could not find it.
+        "ra": 133.795129, "dec": -7.245147, "epoch": 2010.4,
         "pmra": -8118.0, "pmdec": 673.0,
         "note": "coldest known brown dwarf, fast mover (~8\"/yr)",
     },
@@ -58,6 +61,23 @@ def propagate(t, to_epoch=SPHEREX_EPOCH):
     dec = t["dec"] + t["pmdec"] * dt / 3.6e6
     ra = t["ra"] + t["pmra"] * dt / 3.6e6 / math.cos(math.radians(t["dec"]))
     return ra % 360, dec
+
+
+def catalog_match(ra, dec, radius_arcsec=30.0):
+    """The test target within radius of (ra, dec) at the SPHEREx epoch, with its catalogue
+    proper motion, or None. Only our own target list is searched: no external catalogue."""
+    best = None
+    for t in TARGETS:
+        tra, tdec = propagate(t)
+        dra = ((ra - tra + 180) % 360 - 180) * math.cos(math.radians(dec))
+        d = math.hypot(dra, dec - tdec) * 3600
+        if d <= radius_arcsec and (best is None or d < best[0]):
+            best = (d, t)
+    if best is None:
+        return None
+    t = best[1]
+    return {"id": t["id"], "name": t["name"], "pmra": t["pmra"], "pmdec": t["pmdec"],
+            "source": "targets.py", "separation_arcsec": round(best[0], 2)}
 
 
 def targets_now():

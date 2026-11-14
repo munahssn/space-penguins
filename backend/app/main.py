@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import CORS_ORIGINS, FRONTEND_DIR
 from .ratelimit import RateLimitMiddleware
-from .routers import analysis, context, frames, images, resolve, system
+from .routers import analysis, context, explain, frames, images, resolve, system
 
 app = FastAPI(title="SPHEREx Blink API")
 # The last middleware added is the outermost: CORS wraps the rate limit, so a 429 still carries
@@ -35,6 +35,7 @@ app.include_router(frames.router)
 app.include_router(images.router)
 app.include_router(analysis.router)
 app.include_router(context.router)
+app.include_router(explain.router)
 
 # Serve the frontend from the same server (must be mounted last)
 if FRONTEND_DIR.exists():
