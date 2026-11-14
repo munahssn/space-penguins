@@ -1,30 +1,27 @@
 /* Frame player. Classes are prefixed fp- so they can't clash with other components.
-   Colours use the global theme variables, with the mockup colours as fallbacks until #2 lands. */
+   Colours, fonts and radii come from the theme tokens in styles/theme.css. */
 
 .fp {
-  --fp-accent: var(--accent-strong, #ff9a4d);
-  --fp-panel: var(--panel, #0f1420);
-  --fp-border: var(--border, #1e2636);
-  --fp-muted: var(--muted, #a8b1c3);
-  --fp-warning: #ffd666;
+  --fp-warning: #ffd666; /* no theme token for warnings yet */
+  --fp-overlay: color-mix(in srgb, var(--color-bg) 80%, transparent);
 
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   width: 100%;
   max-width: 640px;
   outline: none;
 }
-.fp:focus-visible { box-shadow: 0 0 0 2px var(--fp-accent); border-radius: 14px; }
+.fp:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); border-radius: var(--radius-md); }
 
 /* stage: square, image scaled up with hard pixel edges */
 .fp-stage {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: #000;
-  border: 1px solid var(--fp-border);
-  border-radius: 14px;
+  background: #000; /* the sky: always black, whatever the theme */
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 .fp-canvas {
@@ -34,90 +31,91 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
-.fp-badge,
+.fp-badge {
+  position: absolute;
+  left: var(--space-3);
+  top: var(--space-3);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--fp-overlay);
+  font-size: var(--text-xs);
+}
 .fp-scale {
   position: absolute;
-  padding: 5px 9px;
-  border-radius: 8px;
-  background: rgba(10, 14, 24, 0.8);
-  font-size: 12px;
-  color: #c9d1e0;
-}
-.fp-badge { left: 12px; top: 12px; }
-.fp-scale {
-  right: 12px;
-  bottom: 12px;
+  right: var(--space-3);
+  bottom: var(--space-3);
   width: 40%;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
-  background: transparent;
-  padding: 0;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
   text-shadow: 0 1px 2px #000;
 }
-.fp-scale-bar { display: block; height: 3px; background: #e6e8ee; box-shadow: 0 1px 2px #000; }
+.fp-scale-bar { display: block; height: 3px; background: var(--color-text); box-shadow: 0 1px 2px #000; }
 
 /* controls */
 .fp-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  padding: 12px;
-  border-radius: 12px;
-  background: var(--fp-panel);
-  border: 1px solid var(--fp-border);
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
 }
-.fp-controls button { cursor: pointer; font: inherit; color: inherit; }
-.fp-play {
+.fp-controls .fp-play {
   width: 44px;
   height: 44px;
+  padding: 0;
   border-radius: 50%;
   border: 0;
-  background: var(--fp-accent);
-  color: #1a0e04 !important;
   display: grid;
   place-items: center;
-  padding: 0;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }
-.fp-play:disabled { opacity: 0.4; cursor: default; }
+.fp-controls .fp-play:hover:not(:disabled) { background: var(--color-accent-hover); }
 
-.fp-frames { flex: 1 1 260px; display: flex; gap: 6px; min-width: 0; }
+.fp-frames { flex: 1 1 260px; display: flex; gap: var(--space-2); min-width: 0; }
 .fp-frame-btn {
   flex: 1;
   min-width: 0;
   min-height: 44px;
-  padding: 4px 8px;
-  border-radius: 10px;
-  border: 1px solid var(--fp-border);
+  padding: var(--space-1) var(--space-2);
   background: transparent;
   text-align: left;
 }
-.fp-frame-btn[aria-pressed="true"] { border-color: var(--fp-accent); background: rgba(255, 154, 77, 0.12); }
-.fp-frame-btn-num { display: block; font-weight: 600; font-size: 13px; }
-.fp-frame-btn-date { display: block; font-size: 11px; color: var(--fp-muted); }
+.fp-frame-btn[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+.fp-frame-btn-num { display: block; font-weight: 600; font-size: var(--text-sm); }
+.fp-frame-btn-date { display: block; font-size: var(--text-xs); color: var(--color-text-muted); }
 
 .fp-slider { flex: 1 1 260px; display: flex; }
-.fp-slider input { width: 100%; accent-color: var(--fp-accent); }
+.fp-slider input { width: 100%; padding: 0; border: 0; background: transparent; accent-color: var(--color-accent); }
 
-.fp-speed { display: flex; gap: 4px; }
+.fp-speed { display: flex; gap: var(--space-1); }
 .fp-speed button {
   min-height: 36px;
-  padding: 0 10px;
-  border-radius: 8px;
-  border: 1px solid var(--fp-border);
+  padding: 0 var(--space-3);
   background: transparent;
-  font-size: 12px;
-  color: var(--fp-muted);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
 }
-.fp-speed button[aria-pressed="true"] { color: inherit; border-color: #3a4d73; background: #1d2740; }
+.fp-speed button[aria-pressed="true"] {
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  border-color: var(--color-text-muted);
+}
 
 /* info */
+.fp-info { display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--text-sm); }
 .fp-info p { margin: 0; }
-.fp-info { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
 .fp-info-label { font-weight: 600; }
-.fp-info-meta { color: var(--fp-muted); }
+.fp-info-meta { color: var(--color-text-muted); }
 .fp-info-warning { color: var(--fp-warning); }
 
 /* empty / loading / error states keep the same square footprint as the player */
@@ -127,13 +125,13 @@
   width: 100%;
   max-width: 640px;
   aspect-ratio: 1 / 1;
-  padding: 24px;
+  padding: var(--space-6);
   text-align: center;
-  border: 1px dashed var(--border, #2a3040);
-  border-radius: 14px;
-  color: var(--muted, #a8b1c3);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
 }
-.fp-placeholder--error { color: var(--error, #ff7a7a); border-style: solid; }
+.fp-placeholder--error { color: var(--color-danger); border-style: solid; }
 
 .fp-visually-hidden {
   position: absolute;
