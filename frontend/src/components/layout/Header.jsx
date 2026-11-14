@@ -1,4 +1,5 @@
 import Logo from "./Logo.jsx";
+import "./layout.css";
 
 /** Top bar. Presentational: the caller passes in what goes in each slot. */
 export default function Header({ search, status, actions }) {

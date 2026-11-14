@@ -1,0 +1,73 @@
+// Context sky map (#12): Aladin Lite v3 centred on the target, with a square showing the player's field.
+// Not yet: WISE layer toggle (phase 4).
+import { useEffect, useRef } from "react";
+import { useViewState } from "../../hooks/useViewState.jsx";
+import { useAladin } from "./useAladin.js";
+import "./skymap.css";
+
+const SURVEY = "P/DSS2/color";
+const MAP_FOV_PER_FIELD = 6; // the map shows ~6× the player's field, so the square has context around it
+const MIN_MAP_FOV_DEG = 0.5;
+const FIELD_STYLE = { color: "#ffffff", lineWidth: 2 };
+
+const ALADIN_OPTIONS = {
+  survey: SURVEY,
+  cooFrame: "equatorial",
+  showReticle: false,          // the field square marks the target instead
+  showLayersControl: false,    // WISE toggle comes in phase 4
+  showProjectionControl: false,
+  showFrame: false,
+  showStatusBar: false,
+  showContextMenu: false,
+  showFullscreenControl: true,
+  showZoomControl: true,
+  showCooLocation: true,
+};
+
+const mapFov = (fieldDeg) => Math.max(MIN_MAP_FOV_DEG, fieldDeg * MAP_FOV_PER_FIELD);
+
+/** Corners of a fov × fov square centred on (ra, dec). RA spacing widens by 1/cos(dec) away from the equator. */
+function fieldCorners(ra, dec, fov) {
+  const half = fov / 2;
+  const halfRa = half / Math.cos((dec * Math.PI) / 180);
+  const wrap = (x) => ((x % 360) + 360) % 360;
+  return [
+    [wrap(ra - halfRa), dec - half],
+    [wrap(ra + halfRa), dec - half],
+    [wrap(ra + halfRa), dec + half],
+    [wrap(ra - halfRa), dec + half],
+  ];
+}
+
+export default function SkyMap() {
+  const { ra, dec, fov } = useViewState();
+  const containerRef = useRef(null);
+  const overlayRef = useRef(null);
+  const { A, aladin, error } = useAladin(containerRef, ALADIN_OPTIONS);
+
+  useEffect(() => {
+    if (!aladin || ra === null || dec === null) return;
+    if (!overlayRef.current) {
+      overlayRef.current = A.graphicOverlay(FIELD_STYLE);
+      aladin.addOverlay(overlayRef.current);
+    }
+    aladin.gotoRaDec(ra, dec);
+    aladin.setFoV(mapFov(fov));
+    overlayRef.current.removeAll();
+    overlayRef.current.add(A.polygon(fieldCorners(ra, dec, fov)));
+  }, [A, aladin, ra, dec, fov]);
+
+  return (
+    <section className="skymap" aria-label="Sky map around the target">
+      <div ref={containerRef} className="skymap-view" />
+      {!aladin && (
+        <div className="skymap-overlay-message">
+          {error ? "The sky map couldn't load." : "Loading sky map…"}
+        </div>
+      )}
+      <p className="skymap-caption">
+        <span className="skymap-key" aria-hidden="true" /> Field shown in the player · Sky: DSS2 colour via Aladin Lite (CDS)
+      </p>
+    </section>
+  );
+}
