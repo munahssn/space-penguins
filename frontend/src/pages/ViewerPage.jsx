@@ -3,6 +3,7 @@ import Header from "../components/layout/Header.jsx";
 import Placeholder from "../components/layout/Placeholder.jsx";
 import DataChip from "../components/status/DataChip.jsx";
 import ShareActions from "../components/share/ShareActions.jsx";
+import FramePlayer from "../components/player/FramePlayer.jsx";
 
 const PERSON_1 = "Person 1";
 const PERSON_2 = "Person 2";
@@ -20,7 +21,7 @@ export default function ViewerPage() {
       }
       viewer={
         <>
-          <Placeholder name="FramePlayer" issue={4} owner={PERSON_1} className="placeholder-player" />
+          <FramePlayer />
           <Placeholder name="ControlPanel" issue={9} owner={PERSON_2} />
         </>
       }

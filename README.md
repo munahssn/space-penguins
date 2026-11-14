@@ -52,6 +52,8 @@ To use the real backend, create `frontend/.env.local` with `VITE_USE_MOCK=false`
 Shareable links work: `http://localhost:5173/?ra=133.768&dec=-7.243&fov=0.1&det=D3`
 (`npm run build` also lets the backend serve the app at http://localhost:8000.)
 
+Deploying (Vercel + domain): see `docs/DEPLOY.md`.
+
 ## Git rules
 - `main` always works. Work on branches (`frontend/player`, `backend/spectrum`), merge via PR.
 - Never commit `backend/cache/` or `.venv/` (already in `.gitignore`).
