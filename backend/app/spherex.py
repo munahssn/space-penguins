@@ -250,18 +250,28 @@ def stack_epochs(mjds, results, wmin=None, wmax=None):
     return stacks, meta
 
 
-def fetch_exposures(ra, dec, fov, det):
+def fetch_exposures(ra, dec, fov, det, progress=None):
     """Download every exposure covering the position, on one common grid.
     Returns {mjds, bands, results, grid, n_failed}; results[i] is fetch_cutout's
     tuple. No wavelength filter and no stacking here: both are cheap and done
-    per request (stack_epochs), so this slow step is cached once per position."""
+    per request (stack_epochs), so this slow step is cached once per position.
+
+    progress(done, total) is called after every image, so a job can report progress."""
     rows = find_images(ra, dec, fov, det)
     if not rows:
         raise NoData("No SPHEREx images cover this position")
 
     wcs_out, shape = target_grid(ra, dec, fov)
+    if progress:
+        progress(0, len(rows))
+    results = [None] * len(rows)
     with cf.ThreadPoolExecutor(max_workers=8) as ex:
-        results = list(ex.map(lambda r: fetch_cutout(r["uri"], wcs_out, shape, ra, dec), rows))
+        futures = {ex.submit(fetch_cutout, r["uri"], wcs_out, shape, ra, dec): i
+                   for i, r in enumerate(rows)}
+        for n, fut in enumerate(cf.as_completed(futures), start=1):
+            results[futures[fut]] = fut.result()
+            if progress:
+                progress(n, len(rows))
 
     keep = [(r, res) for r, res in zip(rows, results) if res is not None]
     if not keep:

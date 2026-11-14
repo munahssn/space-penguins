@@ -32,9 +32,21 @@ def _load(k):
     return info
 
 
-def get_exposures(ra, dec, fov, det):
+def cache_key(ra, dec, fov, det):
+    """Also the job key: identical requests share one cache entry and one running job.
+    Wavelength filters are not part of it: they are applied after the download."""
+    return _key(ra, dec, fov, det)
+
+
+def is_cached(ra, dec, fov, det):
+    k = _key(ra, dec, fov, det)
+    return (CACHE_DIR / f"{k}.npz").exists() and (CACHE_DIR / f"{k}.json").exists()
+
+
+def get_exposures(ra, dec, fov, det, progress=None):
     """All exposures for a position: {mjds, bands, results, grid}.
-    results[i] = (image, flagged_fraction, artifact_fraction, wavelength_um)."""
+    results[i] = (image, flagged_fraction, artifact_fraction, wavelength_um).
+    progress(done, total) is passed on to the download (used by jobs.py)."""
     CACHE_DIR.mkdir(exist_ok=True)
     k = _key(ra, dec, fov, det)
     npz, js = CACHE_DIR / f"{k}.npz", CACHE_DIR / f"{k}.json"
@@ -44,7 +56,7 @@ def get_exposures(ra, dec, fov, det):
             e = mock_exposures(ra, dec, fov, det)
         else:
             try:
-                e = spherex.fetch_exposures(ra, dec, fov, det)
+                e = spherex.fetch_exposures(ra, dec, fov, det, progress=progress)
             except spherex.NoData as err:
                 raise HTTPException(404, str(err))
             except Exception as err:

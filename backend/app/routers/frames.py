@@ -1,7 +1,12 @@
-"""Blink frames and difference/sum images."""
-from fastapi import APIRouter, HTTPException, Query
+"""Blink frames and difference/sum images.
 
-from .. import spherex
+Both endpoints answer 202 while a new spot of sky is still being downloaded
+(see jobs.py); the client polls the same URL until it gets 200. Wavelength
+filtering and stacking are fast and happen on every request."""
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import JSONResponse
+
+from .. import jobs, spherex
 from ..cache import get_stacks
 from ..config import MOCK
 from ..validation import check_query, check_wavelength
@@ -9,11 +14,18 @@ from ..validation import check_query, check_wavelength
 router = APIRouter()
 
 
+def _pending(info):
+    return JSONResponse(status_code=202, content=info, headers={"Retry-After": "2"})
+
+
 @router.get("/api/frames")
 def frames(ra: float, dec: float, fov: float = 0.1, det: str = "D3",
            wmin: float | None = None, wmax: float | None = None):
     check_query(ra, dec, fov, det)
     check_wavelength(wmin, wmax)
+    info = jobs.pending(ra, dec, fov, det)
+    if info:
+        return _pending(info)
     stacks, meta, grid = get_stacks(ra, dec, fov, det, wmin, wmax)
     vmin, vmax = spherex.shared_limits(stacks)
     return {
@@ -31,6 +43,9 @@ def diff(ra: float, dec: float, fov: float = 0.1, det: str = "D3",
          a: int = 0, b: int = -1, op: str = Query("sub", pattern="^(sub|add)$")):
     check_query(ra, dec, fov, det)
     check_wavelength(wmin, wmax)
+    info = jobs.pending(ra, dec, fov, det)
+    if info:
+        return _pending(info)
     stacks, _, _ = get_stacks(ra, dec, fov, det, wmin, wmax)
     n = len(stacks)
     b = b if b >= 0 else n - 1
