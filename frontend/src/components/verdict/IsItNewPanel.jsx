@@ -5,7 +5,7 @@
 // Reads the clicked spot from useViewState().selected ({ra, dec, mjd, date}, set by the player).
 import { getContext, getExplain, getTrack } from "../../api/api.js";
 import { useViewState } from "../../hooks/useViewState.jsx";
-import { useRequest } from "./useRequest.js";
+import { useRequest } from "../../hooks/useRequest.js";
 import { templateText } from "./verdicts.js";
 import { Explanation, ExternalLinks, MotionComparison, VerdictBadge, Warnings } from "./VerdictParts.jsx";
 import "./verdict.css";
