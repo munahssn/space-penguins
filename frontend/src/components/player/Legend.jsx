@@ -1,4 +1,6 @@
 // Explains the colours in the Difference and IR colour views.
+import { detectorRange } from "../../api/spherex.js";
+import { rangeLabel } from "../controls/options.js";
 import { RGB_CHANNELS } from "./constants.js";
 
 function Swatch({ className }) {
@@ -9,13 +11,13 @@ function Swatch({ className }) {
 export function DiffLegend({ firstDate, lastDate }) {
   return (
     <div className="fp-legend">
-      <p className="fp-legend-title">Last pass ({lastDate}) − first pass ({firstDate})</p>
+      <p className="fp-legend-title">Newest pass ({lastDate}) minus first pass ({firstDate})</p>
       <ul className="fp-legend-items">
         <li><Swatch className="fp-swatch--before" />was here</li>
         <li><Swatch className="fp-swatch--after" />is here now</li>
       </ul>
       <p className="fp-legend-note">
-        Anything that stayed put cancels out. A moving object shows up as a blue–red pair.
+        Anything that stayed put cancels out. Something that moved shows up as a blue and red pair.
       </p>
     </div>
   );
@@ -26,10 +28,10 @@ export function RgbLegend() {
     <div className="fp-legend">
       <p className="fp-legend-title">Infrared colour</p>
       <ul className="fp-legend-items">
-        {RGB_CHANNELS.map(({ channel, det, range }) => (
+        {RGB_CHANNELS.map(({ channel, det }) => (
           <li key={det}>
             <Swatch className={`fp-swatch--${channel.toLowerCase()}`} />
-            {channel} = {det} ({range})
+            {channel} = {det} ({rangeLabel(detectorRange(det))})
           </li>
         ))}
       </ul>

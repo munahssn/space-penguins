@@ -1,0 +1,8 @@
+[
+  { "id": "notebook-example", "name": "IRSA notebook example (Phase 0 test)", "ra": 304.693509, "dec": 42.443687, "note": "position from IRSA's intro notebook, known to have lots of data" },
+  { "id": "barnard", "name": "Barnard's Star", "ra": 269.446297, "dec": 4.767943, "note": "fastest-moving star in the sky (~10.4\"/yr)" },
+  { "id": "eps-indi-b", "name": "Epsilon Indi B", "ra": 331.095913, "dec": -56.800946, "note": "pair of brown dwarfs orbiting Epsilon Indi" },
+  { "id": "wise0855", "name": "WISE 0855-0714", "ra": 133.768079, "dec": -7.242922, "note": "coldest known brown dwarf, fast mover (~8\"/yr)" },
+  { "id": "rw-aur", "name": "RW Aurigae", "ra": 76.956458, "dec": 30.401417, "note": "variable young star" },
+  { "id": "r-dra", "name": "R Draconis", "ra": 248.167417, "dec": 66.755083, "note": "Mira variable star" }
+]

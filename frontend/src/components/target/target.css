@@ -1,0 +1,14 @@
+/* Page title above the player */
+.target-heading { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.target-name { font-size: var(--text-2xl); overflow-wrap: anywhere; }
+
+/* Facts at the top of the side panel */
+.target-note { margin: 0; color: var(--color-text-soft); font-size: var(--text-sm); }
+.target-facts { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; font-size: var(--text-sm); }
+.target-fact { display: flex; justify-content: space-between; gap: var(--space-6); }
+.target-fact dt { color: var(--color-text-muted); }
+.target-fact dd { margin: 0; font-family: var(--font-mono); text-align: right; }
+
+@media (max-width: 640px) {
+  .target-name { font-size: 2rem; }
+}

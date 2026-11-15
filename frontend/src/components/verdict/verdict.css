@@ -1,0 +1,63 @@
+/* "Is it new?" panel (a block in the side panel). Classes are prefixed verdict- so they can't clash. */
+
+.verdict {
+  --verdict-known: var(--color-success);
+  --verdict-new: var(--color-warning);
+  font-size: var(--text-sm);
+}
+.verdict p { margin: 0; }
+
+.verdict-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+.verdict-muted { color: var(--color-text-muted); }
+.verdict-error { color: var(--color-danger); }
+.verdict-note { color: var(--color-text-muted); font-size: var(--text-xs); }
+
+/* badge: colour carries the meaning (known = green, unexplained = yellow), the words say it too */
+.verdict-badge {
+  padding: 5px var(--space-3);
+  border: 1px solid currentColor;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.verdict-badge--known { color: var(--verdict-known); }
+.verdict-badge--new { color: var(--verdict-new); }
+.verdict-badge--muted { color: var(--color-text-muted); }
+
+.verdict-warnings { margin: 0; padding: 0; list-style: none; color: var(--color-warning); }
+
+.verdict-text { display: flex; flex-direction: column; gap: var(--space-1); color: var(--color-text-soft); line-height: 1.6; }
+
+/* catalogue vs measured: two cells split by a hairline */
+.verdict-motion { display: flex; flex-direction: column; gap: var(--space-2); }
+.verdict-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--color-line);
+  border: 1px solid var(--color-line);
+}
+.verdict-stat { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-3) var(--space-4); background: var(--color-surface); }
+.verdict-stat-label { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xs); color: var(--color-text-muted); }
+.verdict-stat-value { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 300; }
+.verdict-swatch { flex: none; }
+.verdict-swatch--catalog { width: 12px; height: 2px; background: var(--color-catalog); }
+.verdict-swatch--measured { width: 8px; height: 8px; border-radius: 50%; background: var(--color-measured); }
+
+.verdict-links-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-4); }
+.verdict-links-label { color: var(--color-text-muted); }
+.verdict-links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin: 0; padding: 0; list-style: none; }
+.verdict-links a { text-underline-offset: 3px; }
+.verdict-links a:hover { color: var(--color-accent-hover); }
+
+.verdict-check-target { align-self: flex-start; }
+
+/* loading placeholder */
+.verdict-checking { display: flex; flex-direction: column; gap: var(--space-3); }
+.verdict-skeleton { display: flex; flex-direction: column; gap: var(--space-2); }
+.verdict-skeleton-line { height: 12px; width: 100%; }
+.verdict-skeleton-line--short { width: 60%; }
+.verdict-skeleton .verdict-stats { margin-top: var(--space-2); background: none; border: 0; gap: var(--space-2); }
+.verdict-skeleton-stat { height: 64px; }

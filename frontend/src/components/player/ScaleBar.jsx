@@ -1,15 +1,16 @@
-// Scale bar + orientation, drawn over the frame. Sized in % of the frame, so it scales with the canvas.
+// Scale bar + orientation, drawn over the frame. Its length is in cqw (% of the image's width: .fp-stage
+// is a size container), so it stays true at any player size.
 import { MAX_SCALE_BAR_SHARE, SCALE_BAR_ARCSEC } from "./constants.js";
 
 /** "30″", "1′", "2.5′" */
-export function formatArcsec(arcsec) {
+function formatArcsec(arcsec) {
   if (arcsec < 60) return `${arcsec}″`;
   const arcmin = arcsec / 60;
   return `${Number.isInteger(arcmin) ? arcmin : arcmin.toFixed(1)}′`;
 }
 
 /** Longest candidate length that fits in MAX_SCALE_BAR_SHARE of the field (or the shortest one if none fit). */
-export function pickScaleBar(fieldArcsec) {
+function pickScaleBar(fieldArcsec) {
   const fitting = SCALE_BAR_ARCSEC.filter((len) => len <= fieldArcsec * MAX_SCALE_BAR_SHARE);
   return fitting.length ? fitting[fitting.length - 1] : SCALE_BAR_ARCSEC[0];
 }
@@ -21,9 +22,12 @@ export default function ScaleBar({ grid }) {
   const widthPercent = (barArcsec / fieldArcsec) * 100;
 
   return (
-    <div className="fp-scale" aria-label={`Scale: bar is ${formatArcsec(barArcsec)}. North up, east left.`}>
-      <span className="fp-scale-bar" style={{ width: `${widthPercent}%` }} aria-hidden="true" />
-      <span aria-hidden="true">{formatArcsec(barArcsec)} · N up, E left</span>
+    <div className="fp-scale">
+      <span className="fp-scale-bar" style={{ width: `${widthPercent}cqw` }} aria-hidden="true" />
+      <span>
+        <span className="visually-hidden">Scale bar: </span>
+        {formatArcsec(barArcsec)} · North up, East left
+      </span>
     </div>
   );
 }

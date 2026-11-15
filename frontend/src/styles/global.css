@@ -1,4 +1,4 @@
-/* Base element styles. Tokens live in theme.css. */
+/* Base element styles, shared helpers and motion. Tokens live in theme.css. */
 @import "./theme.css";
 
 * { box-sizing: border-box; }
@@ -7,13 +7,17 @@ body {
   margin: 0;
   font-family: var(--font-body);
   font-size: var(--text-md);
+  line-height: 1.5;
   background: var(--color-bg);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; }
-code, pre { font-family: var(--font-mono); }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; margin: 0; }
+h3 { font-weight: 600; letter-spacing: -0.01em; }
+code, pre, kbd { font-family: var(--font-mono); }
+kbd { padding: 0 5px; border: 1px solid var(--color-border-strong); font-size: 0.85em; }
+a { color: var(--color-text); }
 
 input, select, button {
   font: inherit;
@@ -23,25 +27,105 @@ input, select, button {
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
 }
+input::placeholder { color: var(--color-text-faint); }
 
 button { cursor: pointer; }
+/* Hovered buttons glow softly around their edge in the rim's warm colour (not the text). */
+button:hover:not(:disabled),
+.btn-primary:hover,
+.btn-ghost:hover { box-shadow: var(--hover-ring); }
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
-.btn-primary { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent); font-weight: 600; }
-.btn-primary:hover:not(:disabled) { background: var(--color-accent-hover); }
-.btn-ghost { background: transparent; }
-.btn-ghost:hover:not(:disabled) { background: var(--color-surface-raised); }
+/* Toggle buttons (aria-pressed) in a group: the one that's on is filled, the others light up on hover. */
+.toggle:hover:not(:disabled):not([aria-pressed="true"]) { background: var(--color-surface-raised); }
+.toggle[aria-pressed="true"] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent); }
+
+/* buttons: square, uppercase, letter-spaced */
+.btn-primary,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid transparent; /* links styled as buttons need it too */
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-button);
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent); }
+.btn-primary:hover:not(:disabled) { background: var(--color-accent-hover); border-color: var(--color-accent-hover); }
+.btn-ghost { background: transparent; border-color: var(--color-border-strong); color: var(--color-text); }
+.btn-ghost:hover:not(:disabled) { background: var(--color-surface-raised); border-color: var(--color-text-muted); }
 
 .muted { color: var(--color-text-muted); font-size: var(--text-sm); }
 
-/* DevCheck page (temporary, open with ?dev=1) */
-.dev { max-width: 960px; margin: 0 auto; padding: var(--space-6) var(--page-gutter); }
-.dev h2 { font-size: var(--text-md); margin: var(--space-6) 0 var(--space-2); }
-.dev .row { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
-.dev pre {
-  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm);
-  padding: var(--space-3); overflow-x: auto; font-size: var(--text-xs); max-height: 420px;
+/* Small uppercase label in the mono font: "POPULAR FIND", "RA 269.4463°" */
+.kicker {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 400;
+  letter-spacing: var(--tracking-label);
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
-.dev pre.error { color: var(--color-danger); }
-.dev .thumb { width: 160px; height: 160px; image-rendering: pixelated; border: 1px solid var(--color-border); }
+
+/* Heading of a block in the side panel or under the player: "View Settings", "Is It New?" */
+.panel-title { font-size: var(--text-xl); }
+
+/* Grey stand-in block while something loads. It shimmers unless motion is reduced (see below). */
+.skeleton { display: block; background: var(--color-surface-raised); }
+
+/* Text for screen readers only (headings, labels); invisible but still read out. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- motion ----------
+   Everything that moves sits in this block, so people who ask their system to reduce motion get a still page.
+   .rise:  slides up and fades in once, when it appears. Add .rise-1 … .rise-3 to stagger a group.
+   fade-in: keyframes for anything that should fade in (e.g. the player's view switch). */
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+
+.rise-1 { --rise-order: 1; }
+.rise-2 { --rise-order: 2; }
+.rise-3 { --rise-order: 3; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+
+  /* buttons, tabs and links fade their colour instead of snapping */
+  a, button, input, select, summary {
+    transition:
+      background-color var(--duration-fast) ease,
+      border-color var(--duration-fast) ease,
+      color var(--duration-fast) ease,
+      box-shadow var(--duration-fast) ease,
+      opacity var(--duration-fast) ease;
+  }
+
+  .rise {
+    animation: rise var(--duration-rise) var(--ease-out) both;
+    animation-delay: calc(var(--rise-order, 0) * var(--rise-step));
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--color-surface-raised) 30%, #262422 50%, var(--color-surface-raised) 70%);
+    background-size: 300% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+}

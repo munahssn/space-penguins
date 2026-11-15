@@ -23,7 +23,7 @@ function FrameButtons({ frames, index, onPick }) {
         <button
           key={frame.id}
           type="button"
-          className="fp-frame-btn"
+          className="toggle fp-frame-btn"
           aria-pressed={i === index}
           onClick={() => onPick(i)}
         >
@@ -38,7 +38,7 @@ function FrameButtons({ frames, index, onPick }) {
 function FrameSlider({ count, index, onPick }) {
   return (
     <label className="fp-slider">
-      <span className="fp-visually-hidden">Frame</span>
+      <span className="visually-hidden">Frame</span>
       <input
         type="range"
         min={0}
@@ -53,6 +53,7 @@ function FrameSlider({ count, index, onPick }) {
 function SpeedPicker({ speed, onChange }) {
   return (
     <div className="fp-speed" role="group" aria-label="Speed">
+      <span className="fp-speed-label" aria-hidden="true">Speed</span>
       {Object.keys(SPEEDS).map((key) => (
         <button
           key={key}

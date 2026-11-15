@@ -1,0 +1,14 @@
+.embed { display: flex; flex-direction: column; min-height: 100vh; }
+.embed-main { flex: 1; padding: var(--space-3); }
+.embed-empty { margin: var(--space-6) auto; max-width: 36ch; color: var(--color-text-muted); text-align: center; }
+
+.embed-footer { display: flex; justify-content: flex-end; padding: var(--space-2) var(--space-3); border-top: 1px solid var(--color-line); }
+.embed-open {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.embed-open:hover { color: var(--color-text); }

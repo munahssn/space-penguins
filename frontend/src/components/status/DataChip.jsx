@@ -1,17 +1,23 @@
-import { useHealth } from "../../hooks/useHealth.js";
+import { useServerStatus } from "../../hooks/useServerStatus.jsx";
 import "./status.css";
+
+function chipText({ state, health }) {
+  if (state === "ok") {
+    const date = health.latest_data_date ? ` · ${health.latest_data_date}` : "";
+    return `Data: ${health.release}${date}`;
+  }
+  if (state === "unreachable") return "Data: offline";
+  return "Data: connecting…";
+}
 
 /** "Data: dr1+qr3 · 2026-05-20" from /api/health. */
 export default function DataChip() {
-  const { health, error } = useHealth();
-
-  let text = "Data: loading…";
-  if (error) text = "Data: offline";
-  else if (health) text = `Data: ${health.release} · ${health.latest_data_date}`;
+  const status = useServerStatus();
+  const isError = status.state === "unreachable";
 
   return (
-    <span className={`chip ${error ? "chip-error" : ""}`.trim()} title="SPHEREx data release · latest date">
-      {text}
+    <span className={`chip ${isError ? "chip-error" : ""}`.trim()} title="SPHEREx data release in use, and the date of the newest images">
+      {chipText(status)}
     </span>
   );
 }

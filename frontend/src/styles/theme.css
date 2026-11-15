@@ -1,41 +1,77 @@
-/* Design tokens. Use these variables everywhere instead of raw colours, fonts or sizes. */
+/* Design tokens. Use these variables everywhere instead of raw colours, fonts or sizes.
+   Look: warm white on near-black with a black "spec sheet" side panel, bold type, square corners. */
 :root {
   color-scheme: dark;
 
   /* colour */
-  --color-bg: #050505;            /* near-black page background */
-  --color-surface: #0f0f0f;       /* cards, panels */
-  --color-surface-raised: #1c1c1c;
-  --color-border: #2b2b2b;
-  --color-text: #f2f2f2;
-  --color-text-muted: #a3a3a3;
-  --color-accent: #ffffff;        /* white: black-and-white theme */
-  --color-accent-hover: #d6d6d6;
-  --color-on-accent: #000000;     /* text on the accent */
+  --color-bg: #050505;             /* page background */
+  --color-panel: #000000;          /* the black side panel */
+  --color-surface: #0b0b0b;        /* cards, inputs, chart boxes */
+  --color-surface-raised: #161616; /* hover, tooltips, loading blocks */
+  --color-line: rgba(236, 231, 225, 0.12);          /* hairlines between blocks */
+  --color-border: rgba(236, 231, 225, 0.22);        /* inputs and buttons */
+  --color-border-strong: rgba(236, 231, 225, 0.4);  /* outlined buttons */
+  --color-text: #ece7e1;           /* warm white */
+  --color-text-soft: #c9c1b8;      /* body copy */
+  --color-text-muted: #a39a90;     /* labels and captions (about 7:1 on the background) */
+  --color-text-faint: #8f877f;     /* placeholders and disabled text */
+  --color-accent: #ece7e1;         /* buttons that are on / primary */
+  --color-accent-hover: #ffffff;
+  --color-highlight: #d9622b;      /* round arrow buttons on cards */
+  --color-on-accent: #050505;      /* text on the accent */
+  /* hovered buttons, cards and menu links: a soft warm glow around the edge, the colour of the dome's rim */
+  --hover-ring: 0 0 10px 1px rgba(255, 163, 97, 0.55);
   --color-danger: #ff7a7a;
   --color-success: #5ad19a;
+  --color-warning: #ffd166;
+  /* data series (same values as SERIES in components/charts/chartTheme.js) */
+  --color-measured: #e06c1f;       /* what we measured */
+  --color-catalog: #2f94d6;        /* what the catalogue predicts */
 
   /* type */
-  --font-display: "Space Grotesk", system-ui, sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
-  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  /* the same families nasa.gov uses: Inter for headings, Public Sans for text, DM Mono for labels */
+  --font-display: "Inter", system-ui, sans-serif;
+  --font-body: "Public Sans", system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-2xs: 0.6875rem;  /* 11px: small uppercase labels */
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-md: 1rem;
   --text-lg: 1.25rem;
+  --text-xl: 1.625rem;    /* panel titles */
+  --text-2xl: 2.75rem;    /* page title */
+  --tracking-label: 0.14em;
+  --tracking-button: 0.1em;
 
   /* spacing, shape */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
+  --space-5: 1.25rem;
   --space-6: 1.5rem;
-  --radius-sm: 6px;
-  --radius-md: 10px;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --radius-sm: 0;
   --radius-pill: 999px;
 
+  /* motion: only used inside @media (prefers-reduced-motion: no-preference) */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration-fast: 200ms;
+  --duration-rise: 550ms;
+  --rise-step: 80ms;      /* delay between items that slide in one after another */
+
   /* layout */
-  --header-height: 64px;
-  --side-panel-width: 380px;
-  --page-gutter: 16px;
+  --header-height: 72px;
+  --side-panel-width: 420px;
+  --viewer-max-width: 1000px; /* player column: fills the space next to the side panel on a laptop screen */
+  --page-max-width: 1440px;
+  --page-gutter: 32px;
+  /* Side padding for full-width bars, so their content lines up with the centred page (use in padding-inline). */
+  --page-inset: max(var(--page-gutter), calc((100% - var(--page-max-width)) / 2 + var(--page-gutter)));
+}
+
+@media (max-width: 640px) {
+  :root { --page-gutter: 16px; }
 }

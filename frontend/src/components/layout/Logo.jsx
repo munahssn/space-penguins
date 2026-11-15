@@ -1,12 +1,12 @@
 export default function Logo() {
   return (
     <a className="logo" href="/" aria-label="SPHEREx Blink home">
-      <svg className="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
-        <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.35" />
-        <circle cx="12" cy="17" r="3" fill="currentColor" opacity="0.45" />
-        <circle cx="20" cy="15" r="3" fill="var(--color-accent)" />
+      <svg className="logo-mark" viewBox="0 0 28 28" aria-hidden="true">
+        <circle cx="14" cy="14" r="12" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="11" cy="14" r="3" fill="currentColor" />
+        <circle cx="18.5" cy="14" r="1.6" fill="currentColor" opacity="0.55" />
       </svg>
-      <span className="logo-text">SPHEREx <strong>Blink</strong></span>
+      <span className="logo-text">SPHEREx Blink</span>
     </a>
   );
 }

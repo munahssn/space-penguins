@@ -1,13 +1,18 @@
 // Shared view state, synced to the URL so every view is a shareable link.
 //
-//   const { ra, dec, fov, det, mode, display, wmin, wmax, selected, embed, setView, setRa, ..., shareUrl } = useViewState();
+//   const { ra, dec, fov, det, mode, display, stretch, wmin, wmax, selected, embed,
+//           setView, setFov, setDisplay, setStretch, setSelected, shareUrl } = useViewState();
 //
 // - Wrap the app in <ViewStateProvider> once (done in main.jsx).
-// - URL keys: ?ra&dec&fov&det&mode&display&wmin&wmax&embed=1
-// - Values outside the allowed ones (e.g. det=D9, fov=5) fall back to the default.
+// - URL keys: ?ra&dec&fov&det&mode&display&stretch&wmin&wmax&embed=1
+// - Values outside the allowed ones (e.g. det=D9, fov=5) fall back to the default. The allowed values are
+//   the ones the controls offer, so the two can't drift apart.
 // - `selected` (the clicked {ra, dec}) is NOT put in the URL.
 // - `embed` is read from the URL only (?embed=1). Components hide chrome when it's true.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { WAVELENGTH_RANGE_UM } from "../api/spherex.js";
+import { DETECTOR_OPTIONS, STRETCH_OPTIONS } from "../components/controls/options.js";
+import { DISPLAYS } from "../components/player/constants.js";
 
 export const DEFAULTS = {
   ra: null,          // degrees, null = nothing chosen yet
@@ -16,24 +21,26 @@ export const DEFAULTS = {
   det: "D3",         // "D1".."D6" or "all"
   mode: "epoch",     // which data: "epoch" (stack per survey pass) | "exposure" (every exposure)
   display: "blink",  // what the player shows: "blink" | "diff" | "rgb"
+  stretch: "normal", // brightness, applied in the browser: "normal" | "faint" | "contrast"
   wmin: null,        // µm, null = no wavelength filter
   wmax: null,        // µm
-  selected: null,    // { ra, dec } of the clicked source, or null
+  selected: null,    // { ra, dec, mjd, date } of the clicked spot and the frame it was clicked on, or null
   embed: false,      // true when the page is loaded with ?embed=1
 };
 
 // Allowed values per string key, and valid range per number key.
 const CHOICES = {
-  det: ["D1", "D2", "D3", "D4", "D5", "D6", "all"],
+  det: DETECTOR_OPTIONS.map((o) => o.value),
   mode: ["epoch", "exposure"],
-  display: ["blink", "diff", "rgb"],
+  display: DISPLAYS.map((d) => d.id),
+  stretch: STRETCH_OPTIONS.map((o) => o.value),
 };
 const RANGES = {
   ra: [0, 360],
   dec: [-90, 90],
   fov: [0.005, 0.5],
-  wmin: [0.75, 5.0],
-  wmax: [0.75, 5.0],
+  wmin: WAVELENGTH_RANGE_UM,
+  wmax: WAVELENGTH_RANGE_UM,
 };
 const NUMBER_KEYS = Object.keys(RANGES);
 const STRING_KEYS = Object.keys(CHOICES);
@@ -120,17 +127,11 @@ export function ViewStateProvider({ children }) {
   const value = useMemo(() => ({
     ...state,
     setView,
-    setRa: (ra) => setView({ ra }),
-    setDec: (dec) => setView({ dec }),
     setFov: (fov) => setView({ fov }),
-    setDet: (det) => setView({ det }),
-    setMode: (mode) => setView({ mode }),
     setDisplay: (display) => setView({ display }),
-    setWmin: (wmin) => setView({ wmin }),
-    setWmax: (wmax) => setView({ wmax }),
+    setStretch: (stretch) => setView({ stretch }),
     setSelected: (selected) => setView({ selected }),
     shareUrl: (options) => buildShareUrl(state, options),
-    reset: () => setState({ ...DEFAULTS, embed: state.embed }),
   }), [state, setView]);
 
   return <ViewStateContext.Provider value={value}>{children}</ViewStateContext.Provider>;
