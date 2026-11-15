@@ -1,24 +1,69 @@
-.search { display: flex; flex-direction: column; gap: var(--space-2); width: 100%; }
+/* relative + z-index: the suggestion list opens over whatever comes after the search box */
+.search { position: relative; z-index: 5; display: flex; flex-direction: column; gap: var(--space-2); width: 100%; }
 
 .search-row { display: flex; gap: var(--space-2); }
+.search-field { position: relative; display: flex; flex: 1; min-width: 0; } /* the box + its suggestion list */
 .search-input,
 .search-targets { min-height: 44px; background: var(--color-surface); }
-.search-input { flex: 1; min-width: 0; padding: 0 var(--space-4); }
+.search-input { width: 100%; min-width: 0; padding: 0 var(--space-4); }
 .search-input[aria-invalid="true"] { border-color: var(--color-danger); }
 .search-targets { max-width: 220px; padding: 0 var(--space-3); }
 
 .search-error { margin: 0; color: var(--color-danger); font-size: var(--text-xs); }
 
+/* ---------- suggestions under the box ---------- */
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: min(60vh, 440px);
+  overflow-y: auto;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border-strong);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+.search-suggestions ul { margin: 0; padding: 0; list-style: none; }
+.search-suggestion-group { display: block; padding: var(--space-3) var(--space-4) var(--space-1); }
+
+.search-suggestion {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: 44px; /* easy to tap */
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+}
+.search-suggestion[aria-selected="true"] { background: var(--color-surface-raised); box-shadow: inset 2px 0 0 var(--color-highlight); }
+.search-suggestion-label { color: var(--color-text-soft); font-size: var(--text-sm); }
+.search-suggestion-label mark { background: none; color: var(--color-highlight); font-weight: 600; }
+.search-suggestion-detail { color: var(--color-text-muted); font-size: var(--text-xs); }
+
+.search-suggestions-clear {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-top: 1px solid var(--color-line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  text-align: left;
+}
+.search-suggestions-clear:hover { color: var(--color-text); }
+
 /* phone: search box and Go on one row, the target list under them */
 @media (max-width: 640px) {
   .search-row { flex-wrap: wrap; }
-  .search-input { flex: 1 1 200px; }
+  .search-field { flex: 1 1 200px; }
   .search-targets { flex: 1 1 100%; max-width: none; }
 }
 
 /* start page: bigger box over the hero image */
 .search--large .search-input,
-.search--large .search-row button { min-height: 52px; }
+.search--large .search-row > button { min-height: 52px; }
 .search--large .search-input { font-size: var(--text-md); background: rgba(5, 5, 5, 0.72); border-color: var(--color-border-strong); }
-.search--large .search-row button { padding: 0 var(--space-6); }
+.search--large .search-row > button { padding: 0 var(--space-6); }
 .search--large .search-error { font-size: var(--text-sm); }

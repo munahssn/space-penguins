@@ -5,26 +5,11 @@ import SearchBar from "../components/search/SearchBar.jsx";
 import FeatureGrid from "../components/start/FeatureGrid.jsx";
 import HowItWorks from "../components/start/HowItWorks.jsx";
 import Mission from "../components/start/Mission.jsx";
+import StartNav from "../components/start/StartNav.jsx";
 import TargetCards from "../components/start/TargetCards.jsx";
 import DataChip from "../components/status/DataChip.jsx";
 import StatusBar from "../components/status/StatusBar.jsx";
 import "../components/start/start.css";
-
-/** Header links, in page order. The header stays at the top while scrolling (start.css). */
-const SECTIONS = [
-  { id: "search", label: "Search the sky" },
-  { id: "how", label: "How it works" },
-  { id: "features", label: "Features" },
-  { id: "popular", label: "Popular finds" },
-];
-
-function StartNav() {
-  return (
-    <nav className="start-nav" aria-label="On this page">
-      {SECTIONS.map(({ id, label }) => <a key={id} href={`#${id}`}>{label}</a>)}
-    </nav>
-  );
-}
 
 /** A start-page section: small label, big title, then the content. */
 function Section({ id, kicker, title, children }) {
@@ -51,7 +36,7 @@ export default function StartPage() {
           <div className="start-hero-main">
             <p className="kicker rise">NASA Space Apps 2026 · SPHEREx challenge</p>
             <h1 id="start-title" className="rise rise-1">Catch The Sky<br />In Motion</h1>
-            <div className="rise rise-2">
+            <div className="start-hero-search rise rise-2">
               <SearchBar large showTargets={false} />
             </div>
             <p className="start-lead rise rise-3">

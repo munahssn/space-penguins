@@ -60,10 +60,23 @@
 @media (max-width: 1100px) { .start-rocket { display: none; } } /* no room beside the text */
 
 /* ---------- header nav ---------- */
-.start-nav { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); font-size: var(--text-xs); letter-spacing: var(--tracking-button); text-transform: uppercase; }
+/* Wide screens: the links in one row. The Menu button only shows on phones (see the 640px block below). */
+/* .start-nav in front so this beats the shared .btn-ghost display, whatever order the CSS files load in */
+.start-nav .start-nav-toggle { display: none; }
+.start-nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-button);
+  text-transform: uppercase;
+}
 /* each link is a small box, so the hover outline has an edge to glow around */
-.start-nav a { padding: var(--space-2) var(--space-3); text-decoration: none; }
-.start-nav a:hover { color: var(--color-accent-hover); box-shadow: var(--hover-ring); }
+.start-nav-list a { display: block; padding: var(--space-2) var(--space-3); text-decoration: none; }
+.start-nav-list a:hover { color: var(--color-accent-hover); box-shadow: var(--hover-ring); }
 
 /* ---------- hero ---------- */
 /* the text sits at the bottom of the hero, on top of the dome */
@@ -74,6 +87,9 @@
   padding: var(--space-16) var(--page-inset);
 }
 .start-hero-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-6); }
+/* Above the text after it, so the suggestion list opens over it. The slide-in animation makes this wrapper
+   its own layer, which would otherwise trap the list's z-index (search.css) underneath the next line. */
+.start-hero-search { position: relative; z-index: 5; }
 .start-hero h1 { font-size: clamp(2.75rem, 6vw, 5.25rem); line-height: 1.02; letter-spacing: -0.03em; }
 .start-hero .search { max-width: 640px; }
 .start-lead { max-width: 52ch; margin: 0; color: var(--color-text-soft); font-size: var(--text-md); line-height: 1.6; }
@@ -189,10 +205,32 @@ a.target-card:hover { background: var(--color-surface-raised); box-shadow: var(-
 }
 
 @media (max-width: 640px) {
-  /* one scrollable row of links keeps the pinned header short */
-  .start-nav { order: 3; width: 100%; flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
-  .start-hero,
-  .start-section { scroll-margin-top: 110px; }
+  /* Header is one short row: logo on the left, Menu button on the right.
+     (The data chip is hidden on phones anyway, see status.css, so its empty slot goes too.) */
+  .start-page .app-header { column-gap: var(--space-3); }
+  .start-page .app-header-end { display: none; }
+  .start-nav { margin-left: auto; }
+  .start-nav .start-nav-toggle { display: inline-flex; padding: 0 var(--space-3); }
+  .start-nav-icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+
+  /* The links open as a full-width vertical list just under the pinned header, over the page. */
+  .start-nav-list {
+    position: absolute;
+    top: calc(100% + 1px); /* below the header's bottom line */
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0;
+    padding: var(--space-2) var(--page-gutter) var(--space-4);
+    background: var(--color-bg); /* solid: big hero text would show through a see-through panel */
+    border-bottom: 1px solid var(--color-line);
+    font-size: var(--text-sm);
+  }
+  .start-nav-list[data-open="false"] { display: none; }
+  .start-nav-list li + li { border-top: 1px solid var(--color-line); }
+  .start-nav-list a { display: flex; align-items: center; min-height: 52px; padding: 0 var(--space-2); }
+
   .start-hero { padding-block: var(--space-12); }
 }
 
@@ -202,6 +240,7 @@ a.target-card:hover { background: var(--color-surface-raised); box-shadow: var(-
 
 @media (prefers-reduced-motion: no-preference) {
   .start-page::before { animation: start-drift 30s ease-in-out infinite alternate; }
+  .start-nav-list[data-open="true"] { animation: fade-in var(--duration-fast) ease both; }
   .start-rocket { animation: start-rocket-in 1.4s var(--ease-out) 0.3s both; }
   a.target-card { transition: transform 250ms var(--ease-out), background-color 250ms ease, box-shadow 250ms ease; }
   .target-card-image img { transition: transform 600ms var(--ease-out); }
