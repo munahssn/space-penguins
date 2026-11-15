@@ -36,7 +36,7 @@ export default function StartPage() {
           <div className="start-hero-main">
             <p className="kicker rise">NASA Space Apps 2026 · SPHEREx challenge</p>
             <h1 id="start-title" className="rise rise-1">Catch The Sky<br />In Motion</h1>
-            <div className="rise rise-2">
+            <div className="start-hero-search rise rise-2">
               <SearchBar large showTargets={false} />
             </div>
             <p className="start-lead rise rise-3">
