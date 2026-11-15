@@ -1,47 +1,39 @@
 import { useCopyToClipboard } from "../../hooks/useCopyToClipboard.js";
 import { useViewState } from "../../hooks/useViewState.jsx";
-import { embedSnippet } from "./embedSnippet.js";
+import "./share.css";
 
-/** Copies getText() and says so. If the clipboard is blocked (plain http, some browsers) shows it to copy by hand. */
-function CopyButton({ label, copiedLabel, promptLabel, getText, className, title }) {
-  const [copied, copy] = useCopyToClipboard();
-
-  async function handleClick() {
-    const text = getText();
-    if (!(await copy(text))) window.prompt(promptLabel, text);
-  }
-
+/** The usual "share" symbol: three dots joined by lines. */
+function ShareIcon() {
   return (
-    <button type="button" className={className} onClick={handleClick} title={title} aria-live="polite">
-      {copied ? copiedLabel : label}
-    </button>
+    <svg className="share-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="18" cy="5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="19" r="2.5" />
+      <path d="M8.2 10.8 15.8 6.2M8.2 13.2l7.6 4.6" />
+    </svg>
   );
 }
 
 /**
- * "Copy link" and "Embed" in the header. Both reopen the current view (buildShareUrl in useViewState);
- * Embed wraps the ?embed=1 version in an <iframe> snippet.
+ * Share button in the header: copies a link that reopens the current view (buildShareUrl in useViewState)
+ * and says "Link copied" under it for a moment. If the clipboard is blocked (plain http, some browsers),
+ * it shows the link to copy by hand.
  */
 export default function ShareActions() {
   const { shareUrl } = useViewState();
+  const [copied, copy] = useCopyToClipboard();
+
+  async function handleClick() {
+    const link = shareUrl();
+    if (!(await copy(link))) window.prompt("Copy this link:", link);
+  }
 
   return (
-    <>
-      <CopyButton
-        className="btn-ghost"
-        label="Copy link"
-        copiedLabel="Copied!"
-        promptLabel="Copy this link:"
-        getText={() => shareUrl()}
-      />
-      <CopyButton
-        className="btn-ghost"
-        label="Embed"
-        copiedLabel="Snippet copied!"
-        promptLabel="Copy this embed code:"
-        getText={() => embedSnippet(shareUrl({ embed: true }))}
-        title="Copy an <iframe> snippet that shows this view on another page"
-      />
-    </>
+    <span className="share">
+      <button type="button" className="btn-ghost share-btn" onClick={handleClick} aria-label="Share: copy a link to this view" title="Share: copy a link to this view">
+        <ShareIcon />
+      </button>
+      <span className="share-copied" role="status">{copied ? "Link copied" : ""}</span>
+    </span>
   );
 }

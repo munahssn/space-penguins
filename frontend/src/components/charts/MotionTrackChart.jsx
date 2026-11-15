@@ -50,7 +50,7 @@ export default function MotionTrackChart({ track }) {
         {...AXIS_PROPS}
         type="number"
         dataKey="y"
-        width={44}
+        width={60} // room for numbers like "-18.0" and the rotated "north" label beside them
         tickFormatter={(v) => v.toFixed(1)}
         label={{ ...AXIS_LABEL_STYLE, value: "north (″)", angle: -90, position: "insideLeft" }}
       />

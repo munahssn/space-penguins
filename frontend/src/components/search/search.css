@@ -3,11 +3,8 @@
 
 .search-row { display: flex; gap: var(--space-2); }
 .search-field { position: relative; display: flex; flex: 1; min-width: 0; } /* the box + its suggestion list */
-.search-input,
-.search-targets { min-height: 44px; background: var(--color-surface); }
-.search-input { width: 100%; min-width: 0; padding: 0 var(--space-4); }
+.search-input { width: 100%; min-width: 0; min-height: 44px; padding: 0 var(--space-4); background: var(--color-surface); }
 .search-input[aria-invalid="true"] { border-color: var(--color-danger); }
-.search-targets { max-width: 220px; padding: 0 var(--space-3); }
 
 .search-error { margin: 0; color: var(--color-danger); font-size: var(--text-xs); }
 
@@ -54,11 +51,10 @@
 }
 .search-suggestions-clear:hover { color: var(--color-text); }
 
-/* phone: search box and Go on one row, the target list under them */
+/* phone: search box and Go on one row */
 @media (max-width: 640px) {
   .search-row { flex-wrap: wrap; }
   .search-field { flex: 1 1 200px; }
-  .search-targets { flex: 1 1 100%; max-width: none; }
 }
 
 /* start page: bigger box over the hero image */

@@ -5,9 +5,8 @@ export default function Mission() {
       <div className="mission-statement">
         <h2 id="mission-title" className="kicker">The mission</h2>
         <p>
-          SPHEREx photographs the whole sky in 102 infrared colours every six months. Blink lines those images up
-          so you can spot what changed in seconds, <span className="mission-quiet">and check whether anyone has
-          found it before.</span>
+          SPHEREx photographs the whole sky in 102 infrared colours every six months. Our tool lines those images up
+          so you can spot what changed in seconds, <span className="mission-quiet">and also find undiscovered objects. It can be used for researchers, lawyers, students, or anyone interested in Space.</span>
         </p>
       </div>
     </section>

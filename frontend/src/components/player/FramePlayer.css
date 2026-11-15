@@ -138,6 +138,8 @@
 .fp-legend-title { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.06em; text-transform: uppercase; }
 .fp-info-meta { color: var(--color-text-muted); }
 .fp-info-warning { color: var(--fp-warning); }
+/* Hidden but still taking up its space, so passes with and without a warning are the same height. */
+.fp-info-warning[data-shown="false"] { visibility: hidden; }
 
 .fp-tip { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); }
 

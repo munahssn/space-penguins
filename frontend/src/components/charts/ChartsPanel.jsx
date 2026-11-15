@@ -71,11 +71,7 @@ export default function ChartsPanel() {
     <section className="charts rise" aria-labelledby={`${idPrefix}-title`}>
       <div className="charts-head">
         <h2 id={`${idPrefix}-title`} className="panel-title">Charts</h2>
-        {position && (
-          <span className="charts-subject">
-            {position.isSelection ? "For the spot you clicked" : "For the target · click a dot to change"}
-          </span>
-        )}
+        {position?.isSelection && <span className="charts-subject">For the spot you clicked</span>}
       </div>
 
       <div role="tablist" aria-label="Chart type" className="charts-tabs">

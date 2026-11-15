@@ -97,7 +97,6 @@
 /* ---------- sections ---------- */
 .start-section { display: flex; flex-direction: column; gap: var(--space-8); padding: var(--space-16) var(--page-inset) 0; }
 .start-section:last-child { padding-bottom: var(--space-16); }
-.start-section-titles { display: flex; flex-direction: column; gap: var(--space-3); }
 .start-section-title { font-size: clamp(2rem, 3.5vw, 2.75rem); }
 
 /* ---------- mission ---------- */
