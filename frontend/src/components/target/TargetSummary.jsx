@@ -2,7 +2,7 @@
 import { useViewState } from "../../hooks/useViewState.jsx";
 import { useFrames } from "../player/useFrames.js"; // same request as the player: api.js shares it
 import { useCurrentTarget } from "../search/useTargets.js";
-import { PRECISE_DECIMALS, formatDeg, sentenceCase } from "./format.js";
+import { sentenceCase } from "./format.js";
 import "./target.css";
 
 /** Rows for the facts list. While frames load the counts show "…", after an error "—". */
@@ -10,8 +10,6 @@ function facts(view, { frames, loading }) {
   const pending = loading ? "…" : "—";
   const exposures = frames.reduce((n, f) => n + (f.n_exposures ?? 0), 0);
   return [
-    ["RA", formatDeg(view.ra, { decimals: PRECISE_DECIMALS })],
-    ["Dec", formatDeg(view.dec, { signed: true, decimals: PRECISE_DECIMALS })],
     [view.mode === "exposure" ? "Single exposures" : "Survey passes", frames.length || pending],
     ["Exposures used", exposures || pending],
     ["Newest image", frames.at(-1)?.date ?? pending],

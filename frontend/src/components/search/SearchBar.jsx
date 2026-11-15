@@ -6,7 +6,7 @@ import { formatCoords, parseSearch } from "./parseSearch.js";
 import { useRecentSearches } from "./recentSearches.js";
 import { suggest } from "./suggest.js";
 import SuggestionList from "./SuggestionList.jsx";
-import { findTargetAt, useTargets } from "./useTargets.js";
+import { useTargets } from "./useTargets.js";
 import "./search.css";
 
 function lookupErrorMessage(error, name) {
@@ -15,34 +15,13 @@ function lookupErrorMessage(error, name) {
   return "Couldn't reach the name lookup. Try again, or enter coordinates.";
 }
 
-function TargetSelect({ targets, value, onChange }) {
-  return (
-    <select
-      className="search-targets"
-      value={value}
-      onChange={onChange}
-      disabled={targets.length === 0}
-      aria-label="Popular finds"
-    >
-      <option value="" disabled>
-        {targets.length ? "Popular finds" : "Loading…"}
-      </option>
-      {targets.map((t) => (
-        <option key={t.id} value={t.id} title={t.note}>
-          {t.name}
-        </option>
-      ))}
-    </select>
-  );
-}
-
 /**
- * Search by name (→ /api/resolve), decimal degrees or hh:mm:ss dd:mm:ss, or pick one of the popular finds.
+ * Search by name (→ /api/resolve), decimal degrees or hh:mm:ss dd:mm:ss.
  * While typing, a list suggests recent searches, popular finds, well-known objects and known positions
  * (suggest.js). Successful searches are remembered in this browser (recentSearches.js).
- * large: bigger version for the start page. showTargets: false hides the popular finds dropdown.
+ * large: bigger version for the start page.
  */
-export default function SearchBar({ large = false, showTargets = true }) {
+export default function SearchBar({ large = false }) {
   const { ra, dec, setView } = useViewState();
   const targets = useTargets();
   const [text, setText] = useState(() => (ra !== null && dec !== null ? formatCoords(ra, dec) : ""));
@@ -62,8 +41,6 @@ export default function SearchBar({ large = false, showTargets = true }) {
   const showList = listOpen && suggestions.length > 0;
   const active = showList && activeIndex < suggestions.length ? activeIndex : -1;
   const optionId = (index) => `${listId}-option-${index}`;
-
-  const currentTarget = findTargetAt(targets, ra, dec);
 
   // Keep the highlighted suggestion in view when the list is taller than its box.
   useEffect(() => {
@@ -103,13 +80,6 @@ export default function SearchBar({ large = false, showTargets = true }) {
     if (parsed.kind === "error") setError(parsed.message);
     else if (parsed.kind === "coords") goTo({ ra: parsed.ra, dec: parsed.dec }, text);
     else lookUp(parsed.name);
-  }
-
-  function handlePickTarget(event) {
-    const target = targets.find((t) => t.id === event.target.value);
-    if (!target) return;
-    setText(target.name);
-    goTo({ ra: target.ra, dec: target.dec }, target.name, target.name);
   }
 
   /** A suggestion with a known position goes straight there; a name without one is looked up. */
@@ -186,9 +156,6 @@ export default function SearchBar({ large = false, showTargets = true }) {
         <button type="submit" className="btn-primary" disabled={lookingUp}>
           {lookingUp ? "Looking up…" : "Go"}
         </button>
-        {showTargets && (
-          <TargetSelect targets={targets} value={currentTarget?.id ?? ""} onChange={handlePickTarget} />
-        )}
       </div>
       {error && (
         <p id={errorId} className="search-error" role="alert">

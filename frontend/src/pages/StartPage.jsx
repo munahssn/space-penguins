@@ -34,11 +34,11 @@ export default function StartPage() {
             <p className="kicker rise">NASA Space Apps 2026 · SPHEREx challenge</p>
             <h1 id="start-title" className="rise rise-1">Catch The Sky<br />In Motion</h1>
             <div className="start-hero-search rise rise-2">
-              <SearchBar large showTargets={false} />
+              <SearchBar large />
             </div>
             <p className="start-lead rise rise-3">
-              Pick any spot on the sky and flip through every SPHEREx image of it. Anything that moved or changed
-              brightness stands out.
+              Search and flip through every SPHEREx image of it. Anything that moved or changed
+              brightness stands out!
             </p>
           </div>
         </section>

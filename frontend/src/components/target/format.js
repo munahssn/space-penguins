@@ -5,7 +5,7 @@ const DEFAULT_DECIMALS = 4;
 export const PRECISE_DECIMALS = 5;
 
 /** 269.44630° (RA) or +4.76794° (Dec, always signed). */
-export function formatDeg(value, { signed = false, decimals = DEFAULT_DECIMALS } = {}) {
+function formatDeg(value, { signed = false, decimals = DEFAULT_DECIMALS } = {}) {
   const text = `${value.toFixed(decimals)}°`;
   return signed && value >= 0 ? `+${text}` : text;
 }

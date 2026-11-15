@@ -36,7 +36,7 @@ export function useTargets() {
 }
 
 /** The popular find at (ra, dec), if the view is centred on one. */
-export function findTargetAt(targets, ra, dec) {
+function findTargetAt(targets, ra, dec) {
   if (ra === null || dec === null) return undefined;
   return targets.find((t) => Math.abs(t.ra - ra) < SAME_POSITION_DEG && Math.abs(t.dec - dec) < SAME_POSITION_DEG);
 }
