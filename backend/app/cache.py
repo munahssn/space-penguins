@@ -70,8 +70,13 @@ def get_exposures(ra, dec, fov, det, progress=None):
                 e = spherex.fetch_exposures(ra, dec, fov, det, progress=progress)
             except spherex.NoData as err:
                 raise HTTPException(404, str(err))
+            except spherex.ArchiveUnavailable:
+                # 503 = try again: the frontend retries it by itself. No raw HTML from IRSA here.
+                raise HTTPException(503, "NASA's SPHEREx archive (IRSA) is not responding right now. "
+                                         "Please try again in a minute.")
             except Exception as err:
-                raise HTTPException(502, f"IRSA request failed: {err}")
+                first = str(err).splitlines()[0][:200] if str(err) else type(err).__name__
+                raise HTTPException(502, f"Could not get the SPHEREx data: {first}")
         res = e["results"]
         # npz first, json last: is_cached() and the check above need both files.
         _write_atomically(npz, lambda tmp: np.savez_compressed(tmp, imgs=np.array([r[0] for r in res], dtype=np.float32)))
