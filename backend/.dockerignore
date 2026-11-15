@@ -1,0 +1,8 @@
+# Not needed inside the image
+__pycache__/
+*.pyc
+.venv/
+data/
+scripts/preview_local.py
+# Downloaded on this computer only; demo data is added separately
+cache/
