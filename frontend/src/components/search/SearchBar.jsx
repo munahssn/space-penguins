@@ -18,10 +18,10 @@ function TargetSelect({ targets, value, onChange }) {
       value={value}
       onChange={onChange}
       disabled={targets.length === 0}
-      aria-label="Test targets"
+      aria-label="Popular finds"
     >
       <option value="" disabled>
-        {targets.length ? "Test targets" : "Loading targets…"}
+        {targets.length ? "Popular finds" : "Loading…"}
       </option>
       {targets.map((t) => (
         <option key={t.id} value={t.id} title={t.note}>
@@ -33,8 +33,8 @@ function TargetSelect({ targets, value, onChange }) {
 }
 
 /**
- * Search by name (→ /api/resolve), decimal degrees or hh:mm:ss dd:mm:ss, or pick a test target.
- * large: bigger version for the start page. showTargets: false hides the test-target dropdown.
+ * Search by name (→ /api/resolve), decimal degrees or hh:mm:ss dd:mm:ss, or pick one of the popular finds.
+ * large: bigger version for the start page. showTargets: false hides the popular finds dropdown.
  */
 export default function SearchBar({ large = false, showTargets = true }) {
   const { ra, dec, setView } = useViewState();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Creates one Aladin Lite viewer inside containerRef. The library (~2.4 MB) is loaded only when
@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
  */
 export function useAladin(containerRef, options, enabled = true) {
   const [state, setState] = useState({ A: null, aladin: null, error: null });
+  const creationOptions = useRef(options); // read once, when the viewer is created
 
   useEffect(() => {
     if (!enabled) return undefined;
@@ -19,7 +20,7 @@ export function useAladin(containerRef, options, enabled = true) {
         const { default: A } = await import("aladin-lite");
         await A.init;
         if (cancelled) return;
-        setState({ A, aladin: A.aladin(container, options), error: null });
+        setState({ A, aladin: A.aladin(container, creationOptions.current), error: null });
       } catch (error) {
         if (!cancelled) setState({ A: null, aladin: null, error });
       }
@@ -29,7 +30,7 @@ export function useAladin(containerRef, options, enabled = true) {
       cancelled = true;
       container.replaceChildren(); // drop the viewer's DOM; Aladin has no public destroy()
     };
-  }, [containerRef, enabled]); // options are creation-time only, so they are not a dependency
+  }, [containerRef, enabled]);
 
   return state;
 }

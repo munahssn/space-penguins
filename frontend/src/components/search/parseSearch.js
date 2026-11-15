@@ -6,8 +6,9 @@
 //   parseSearch("8h55m04.3s -7d14m34s")  → same
 //   parseSearch("WISE 0855")             → { kind: "name", name: "WISE 0855" }
 //   parseSearch("400 10")                → { kind: "error", message: "RA must be …" }
+import { roundDegrees } from "../../utils/angles.js";
 
-export const FORMAT_HINT =
+const FORMAT_HINT =
   "Type a name, decimal degrees (133.768 -7.243) or hh:mm:ss dd:mm:ss (08:55:04 -07:14:34).";
 
 // Only digits, signs, separators and unit marks: anything else (letters) means it's a name.
@@ -40,7 +41,7 @@ function parseCoordinates(text) {
   const ra = raInHours ? raValue * 15 : raValue;
   if (raValue < 0 || ra >= 360) return error("RA must be 0–360° (or 0–24h).");
   if (dec < -90 || dec > 90) return error("Dec must be between −90° and +90°.");
-  return { kind: "coords", ra: round6(ra), dec: round6(dec) };
+  return { kind: "coords", ra: roundDegrees(ra), dec: roundDegrees(dec) };
 }
 
 /** Splits into RA tokens and Dec tokens: at the comma if there is one, else in the middle. */
@@ -65,9 +66,7 @@ function sexagesimal(parts) {
   return sign * magnitude;
 }
 
-const round6 = (x) => Math.round(x * 1e6) / 1e6;
-
 /** For showing a position in the search box: "133.768079 -7.242922". */
 export function formatCoords(ra, dec) {
-  return `${round6(ra)} ${round6(dec)}`;
+  return `${roundDegrees(ra)} ${roundDegrees(dec)}`;
 }

@@ -24,9 +24,9 @@ export const MAX_SCALE_BAR_SHARE = 0.3;
 
 /** IR colour image: which detector feeds which channel (matches the backend's /api/rgb). */
 export const RGB_CHANNELS = [
-  { channel: "Red", det: "D6", range: "4.4–5.0 µm" },
-  { channel: "Green", det: "D3", range: "1.6–2.4 µm" },
-  { channel: "Blue", det: "D1", range: "0.75–1.1 µm" },
+  { channel: "Red", det: "D6" },
+  { channel: "Green", det: "D3" },
+  { channel: "Blue", det: "D1" },
 ];
 
 /** Overlays drawn on the image, in the order of their toggles. */

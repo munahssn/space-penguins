@@ -32,10 +32,8 @@ import lightcurveMock from "./mock/lightcurve.json";
 import { mockFrames } from "./mock/mockFrames.js";
 import { ApiError } from "./errors.js";
 
-export { ApiError };
-
-export const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
-export const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
 
 const POLL_MS = 2000;
 const MAX_POLL_MS = 10 * 60 * 1000; // stop waiting on a 202 after 10 minutes
@@ -196,11 +194,14 @@ function startShared(url, poll) {
   return job;
 }
 
+/** The error to reject with when `signal` aborts. */
+const abortError = (signal) => signal.reason ?? new DOMException("Aborted", "AbortError");
+
 /** Resolves/rejects with `promise`, or rejects early when `signal` aborts. */
 function untilDone(promise, signal) {
   if (!signal) return promise;
   return new Promise((resolve, reject) => {
-    const onAbort = () => reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
+    const onAbort = () => reject(abortError(signal));
     if (signal.aborted) return onAbort();
     signal.addEventListener("abort", onAbort, { once: true });
     promise.then(resolve, reject).finally(() => signal.removeEventListener("abort", onAbort));
@@ -243,13 +244,13 @@ function retryDelayMs(res, attempt) {
   return POLL_MS * 2 ** (attempt - 1);
 }
 
-// Backend image URLs are relative ("/img/abc.png"): make them absolute so they work from Vercel.
 /** FastAPI errors: `detail` is a string, or for invalid queries a list of {loc, msg}. */
 function detailMessage(detail) {
   if (!Array.isArray(detail)) return detail;
   return detail.map((d) => `${d.loc?.at(-1) ?? "request"}: ${d.msg}`).join("; ");
 }
 
+// Backend image URLs are relative ("/img/abc.png"): make them absolute so they work from Vercel.
 // Mock URLs point at frontend/public/mock/ and stay relative to the frontend.
 // Frames without an id (the backend sends only `index`) get their URL as id, which is unique per image.
 function withImageUrls(body, { mock }) {
@@ -282,12 +283,11 @@ async function fakeCall(mock, { signal, poll = false }, reporter) {
 /** Waits `ms`, or rejects as soon as `signal` aborts. Removes its abort listener either way. */
 function sleep(ms, signal) {
   return new Promise((resolve, reject) => {
-    const abortReason = () => signal.reason ?? new DOMException("Aborted", "AbortError");
-    if (signal?.aborted) return reject(abortReason());
+    if (signal?.aborted) return reject(abortError(signal));
 
     const onAbort = () => {
       clearTimeout(timer);
-      reject(abortReason());
+      reject(abortError(signal));
     };
     const timer = setTimeout(() => {
       signal?.removeEventListener("abort", onAbort);

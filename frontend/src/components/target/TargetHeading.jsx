@@ -1,4 +1,4 @@
-// Page title above the player: the test target's name (or "Sky position" anywhere else) and where it is.
+// Page title above the player: the popular find's name (or "Sky position" anywhere else) and where it is.
 import { useViewState } from "../../hooks/useViewState.jsx";
 import { useCurrentTarget } from "../search/useTargets.js";
 import { formatPosition } from "./format.js";

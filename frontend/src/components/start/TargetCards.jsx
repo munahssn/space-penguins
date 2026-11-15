@@ -1,46 +1,54 @@
+import { useState } from "react";
 import { DEFAULTS, buildShareUrl } from "../../hooks/useViewState.jsx";
-import { useTargets } from "../search/useTargets.js";
-import { formatDeg, sentenceCase } from "../target/format.js";
+import { POPULAR_FINDS, useTargets } from "../search/useTargets.js";
+import { formatPosition, sentenceCase } from "../target/format.js";
 
-/** Which test targets get a card, and their tag. Backend target ids (see /api/targets). */
-const TARGET_KINDS = {
-  barnard: "moves",
-  "eps-indi-b": "moves",
-  wise0855: "moves",
-  "rw-aur": "brightness",
-  "r-dra": "brightness",
-};
+/** Tag text for what each popular find is known for. */
 const KIND_LABELS = { moves: "Moves", brightness: "Changes brightness" };
-const CARD_COUNT = Object.keys(TARGET_KINDS).length;
+const CARD_COUNT = Object.keys(POPULAR_FINDS).length;
 
 const viewerUrl = (target) => buildShareUrl({ ...DEFAULTS, ra: target.ra, dec: target.dec });
 /** "T-01": a small catalogue-style number, decoration only. */
 const cardCode = (i) => `T-${String(i + 1).padStart(2, "0")}`;
 
+/** Picture for each card: public/images/targets/<target id>.jpg. Until a file is there, the frame shows stars. */
+const imageUrl = (target) => `/images/targets/${target.id}.jpg`;
+
+function TargetImage({ target }) {
+  const [missing, setMissing] = useState(false);
+  return (
+    <span className="target-card-image">
+      {!missing && <img src={imageUrl(target)} alt="" loading="lazy" onError={() => setMissing(true)} />}
+    </span>
+  );
+}
+
 function TargetCard({ target, index }) {
-  const kind = TARGET_KINDS[target.id];
+  const kind = POPULAR_FINDS[target.id];
   return (
     <li className="target-card-item">
       <a className="target-card" href={viewerUrl(target)}>
+        <TargetImage target={target} />
         <span className="target-card-top">
           <span className={`target-tag target-tag--${kind}`}>{KIND_LABELS[kind]}</span>
           <span aria-hidden="true">{cardCode(index)}</span>
         </span>
-        <h3>{target.name}</h3>
+        <h3>
+          {target.name}
+          <span className="target-arrow" aria-hidden="true">
+            <svg viewBox="0 0 12 12"><path d="M2 6h7M6 2.5 9.5 6 6 9.5" /></svg>
+          </span>
+        </h3>
         <p>{sentenceCase(target.note)}</p>
-        <dl className="target-position">
-          <div><dt>RA</dt><dd>{formatDeg(target.ra)}</dd></div>
-          <div><dt>Dec</dt><dd>{formatDeg(target.dec, { signed: true })}</dd></div>
-        </dl>
-        <span className="target-open" aria-hidden="true">Open in viewer →</span>
+        <span className="target-position">{formatPosition(target.ra, target.dec)}</span>
       </a>
     </li>
   );
 }
 
-/** The challenge's test targets as cards linking to the viewer. Grey placeholders until they load. */
+/** The popular finds as picture cards linking to the viewer. Grey placeholders until they load. */
 export default function TargetCards() {
-  const targets = useTargets().filter((t) => t.id in TARGET_KINDS);
+  const targets = useTargets();
   const loading = targets.length === 0;
 
   return (

@@ -1,5 +1,36 @@
-// Pieces shared by every chart: the hover tooltip, the dot, the table view and the empty/loading line.
-import { MARKER_RADIUS } from "./chartTheme.js";
+// Pieces shared by every chart: the frame, the hover tooltip, the dot, the table view and the empty/loading line.
+import { ResponsiveContainer, ScatterChart } from "recharts";
+import { CHART_HEIGHT, CHART_MARGIN, MARKER_RADIUS } from "./chartTheme.js";
+
+/** n decimals, for table cells and tooltips. */
+export const fixed = (digits) => (value) => value.toFixed(digits);
+
+/** Brightness ± error: the same column pair and tooltip line in the spectrum and the light curve. */
+export const BRIGHTNESS_COLUMNS = [
+  { key: "flux", label: "Brightness", format: fixed(1) },
+  { key: "error", label: "± error", format: fixed(1) },
+];
+export const brightnessRow = (p) => ["Brightness", `${p.flux.toFixed(1)} ± ${p.error.toFixed(1)}`];
+
+/**
+ * Every chart: an accessible figure around a scatter chart, a caption, and the numbers as a table.
+ * The drawing is hidden from screen readers: the label and the table carry the data.
+ * @param {{label: string, caption: React.ReactNode, columns: object[], rows: object[], className?: string,
+ *          children: React.ReactNode}} props  children: the recharts axes, series etc.
+ */
+export function ChartFrame({ label, caption, columns, rows, className = "", children }) {
+  return (
+    <figure className={`chart ${className}`.trim()} aria-label={label}>
+      <div aria-hidden="true">
+        <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+          <ScatterChart margin={CHART_MARGIN}>{children}</ScatterChart>
+        </ResponsiveContainer>
+      </div>
+      <figcaption className="chart-caption">{caption}</figcaption>
+      <DataTable columns={columns} rows={rows} />
+    </figure>
+  );
+}
 
 /** Filled dot with a 2 px ring in the surface colour, so it stays readable over lines and other dots. */
 export function Dot({ cx, cy, fill }) {
@@ -30,7 +61,7 @@ export function ChartTooltip({ active, payload, rows }) {
  * The same numbers as a table, for screen readers and anyone who wants the exact values.
  * @param {{columns: {key: string, label: string, format?: (v) => string}[], rows: object[]}} props
  */
-export function DataTable({ columns, rows }) {
+function DataTable({ columns, rows }) {
   return (
     <details className="chart-table">
       <summary>Show the numbers as a table</summary>

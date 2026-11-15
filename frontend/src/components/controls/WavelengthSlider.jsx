@@ -5,6 +5,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { detectorRange } from "../../api/spherex.js";
 import { useViewState } from "../../hooks/useViewState.jsx";
 import { useFrames } from "../player/useFrames.js"; // same request as the player: api.js shares it
+import FieldLabel from "./FieldLabel.jsx";
 import { formatUm } from "./options.js";
 
 const STEP_UM = 0.01;
@@ -44,7 +45,7 @@ function RangeSlider({ lo, hi, committedFrom, committedTo, onCommit, summary }) 
   return (
     <div className="wl" role="group" aria-labelledby={labelId}>
       <div className="wl-head">
-        <span id={labelId} className="field-label">Narrow the band</span>
+        <FieldLabel as="span" id={labelId} label="Narrow the band" />
         <span className="wl-value">{formatUm(from)}–{formatUm(to)} µm</span>
         {filtered && (
           <button type="button" className="btn-ghost wl-reset" onClick={() => setRange([lo, hi])}>
@@ -81,7 +82,7 @@ export default function WavelengthSlider() {
   const view = useViewState();
   const { det, wmin, wmax, setView } = view;
   const [lo, hi] = detectorRange(det);
-  const frames = useFrames(view);
+  const frameResult = useFrames(view);
 
   // The full detector range means "no filter", which keeps the URL short.
   const commit = useCallback(
@@ -99,7 +100,7 @@ export default function WavelengthSlider() {
       committedFrom={committedFrom}
       committedTo={committedTo}
       onCommit={commit}
-      summary={exposureSummary(frames)}
+      summary={exposureSummary(frameResult)}
     />
   );
 }

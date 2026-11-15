@@ -13,8 +13,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3 { font-family: var(--font-display); font-weight: 300; line-height: 1.1; margin: 0; }
-h3 { font-weight: 400; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; margin: 0; }
+h3 { font-weight: 600; letter-spacing: -0.01em; }
 code, pre, kbd { font-family: var(--font-mono); }
 kbd { padding: 0 5px; border: 1px solid var(--color-border-strong); font-size: 0.85em; }
 a { color: var(--color-text); }
@@ -36,6 +36,10 @@ button:hover:not(:disabled),
 .btn-ghost:hover { box-shadow: var(--hover-ring); }
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* Toggle buttons (aria-pressed) in a group: the one that's on is filled, the others light up on hover. */
+.toggle:hover:not(:disabled):not([aria-pressed="true"]) { background: var(--color-surface-raised); }
+.toggle[aria-pressed="true"] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent); }
 
 /* buttons: square, uppercase, letter-spaced */
 .btn-primary,
@@ -61,7 +65,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .muted { color: var(--color-text-muted); font-size: var(--text-sm); }
 
-/* Small uppercase label in the mono font: "TEST TARGET", "RA 269.4463°" */
+/* Small uppercase label in the mono font: "POPULAR FIND", "RA 269.4463°" */
 .kicker {
   margin: 0;
   font-family: var(--font-mono);
@@ -79,17 +83,6 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 /* Grey stand-in block while something loads. It shimmers unless motion is reduced (see below). */
 .skeleton { display: block; background: var(--color-surface-raised); }
 
-/* DevCheck page (temporary, open with ?dev=1) */
-.dev { max-width: 960px; margin: 0 auto; padding: var(--space-6) var(--page-gutter); }
-.dev h2 { font-size: var(--text-md); margin: var(--space-6) 0 var(--space-2); }
-.dev .row { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
-.dev pre {
-  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm);
-  padding: var(--space-3); overflow-x: auto; font-size: var(--text-xs); max-height: 420px;
-}
-.dev pre.error { color: var(--color-danger); }
-.dev .thumb { width: 160px; height: 160px; image-rendering: pixelated; border: 1px solid var(--color-border); }
-
 /* Text for screen readers only (headings, labels); invisible but still read out. */
 .visually-hidden {
   position: absolute;
@@ -102,8 +95,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* ---------- motion ----------
    Everything that moves sits in this block, so people who ask their system to reduce motion get a still page.
-   .rise:  slides up and fades in once, when it appears. Add .rise-1 … .rise-5 to stagger a group.
-   .fade-in: fades in once, when it appears. */
+   .rise:  slides up and fades in once, when it appears. Add .rise-1 … .rise-3 to stagger a group.
+   fade-in: keyframes for anything that should fade in (e.g. the player's view switch). */
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
@@ -111,8 +104,6 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .rise-1 { --rise-order: 1; }
 .rise-2 { --rise-order: 2; }
 .rise-3 { --rise-order: 3; }
-.rise-4 { --rise-order: 4; }
-.rise-5 { --rise-order: 5; }
 
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
@@ -131,7 +122,6 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
     animation: rise var(--duration-rise) var(--ease-out) both;
     animation-delay: calc(var(--rise-order, 0) * var(--rise-step));
   }
-  .fade-in { animation: fade-in 350ms ease both; }
 
   .skeleton {
     background: linear-gradient(90deg, var(--color-surface-raised) 30%, #262422 50%, var(--color-surface-raised) 70%);

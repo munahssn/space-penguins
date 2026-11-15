@@ -4,7 +4,7 @@ import FlagTint from "./FlagTint.jsx";
 import FrameCanvas from "./FrameCanvas.jsx";
 import FrameInfo, { frameLabel } from "./FrameInfo.jsx";
 import PlayerControls from "./PlayerControls.jsx";
-import { PlayerPlaceholder, ProgressBar } from "./PlayerStatus.jsx";
+import { LoadingMessage, PlayerPlaceholder } from "./PlayerStatus.jsx";
 import ScaleBar from "./ScaleBar.jsx";
 import SelectionLayer from "./SelectionLayer.jsx";
 import SkyMarkers from "./SkyMarkers.jsx";
@@ -34,10 +34,12 @@ export default function BlinkView({ frames, grid, images, view, overlays }) {
   if (!images.ready) {
     return (
       <PlayerPlaceholder>
-        <div className="fp-loading">
-          <p className="fp-loading-text">Loading images · {images.loaded} of {frames.length}</p>
-          <ProgressBar done={images.loaded} total={frames.length} label="Loading images" />
-        </div>
+        <LoadingMessage
+          text={`Loading images · ${images.loaded} of ${frames.length}`}
+          done={images.loaded}
+          total={frames.length}
+          label="Loading images"
+        />
       </PlayerPlaceholder>
     );
   }

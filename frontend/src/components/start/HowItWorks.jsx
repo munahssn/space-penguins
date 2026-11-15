@@ -1,7 +1,7 @@
 const STEPS = [
   {
     title: "Pick a spot of sky",
-    text: "Type a name like WISE 0855, paste coordinates, or start from one of the test targets.",
+    text: "Type a name like WISE 0855, paste coordinates, or start from one of the popular finds.",
   },
   {
     title: "Blink the SPHEREx images",

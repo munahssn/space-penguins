@@ -2,19 +2,15 @@
 // opaque where a pixel was flagged, transparent elsewhere. We paint yellow through that mask on a
 // canvas, so the tint keeps the same hard pixel edges as the image.
 import { useEffect, useRef } from "react";
+import { drawSharp } from "./drawSharp.js";
 
 /** @param {{mask: HTMLImageElement|null, width: number, height: number}} props */
 export default function FlagTint({ mask, width, height }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    const ctx = canvasRef.current?.getContext("2d");
+    const ctx = drawSharp(canvasRef.current, mask, width, height);
     if (!ctx) return;
-    ctx.clearRect(0, 0, width, height);
-    if (!mask) return;
-    ctx.imageSmoothingEnabled = false;
-    ctx.globalCompositeOperation = "source-over";
-    ctx.drawImage(mask, 0, 0, width, height);
     ctx.globalCompositeOperation = "source-in"; // keep the mask's shape, replace its colour
     ctx.fillStyle = getComputedStyle(canvasRef.current).color; // --fp-flag, set in CSS
     ctx.fillRect(0, 0, width, height);

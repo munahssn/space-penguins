@@ -1,8 +1,9 @@
 // What each verdict from /api/context means, and the plain sentence we show straight away.
 // The backend decides the verdict with rules (DESIGN.md §5); nothing here guesses.
+import { MAS_PER_ARCSEC } from "../../utils/angles.js";
 
 /** verdict id → badge label + tone (tone picks the colour in verdict.css). */
-export const VERDICTS = {
+const VERDICTS = {
   known_star: { label: "Known star", tone: "known" },
   known_asteroid: { label: "Known asteroid", tone: "known" },
   known_other: { label: "Known object", tone: "known" },
@@ -32,8 +33,6 @@ export function templateText({ verdict, match }) {
   const from = match.source ? ` (${sourceName(match.source)})` : "";
   return `This matches ${match.name}${kind}${from}.`;
 }
-
-const MAS_PER_ARCSEC = 1000;
 
 /** Total proper motion in ″/yr from {pmra, pmdec} in mas/yr, or null if missing. */
 export function totalMotion(pm) {

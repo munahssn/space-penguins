@@ -1,6 +1,7 @@
 // Draws one frame image on a canvas, pixel for pixel. CSS scales it up with sharp (pixelated) edges,
 // so each SPHEREx pixel stays a visible square instead of a blur.
 import { useEffect, useRef } from "react";
+import { drawSharp } from "./drawSharp.js";
 
 /**
  * @param {{image: HTMLImageElement|null, width: number, height: number, label: string,
@@ -12,12 +13,7 @@ export default function FrameCanvas({ image, width, height, label, stretch = "no
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    const ctx = canvasRef.current?.getContext("2d");
-    if (!ctx) return;
-    ctx.clearRect(0, 0, width, height);
-    if (!image) return;
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(image, 0, 0, width, height);
+    drawSharp(canvasRef.current, image, width, height);
   }, [image, width, height]);
 
   return (

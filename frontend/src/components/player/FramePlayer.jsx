@@ -28,7 +28,7 @@ function unavailableOverlays(frames) {
 /** What to show instead of the player while there are no frames to play, or null when there are. */
 function statusInstead(view, { error, loading, progress, frames }) {
   if (view.ra === null || view.dec === null) {
-    return <PlayerPlaceholder>Search for an object or pick a test target to start.</PlayerPlaceholder>;
+    return <PlayerPlaceholder>Search for an object or pick one of the popular finds to start.</PlayerPlaceholder>;
   }
   if (error) return <PlayerPlaceholder tone="error">{errorMessage(error)}</PlayerPlaceholder>;
   if (loading) return <PlayerPlaceholder><LoadingProgress progress={progress} /></PlayerPlaceholder>;

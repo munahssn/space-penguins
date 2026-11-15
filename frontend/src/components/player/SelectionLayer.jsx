@@ -3,11 +3,9 @@
 // which feeds the "Is it new?" panel (#10).
 //
 // Pointer only: keyboard users can type exact coordinates in the search bar instead.
+import { roundDegrees } from "../../utils/angles.js";
 import { MARKER_SIZES } from "./constants.js";
 import { isOnImage, pixelToPercent, pixelToSky, skyToPixel } from "./skyProjection.js";
-
-const DECIMALS = 6; // ~0.004″, far finer than a 6″ pixel
-const round = (value) => Number(value.toFixed(DECIMALS));
 
 /** Click position → image pixel coordinates, using the layer's on-screen size. */
 function clickToPixel(event, grid) {
@@ -25,7 +23,7 @@ function clickToPixel(event, grid) {
 export default function SelectionLayer({ grid, center, selected, onSelect }) {
   function handleClick(event) {
     const sky = pixelToSky(clickToPixel(event, grid), center, grid);
-    onSelect({ ra: round(sky.ra), dec: round(sky.dec) });
+    onSelect({ ra: roundDegrees(sky.ra), dec: roundDegrees(sky.dec) });
   }
 
   const ringPixel = selected ? skyToPixel(selected, center, grid) : null;

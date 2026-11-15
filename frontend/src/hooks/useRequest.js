@@ -1,11 +1,13 @@
 // Runs one API request whenever `key` changes, cancels the previous one, and tracks its state.
 //
-//   const { data, error, loading } = useRequest(key, (signal) => getTrack({ ra, dec }, { signal }));
+//   const { data, progress, error, loading } =
+//     useRequest(key, (signal, onProgress) => getFrames(view, { signal, onProgress }));
 //
 // key: anything that identifies the request (a string is easiest); null = don't request.
+// progress: the latest onProgress update from api.js (queued / processing / retrying), or null.
 import { useEffect, useRef, useState } from "react";
 
-const IDLE = { data: null, error: null, loading: false };
+const IDLE = { data: null, progress: null, error: null, loading: false };
 
 export function useRequest(key, request) {
   const [state, setState] = useState(IDLE);
@@ -18,8 +20,11 @@ export function useRequest(key, request) {
       return undefined;
     }
     const controller = new AbortController();
+    const onProgress = (progress) => {
+      if (!controller.signal.aborted) setState((current) => ({ ...current, progress }));
+    };
     setState({ ...IDLE, loading: true });
-    latestRequest.current(controller.signal)
+    latestRequest.current(controller.signal, onProgress)
       .then((data) => setState({ ...IDLE, data }))
       .catch((error) => {
         if (!controller.signal.aborted) setState({ ...IDLE, error });

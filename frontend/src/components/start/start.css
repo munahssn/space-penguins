@@ -35,7 +35,6 @@
   z-index: 10;
   background: rgba(5, 5, 5, 0.72);
   backdrop-filter: blur(10px);
-  border-bottom-color: var(--color-line);
 }
 /* jump links land below the pinned header */
 .start-hero,
@@ -67,58 +66,62 @@
 .start-nav a:hover { color: var(--color-accent-hover); box-shadow: var(--hover-ring); }
 
 /* ---------- hero ---------- */
+/* the text sits at the bottom of the hero, on top of the dome */
 .start-hero {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-end;
-  align-content: flex-end; /* when it wraps (phone), keep the lines together at the bottom */
-  justify-content: space-between;
-  gap: var(--space-12);
   min-height: calc(var(--start-backdrop-height) - var(--header-height));
   padding: var(--space-16) var(--page-inset);
 }
-.start-hero-main { flex: 1 1 560px; min-width: 0; display: flex; flex-direction: column; gap: var(--space-6); }
-.start-hero h1 { font-size: clamp(2.75rem, 6vw, 5.25rem); line-height: 1.02; letter-spacing: -0.01em; }
+.start-hero-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-6); }
+.start-hero h1 { font-size: clamp(2.75rem, 6vw, 5.25rem); line-height: 1.02; letter-spacing: -0.03em; }
 .start-hero .search { max-width: 640px; }
 .start-lead { max-width: 52ch; margin: 0; color: var(--color-text-soft); font-size: var(--text-md); line-height: 1.6; }
 
 /* ---------- sections ---------- */
 .start-section { display: flex; flex-direction: column; gap: var(--space-8); padding: var(--space-16) var(--page-inset) 0; }
 .start-section:last-child { padding-bottom: var(--space-16); }
-.start-section-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-4) var(--space-8); }
 .start-section-titles { display: flex; flex-direction: column; gap: var(--space-3); }
 .start-section-title { font-size: clamp(2rem, 3.5vw, 2.75rem); }
-.start-section-intro { margin: 0; max-width: 360px; color: var(--color-text-soft); font-size: var(--text-sm); line-height: 1.6; }
 
-/* ---------- mission + numbers ---------- */
+/* ---------- mission ---------- */
 .mission-statement { display: flex; flex-direction: column; gap: var(--space-4); }
-.mission-statement p { margin: 0; max-width: 720px; font-size: clamp(1.125rem, 1.8vw, 1.5rem); font-weight: 300; line-height: 1.45; }
+.mission-statement p { margin: 0; max-width: 720px; font-family: var(--font-display); font-size: clamp(1.125rem, 1.8vw, 1.5rem); font-weight: 500; line-height: 1.45; letter-spacing: -0.01em; }
 .mission-quiet { color: var(--color-text-muted); }
 
-/* ---------- test target cards (a grid of cells split by hairlines) ---------- */
+/* ---------- popular finds: picture cards ---------- */
 .target-cards {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
-  gap: 1px;
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
+  gap: var(--space-8) var(--space-6);
 }
 .target-card-item { display: flex; }
 .target-card {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  min-height: 280px;
-  padding: var(--space-6);
-  background: var(--color-surface);
-  box-shadow: 0 0 0 1px var(--color-line);
+  gap: var(--space-3);
+  /* padding around picture and text, so the hover glow takes in the whole card */
+  margin: calc(-1 * var(--space-3));
+  padding: var(--space-3) var(--space-3) var(--space-4);
   color: var(--color-text);
   text-decoration: none;
 }
-a.target-card:hover { background: var(--color-surface-raised); box-shadow: var(--hover-ring); position: relative; z-index: 1; }
-.target-card-placeholder { flex: 1; min-height: 280px; box-shadow: 0 0 0 1px var(--color-line); }
+/* a square of black sky; the target's picture sits on top once it's in public/images/targets/ */
+.target-card-image {
+  display: block;
+  aspect-ratio: 1 / 1;
+  margin-bottom: var(--space-2);
+  overflow: hidden;
+  background: var(--color-panel) url("/images/stars.png") 0 0 / 256px repeat;
+  box-shadow: 0 0 0 1px var(--color-line); /* keeps the square visible on the dark page */
+}
+.target-card-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
+a.target-card:hover { background: var(--color-surface-raised); box-shadow: var(--hover-ring); }
+.target-card-placeholder { flex: 1; aspect-ratio: 3 / 4; }
 .target-card-top {
   display: flex;
   justify-content: space-between;
@@ -131,13 +134,12 @@ a.target-card:hover { background: var(--color-surface-raised); box-shadow: var(-
 }
 .target-tag--moves { color: var(--color-text); }
 .target-tag--brightness { color: var(--color-warning); }
-.target-card h3 { font-size: var(--text-xl); }
-.target-card p { margin: 0; flex: 1; color: var(--color-text-soft); font-size: var(--text-sm); }
-.target-position { display: grid; grid-template-columns: auto 1fr; gap: var(--space-1) var(--space-6); margin: 0; font-size: var(--text-sm); }
-.target-position div { display: contents; }
-.target-position dt { color: var(--color-text-muted); }
-.target-position dd { margin: 0; font-family: var(--font-mono); text-align: right; }
-.target-open { padding-top: var(--space-4); border-top: 1px solid var(--color-line); font-size: var(--text-xs); letter-spacing: var(--tracking-button); text-transform: uppercase; }
+.target-card h3 { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--text-lg); }
+/* round orange arrow, like the "read more" links on nasa.gov */
+.target-arrow { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--color-highlight); }
+.target-arrow svg { width: 12px; height: 12px; fill: none; stroke: var(--color-accent-hover); stroke-width: 1.6; }
+.target-card p { margin: 0; flex: 1; color: var(--color-text-soft); font-size: var(--text-sm); line-height: 1.5; }
+.target-position { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); }
 
 /* ---------- how it works ---------- */
 .how-steps {
@@ -151,7 +153,6 @@ a.target-card:hover { background: var(--color-surface-raised); box-shadow: var(-
 .how-step { display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-5); border-top: 1px solid var(--color-line); }
 .how-step-number { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.1em; color: var(--color-text-muted); }
 .how-step h3 { font-size: var(--text-lg); }
-.how-step p { margin: 0; color: var(--color-text-soft); font-size: var(--text-sm); line-height: 1.6; }
 
 /* ---------- features ---------- */
 .feature-grid {
@@ -166,7 +167,10 @@ a.target-card:hover { background: var(--color-surface-raised); box-shadow: var(-
 .feature-icon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--color-border); border-radius: 50%; }
 .feature-icon svg { width: 20px; height: 20px; }
 .feature-body { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
-.feature h3 { font-size: var(--text-lg); font-weight: 500; }
+.feature h3 { font-size: var(--text-lg); }
+
+/* body text of a step or a feature */
+.how-step p,
 .feature p { margin: 0; color: var(--color-text-soft); font-size: var(--text-sm); line-height: 1.6; }
 
 /* ---------- footer ---------- */
@@ -189,7 +193,7 @@ a.target-card:hover { background: var(--color-surface-raised); box-shadow: var(-
   .start-nav { order: 3; width: 100%; flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
   .start-hero,
   .start-section { scroll-margin-top: 110px; }
-  .start-hero { gap: var(--space-8); padding-block: var(--space-12); }
+  .start-hero { padding-block: var(--space-12); }
 }
 
 /* ---------- motion (none when the system asks for reduced motion) ---------- */
@@ -200,5 +204,7 @@ a.target-card:hover { background: var(--color-surface-raised); box-shadow: var(-
   .start-page::before { animation: start-drift 30s ease-in-out infinite alternate; }
   .start-rocket { animation: start-rocket-in 1.4s var(--ease-out) 0.3s both; }
   a.target-card { transition: transform 250ms var(--ease-out), background-color 250ms ease, box-shadow 250ms ease; }
+  .target-card-image img { transition: transform 600ms var(--ease-out); }
   a.target-card:hover { transform: translateY(-3px); }
+  a.target-card:hover .target-card-image img { transform: scale(1.04); }
 }

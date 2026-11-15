@@ -4,8 +4,11 @@
 .fp {
   --fp-warning: var(--color-warning);
   /* data colours: they mean something, so they stay coloured whatever the theme */
-  --fp-before: #4c7dff;   /* difference: was here (matches the backend's blue) */
-  --fp-after: #ff4b3a;    /* difference: is here now (matches the backend's red) */
+  --fp-red: #ff4b3a;
+  --fp-green: #3ddc84;
+  --fp-blue: #4c7dff;
+  --fp-before: var(--fp-blue); /* difference: was here (matches the backend's blue) */
+  --fp-after: var(--fp-red);   /* difference: is here now (matches the backend's red) */
   --fp-star: #5cc8ff;     /* Gaia star circles */
   --fp-asteroid: #b79cff; /* known asteroids */
   --fp-flag: var(--color-warning); /* flagged pixels */
@@ -41,8 +44,6 @@
   letter-spacing: var(--tracking-button);
   text-transform: uppercase;
 }
-.fp-display button[aria-pressed="true"] { background: var(--color-accent); color: var(--color-on-accent); }
-.fp-display button:hover:not(:disabled):not([aria-pressed="true"]) { background: var(--color-surface-raised); }
 /* width 0 + min-width 100%: the hint wraps to the buttons' width instead of widening the switch */
 .fp-display-hint { width: 0; min-width: 100%; margin: 0; color: var(--color-text-muted); font-size: var(--text-xs); text-align: right; }
 
@@ -112,8 +113,6 @@
   background: transparent;
   text-align: left;
 }
-.fp-frame-btn:hover:not([aria-pressed="true"]) { background: var(--color-surface-raised); }
-.fp-frame-btn[aria-pressed="true"] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent); }
 .fp-frame-btn-num { display: block; font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 500; }
 .fp-frame-btn-date { display: block; font-family: var(--font-mono); font-size: var(--text-2xs); opacity: 0.75; }
 
@@ -135,7 +134,8 @@
 /* ---------- text under the player ---------- */
 .fp-info { display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--text-sm); }
 .fp-info p { margin: 0; }
-.fp-info-label { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.06em; text-transform: uppercase; }
+.fp-info-label,
+.fp-legend-title { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.06em; text-transform: uppercase; }
 .fp-info-meta { color: var(--color-text-muted); }
 .fp-info-warning { color: var(--fp-warning); }
 
@@ -166,16 +166,16 @@
 /* ---------- legend under the Difference / IR colour image ---------- */
 .fp-legend { display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
 .fp-legend p { margin: 0; }
-.fp-legend-title { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.06em; text-transform: uppercase; }
 .fp-legend-note { color: var(--color-text-muted); }
 .fp-legend-items { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin: 0; padding: 0; list-style: none; }
 .fp-legend-items li { display: inline-flex; align-items: center; gap: var(--space-2); }
-.fp-swatch { width: 12px; height: 12px; border-radius: 50%; }
+.fp-swatch,
+.fp-overlay-swatch { width: 12px; height: 12px; border-radius: 50%; }
 .fp-swatch--before { background: var(--fp-before); }
 .fp-swatch--after { background: var(--fp-after); }
-.fp-swatch--red { background: #ff4b3a; }
-.fp-swatch--green { background: #3ddc84; }
-.fp-swatch--blue { background: #4c7dff; }
+.fp-swatch--red { background: var(--fp-red); }
+.fp-swatch--green { background: var(--fp-green); }
+.fp-swatch--blue { background: var(--fp-blue); }
 
 /* ---------- overlays ---------- */
 .fp-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
@@ -210,7 +210,6 @@
 .fp-overlay-toggle { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 32px; font-size: var(--text-sm); cursor: pointer; }
 .fp-overlay-toggle:has(input:disabled) { color: var(--color-text-faint); cursor: not-allowed; }
 .fp-overlay-toggle input { width: 16px; height: 16px; padding: 0; accent-color: var(--color-accent); }
-.fp-overlay-swatch { width: 12px; height: 12px; border-radius: 50%; }
 .fp-overlay-swatch--stars { border: 2px solid var(--fp-star); }
 .fp-overlay-swatch--asteroids { background: var(--fp-asteroid); }
 .fp-overlay-swatch--flags { background: var(--fp-flag); border-radius: 2px; }

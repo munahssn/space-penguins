@@ -19,8 +19,6 @@ export function usePreloadedImages(urls) {
 
     urls.forEach((url, i) => {
       const img = new Image();
-      // Keeps the canvas readable (getImageData) for click-to-select later; backend sends CORS headers.
-      img.crossOrigin = "anonymous";
       img.onload = () => {
         if (cancelled) return;
         images[i] = img;

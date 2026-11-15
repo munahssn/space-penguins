@@ -1,4 +1,6 @@
 // Explains the colours in the Difference and IR colour views.
+import { detectorRange } from "../../api/spherex.js";
+import { rangeLabel } from "../controls/options.js";
 import { RGB_CHANNELS } from "./constants.js";
 
 function Swatch({ className }) {
@@ -26,10 +28,10 @@ export function RgbLegend() {
     <div className="fp-legend">
       <p className="fp-legend-title">Infrared colour</p>
       <ul className="fp-legend-items">
-        {RGB_CHANNELS.map(({ channel, det, range }) => (
+        {RGB_CHANNELS.map(({ channel, det }) => (
           <li key={det}>
             <Swatch className={`fp-swatch--${channel.toLowerCase()}`} />
-            {channel} = {det} ({range})
+            {channel} = {det} ({rangeLabel(detectorRange(det))})
           </li>
         ))}
       </ul>

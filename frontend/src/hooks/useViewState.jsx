@@ -1,13 +1,18 @@
 // Shared view state, synced to the URL so every view is a shareable link.
 //
-//   const { ra, dec, fov, det, mode, display, stretch, wmin, wmax, selected, embed, setView, setRa, ..., shareUrl } = useViewState();
+//   const { ra, dec, fov, det, mode, display, stretch, wmin, wmax, selected, embed,
+//           setView, setFov, setDisplay, setStretch, setSelected, shareUrl } = useViewState();
 //
 // - Wrap the app in <ViewStateProvider> once (done in main.jsx).
 // - URL keys: ?ra&dec&fov&det&mode&display&stretch&wmin&wmax&embed=1
-// - Values outside the allowed ones (e.g. det=D9, fov=5) fall back to the default.
+// - Values outside the allowed ones (e.g. det=D9, fov=5) fall back to the default. The allowed values are
+//   the ones the controls offer, so the two can't drift apart.
 // - `selected` (the clicked {ra, dec}) is NOT put in the URL.
 // - `embed` is read from the URL only (?embed=1). Components hide chrome when it's true.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { WAVELENGTH_RANGE_UM } from "../api/spherex.js";
+import { DETECTOR_OPTIONS, STRETCH_OPTIONS } from "../components/controls/options.js";
+import { DISPLAYS } from "../components/player/constants.js";
 
 export const DEFAULTS = {
   ra: null,          // degrees, null = nothing chosen yet
@@ -25,17 +30,17 @@ export const DEFAULTS = {
 
 // Allowed values per string key, and valid range per number key.
 const CHOICES = {
-  det: ["D1", "D2", "D3", "D4", "D5", "D6", "all"],
+  det: DETECTOR_OPTIONS.map((o) => o.value),
   mode: ["epoch", "exposure"],
-  display: ["blink", "diff", "rgb"],
-  stretch: ["normal", "faint", "contrast"],
+  display: DISPLAYS.map((d) => d.id),
+  stretch: STRETCH_OPTIONS.map((o) => o.value),
 };
 const RANGES = {
   ra: [0, 360],
   dec: [-90, 90],
   fov: [0.005, 0.5],
-  wmin: [0.75, 5.0],
-  wmax: [0.75, 5.0],
+  wmin: WAVELENGTH_RANGE_UM,
+  wmax: WAVELENGTH_RANGE_UM,
 };
 const NUMBER_KEYS = Object.keys(RANGES);
 const STRING_KEYS = Object.keys(CHOICES);
@@ -122,18 +127,11 @@ export function ViewStateProvider({ children }) {
   const value = useMemo(() => ({
     ...state,
     setView,
-    setRa: (ra) => setView({ ra }),
-    setDec: (dec) => setView({ dec }),
     setFov: (fov) => setView({ fov }),
-    setDet: (det) => setView({ det }),
-    setMode: (mode) => setView({ mode }),
     setDisplay: (display) => setView({ display }),
     setStretch: (stretch) => setView({ stretch }),
-    setWmin: (wmin) => setView({ wmin }),
-    setWmax: (wmax) => setView({ wmax }),
     setSelected: (selected) => setView({ selected }),
     shareUrl: (options) => buildShareUrl(state, options),
-    reset: () => setState({ ...DEFAULTS, embed: state.embed }),
   }), [state, setView]);
 
   return <ViewStateContext.Provider value={value}>{children}</ViewStateContext.Provider>;

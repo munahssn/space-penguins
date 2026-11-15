@@ -145,7 +145,7 @@ def _fetch_cutout_s3(uri, wcs_out, shape, ra, dec):
 
     from .s3io import open_remote, s3_url_from_access_url
 
-    hdul, _ = open_remote(s3_url_from_access_url(uri))
+    hdul = open_remote(s3_url_from_access_url(uri))
     try:
         hdr = hdul["IMAGE"].header
         w_in = WCS(hdr)  # primary = sky WCS (TAN-SIP)

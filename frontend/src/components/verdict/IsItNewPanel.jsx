@@ -7,11 +7,10 @@ import { getContext, getExplain, getTrack } from "../../api/api.js";
 import { useViewState } from "../../hooks/useViewState.jsx";
 import { useRequest } from "../../hooks/useRequest.js";
 import { useFrames } from "../player/useFrames.js"; // same request as the player: api.js shares it
+import { PRECISE_DECIMALS, formatPosition } from "../target/format.js";
 import { templateText } from "./verdicts.js";
 import { CheckingPlaceholder, Explanation, ExternalLinks, MotionComparison, VerdictBadge, Warnings } from "./VerdictParts.jsx";
 import "./verdict.css";
-
-const COORD_DECIMALS = 5;
 
 /** Same click → same key → no refetch. A new click or field size → new requests. */
 const requestKey = (selected, fov) => (selected ? `${selected.ra}|${selected.dec}|${selected.mjd}|${fov}` : null);
@@ -61,7 +60,7 @@ export default function IsItNewPanel() {
 
   const position = (
     <p className="kicker">
-      Checked at RA {selected.ra.toFixed(COORD_DECIMALS)}° · Dec {selected.dec.toFixed(COORD_DECIMALS)}°
+      Checked at {formatPosition(selected.ra, selected.dec, PRECISE_DECIMALS)}
       {selected.date && <> · {selected.date}</>}
     </p>
   );

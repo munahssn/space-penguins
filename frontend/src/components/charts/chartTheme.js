@@ -24,8 +24,7 @@ export const ICE_LINES = [
   { wavelength: 4.67, label: "CO" },
 ];
 
-/** SPHEREx covers 0.75–5.0 µm. */
-export const WAVELENGTH_DOMAIN = [0.75, 5.0];
+/** x axis ticks for the spectrum (SPHEREx covers 0.75–5.0 µm, see api/spherex.js). */
 export const WAVELENGTH_TICKS = [1, 2, 3, 4, 5];
 
 export const CHART_HEIGHT = 240;

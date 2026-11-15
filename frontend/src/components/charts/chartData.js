@@ -1,10 +1,9 @@
 // Turns API responses into chart rows. Plain functions, no React, so they're easy to test.
+import { ARCSEC_PER_DEG, MAS_PER_ARCSEC, RAD_PER_DEG } from "../../utils/angles.js";
 
 const MJD_UNIX_EPOCH = 40587; // MJD of 1970-01-01
 const MS_PER_DAY = 86_400_000;
 const DAYS_PER_YEAR = 365.25;
-const ARCSEC_PER_DEG = 3600;
-const MAS_PER_ARCSEC = 1000;
 
 /** 60816.4 → "2025-05-21" */
 export function mjdToDate(mjd) {
@@ -38,7 +37,7 @@ export function trackRows(track) {
   if (points.length === 0) return { measured: [], predicted: [] };
 
   const [first] = points;
-  const cosDec = Math.cos((first.dec * Math.PI) / 180);
+  const cosDec = Math.cos(first.dec * RAD_PER_DEG);
 
   const measured = points.map((p) => ({
     x: (p.ra - first.ra) * cosDec * ARCSEC_PER_DEG,

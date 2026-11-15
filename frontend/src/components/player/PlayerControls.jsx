@@ -23,7 +23,7 @@ function FrameButtons({ frames, index, onPick }) {
         <button
           key={frame.id}
           type="button"
-          className="fp-frame-btn"
+          className="toggle fp-frame-btn"
           aria-pressed={i === index}
           onClick={() => onPick(i)}
         >

@@ -2,6 +2,7 @@
 // and a switch between the optical sky (DSS) and the infrared sky (WISE) for comparison.
 import { useEffect, useRef, useState } from "react";
 import { useViewState } from "../../hooks/useViewState.jsx";
+import { RAD_PER_DEG, wrapDegrees } from "../../utils/angles.js";
 import { useAladin } from "./useAladin.js";
 import { useReachable } from "./useReachable.js";
 import "./skymap.css";
@@ -35,13 +36,12 @@ const mapFov = (fieldDeg) => Math.max(MIN_MAP_FOV_DEG, fieldDeg * MAP_FOV_PER_FI
 /** Corners of a fov × fov square centred on (ra, dec). RA spacing widens by 1/cos(dec) away from the equator. */
 function fieldCorners(ra, dec, fov) {
   const half = fov / 2;
-  const halfRa = half / Math.cos((dec * Math.PI) / 180);
-  const wrap = (x) => ((x % 360) + 360) % 360;
+  const halfRa = half / Math.cos(dec * RAD_PER_DEG);
   return [
-    [wrap(ra - halfRa), dec - half],
-    [wrap(ra + halfRa), dec - half],
-    [wrap(ra + halfRa), dec + half],
-    [wrap(ra - halfRa), dec + half],
+    [wrapDegrees(ra - halfRa), dec - half],
+    [wrapDegrees(ra + halfRa), dec - half],
+    [wrapDegrees(ra + halfRa), dec + half],
+    [wrapDegrees(ra - halfRa), dec + half],
   ];
 }
 
@@ -52,6 +52,7 @@ function LayerSwitch({ value, onChange }) {
         <button
           key={layer.id}
           type="button"
+          className="toggle"
           aria-pressed={layer.id === value.id}
           title={layer.credit}
           onClick={() => onChange(layer)}

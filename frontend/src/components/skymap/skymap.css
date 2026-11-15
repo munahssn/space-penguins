@@ -44,5 +44,3 @@
   color: var(--color-text);
   font-size: var(--text-xs);
 }
-.skymap-layers button:hover:not([aria-pressed="true"]) { background: var(--color-surface-raised); }
-.skymap-layers button[aria-pressed="true"] { background: var(--color-accent); color: var(--color-on-accent); }

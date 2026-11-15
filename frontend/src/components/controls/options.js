@@ -1,8 +1,9 @@
-// Choices shown in the ControlPanel. Values must match what useViewState allows.
+// Choices shown in the ControlPanel. useViewState accepts exactly these values from a URL.
 import { DETECTORS, WAVELENGTH_RANGE_UM } from "../../api/spherex.js";
 
 export const formatUm = (um) => um.toFixed(2);
-const rangeLabel = ([min, max]) => `${formatUm(min)}–${formatUm(max)} µm`;
+/** [1.64, 2.42] → "1.64–2.42 µm" */
+export const rangeLabel = ([min, max]) => `${formatUm(min)}–${formatUm(max)} µm`;
 
 export const DETECTOR_OPTIONS = [
   ...DETECTORS.map((d) => ({ value: d.value, label: `${d.value} · ${rangeLabel([d.minUm, d.maxUm])}` })),
@@ -14,6 +15,14 @@ export const FOV_OPTIONS = [0.05, 0.1, 0.2, 0.4, 0.5].map((deg) => ({ value: deg
 
 export function arcminLabel(deg) {
   return `${Number((deg * 60).toFixed(1))}′`;
+}
+
+/**
+ * The options plus the current value if it isn't one of them (e.g. fov=0.15 from a shared link), so the
+ * control can always show what's on. Option values may be numbers or strings.
+ */
+export function withCurrentValue(options, value, formatExtra = String) {
+  return options.some((o) => o.value === value) ? options : [{ value, label: formatExtra(value) }, ...options];
 }
 
 export const STRETCH_OPTIONS = [

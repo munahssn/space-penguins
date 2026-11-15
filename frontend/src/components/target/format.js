@@ -1,6 +1,8 @@
 // How positions and notes are written across the target pieces.
 
 const DEFAULT_DECIMALS = 4;
+/** For exact positions in the side panel (≈0.04″). */
+export const PRECISE_DECIMALS = 5;
 
 /** 269.44630° (RA) or +4.76794° (Dec, always signed). */
 export function formatDeg(value, { signed = false, decimals = DEFAULT_DECIMALS } = {}) {

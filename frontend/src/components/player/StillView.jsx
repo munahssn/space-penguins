@@ -21,7 +21,7 @@ export default function StillView({ kind, view, frames, grid }) {
   const image = usePreloadedImages(still.url ? [still.url] : []);
   const { what, badge } = TEXT[kind];
   // Both still images show the sky as of the latest pass, so a click is dated to that pass.
-  const latest = frames[frames.length - 1];
+  const latest = frames.at(-1);
   const selectHere = (position) => view.setSelected({ ...position, mjd: latest.mjd, date: latest.date });
 
   if (still.error) return <PlayerPlaceholder tone="error">{errorMessage(still.error, what)}</PlayerPlaceholder>;
@@ -41,7 +41,7 @@ export default function StillView({ kind, view, frames, grid }) {
         <ScaleBar grid={grid} />
       </FrameCanvas>
       {kind === "diff"
-        ? <DiffLegend firstDate={frames[0].date} lastDate={frames[frames.length - 1].date} />
+        ? <DiffLegend firstDate={frames[0].date} lastDate={latest.date} />
         : <RgbLegend />}
     </div>
   );

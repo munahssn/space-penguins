@@ -27,15 +27,12 @@ function StartNav() {
 }
 
 /** A start-page section: small label, big title, then the content. */
-function Section({ id, kicker, title, intro, children }) {
+function Section({ id, kicker, title, children }) {
   return (
     <section id={id} className="start-section" aria-labelledby={`${id}-title`}>
-      <div className="start-section-head">
-        <div className="start-section-titles">
-          <p className="kicker">{kicker}</p>
-          <h2 id={`${id}-title`} className="start-section-title">{title}</h2>
-        </div>
-        {intro && <p className="start-section-intro">{intro}</p>}
+      <div className="start-section-titles">
+        <p className="kicker">{kicker}</p>
+        <h2 id={`${id}-title`} className="start-section-title">{title}</h2>
       </div>
       {children}
     </section>
@@ -74,12 +71,7 @@ export default function StartPage() {
           <FeatureGrid />
         </Section>
 
-        <Section
-          id="popular"
-          kicker="Popular finds"
-          title="Check Out Some Well-Known Movers"
-          intro="The five objects from the challenge brief. Each card opens straight in the viewer."
-        >
+        <Section id="popular" kicker="Popular finds" title="Check Out Some Well-Known Movers">
           <TargetCards />
         </Section>
       </main>

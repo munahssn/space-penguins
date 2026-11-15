@@ -7,20 +7,27 @@ space_penguins/
 ├── docs/API.md          <- the contract between frontend and backend. Read first.
 ├── backend/             <- Python, FastAPI (team: backend)
 │   ├── app/main.py        creates the app, includes the routers
-│   ├── app/routers/       endpoints, one file per group (system, frames, analysis, context)
+│   ├── app/routers/       endpoints, one file per group (system, resolve, frames, images, analysis, context, explain)
 │   ├── app/config.py      settings: mock mode, paths, detectors
 │   ├── app/cache.py       disk cache of stacked images
+│   ├── app/jobs.py        background jobs (slow endpoints answer 202 while they run)
 │   ├── app/validation.py  query parameter checks
 │   ├── app/spherex.py     IRSA query, cutouts, stacking, PNG rendering
+│   ├── app/s3io.py        reads small pieces of FITS files from IRSA's public S3 bucket
+│   ├── app/catalogs.py    Gaia, SkyBoT and SIMBAD lookups for "Is it new?"
+│   ├── app/explain.py     plain-language text for the verdict
 │   ├── app/targets.py     the 5 test targets (with proper motion)
 │   ├── app/mock.py        fake data for frontend dev
-│   └── scripts/precache.py
-├── frontend/            <- React + Vite (team: frontend), see docs/FRONTEND_PLAN.md
-│   ├── src/api/api.js     every backend call + mock switch
-│   ├── src/api/mock/      fake responses (shapes from docs/DESIGN.md §6)
-│   ├── src/hooks/         useViewState (URL state)
-│   └── src/{components,pages,styles}/
-└── frontend-old/        <- Phase 0 plain-JS starter, kept for reference
+│   └── scripts/           precache.py, phase0_check.py (checks IRSA access)
+└── frontend/            <- React + Vite (team: frontend), see docs/FRONTEND_PLAN.md
+    ├── src/api/api.js     every backend call + mock switch
+    ├── src/api/mock/      fake responses (shapes from docs/DESIGN.md §6)
+    ├── src/hooks/         shared state: the view (in the URL), server status, requests
+    ├── src/components/    one folder per part of the page (player, charts, verdict, …)
+    ├── src/pages/         start page, viewer, embed
+    ├── src/utils/         small helpers shared by several components
+    ├── src/styles/        theme tokens and base styles
+    └── public/images/     start page pictures (popular finds pictures go in targets/)
 ```
 
 ## Setup (Windows, PowerShell)

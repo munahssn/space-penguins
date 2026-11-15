@@ -43,8 +43,6 @@ class RangeFile(io.RawIOBase):
         self.url = url
         self.pos = 0
         self.blocks = OrderedDict()
-        self.requests_made = 0
-        self.bytes_fetched = 0
         r = _session().get(url, headers={"Range": "bytes=0-0"}, timeout=TIMEOUT)
         if r.status_code != 206:
             raise OSError(f"range request failed ({r.status_code}) for {url}")
@@ -79,8 +77,6 @@ class RangeFile(io.RawIOBase):
         r = _session().get(self.url, headers={"Range": f"bytes={start}-{end}"}, timeout=TIMEOUT)
         if r.status_code != 206:
             raise OSError(f"range request failed ({r.status_code}) for {self.url}")
-        self.requests_made += 1
-        self.bytes_fetched += len(r.content)
         self.blocks[i] = r.content
         if len(self.blocks) > MAX_CACHED_BLOCKS:
             self.blocks.popitem(last=False)
@@ -109,7 +105,5 @@ class RangeFile(io.RawIOBase):
 
 
 def open_remote(url):
-    """Open a SPHEREx FITS file lazily over range requests. Returns (hdulist, rangefile)."""
-    rf = RangeFile(url)
-    hdul = fits.open(rf, memmap=False, lazy_load_hdus=True)
-    return hdul, rf
+    """Open a SPHEREx FITS file lazily over range requests. The HDU list keeps the remote file open."""
+    return fits.open(RangeFile(url), memmap=False, lazy_load_hdus=True)

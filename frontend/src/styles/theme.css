@@ -1,5 +1,5 @@
 /* Design tokens. Use these variables everywhere instead of raw colours, fonts or sizes.
-   Look: warm white on near-black with a black "spec sheet" side panel, thin type, square corners. */
+   Look: warm white on near-black with a black "spec sheet" side panel, bold type, square corners. */
 :root {
   color-scheme: dark;
 
@@ -17,6 +17,7 @@
   --color-text-faint: #8f877f;     /* placeholders and disabled text */
   --color-accent: #ece7e1;         /* buttons that are on / primary */
   --color-accent-hover: #ffffff;
+  --color-highlight: #d9622b;      /* round arrow buttons on cards */
   --color-on-accent: #050505;      /* text on the accent */
   /* hovered buttons, cards and menu links: a soft warm glow around the edge, the colour of the dome's rim */
   --hover-ring: 0 0 10px 1px rgba(255, 163, 97, 0.55);
@@ -28,9 +29,10 @@
   --color-catalog: #2f94d6;        /* what the catalogue predicts */
 
   /* type */
-  --font-display: "Saira", system-ui, sans-serif;
-  --font-body: "Saira", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  /* the same families nasa.gov uses: Inter for headings, Public Sans for text, DM Mono for labels */
+  --font-display: "Inter", system-ui, sans-serif;
+  --font-body: "Public Sans", system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
   --text-2xs: 0.6875rem;  /* 11px: small uppercase labels */
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -52,7 +54,6 @@
   --space-12: 3rem;
   --space-16: 4rem;
   --radius-sm: 0;
-  --radius-md: 0;
   --radius-pill: 999px;
 
   /* motion: only used inside @media (prefers-reduced-motion: no-preference) */
@@ -64,7 +65,7 @@
   /* layout */
   --header-height: 72px;
   --side-panel-width: 420px;
-  --viewer-max-width: 760px;  /* player column: wide enough to see detail, short enough to fit a screen */
+  --viewer-max-width: 1000px; /* player column: fills the space next to the side panel on a laptop screen */
   --page-max-width: 1440px;
   --page-gutter: 32px;
   /* Side padding for full-width bars, so their content lines up with the centred page (use in padding-inline). */

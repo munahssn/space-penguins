@@ -1,8 +1,10 @@
 // Loading, empty and error messages shared by every player view. They keep the player's square footprint
 // so the layout doesn't jump while things load.
 
+const DEFAULT_WHAT = "SPHEREx images";
+
 /** One line describing an API request in progress (see onProgress in api.js). */
-function progressMessage(progress, what = "SPHEREx images") {
+function progressMessage(progress, what) {
   if (progress?.status === "queued") return `Waiting in line: you're number ${progress.position}`;
   if (progress?.status === "processing") return `Processing ${what} · ${progress.done} of ${progress.total}`;
   if (progress?.status === "retrying") return "The archive is busy, trying again…";
@@ -20,7 +22,7 @@ export function errorMessage(error, what = "frames") {
  * reduced); without one it shows that something is happening.
  * @param {{done?: number, total?: number, label: string}} props
  */
-export function ProgressBar({ done, total, label }) {
+function ProgressBar({ done, total, label }) {
   const counted = Number.isFinite(done) && total > 0;
   return (
     <div
@@ -36,21 +38,29 @@ export function ProgressBar({ done, total, label }) {
   );
 }
 
-/**
- * Message + progress bar for a request to the backend (frames, difference or colour image).
- * `text` replaces the message worked out from `progress`.
- */
-export function LoadingProgress({ progress, what, text }) {
-  const counted = progress?.status === "processing";
+/** A loading line with a progress bar under it. Without done/total the bar just shows activity. */
+export function LoadingMessage({ text, done, total, label }) {
   return (
     <div className="fp-loading">
-      <p className="fp-loading-text">{text ?? progressMessage(progress, what)}</p>
-      <ProgressBar
-        done={counted ? progress.done : undefined}
-        total={counted ? progress.total : undefined}
-        label={`Loading ${what ?? "SPHEREx images"}`}
-      />
+      <p className="fp-loading-text">{text}</p>
+      <ProgressBar done={done} total={total} label={label} />
     </div>
+  );
+}
+
+/**
+ * Loading line for a request to the backend (frames, difference or colour image), worked out from its
+ * latest progress update. `text` replaces the worked-out line.
+ */
+export function LoadingProgress({ progress, what = DEFAULT_WHAT, text }) {
+  const counted = progress?.status === "processing";
+  return (
+    <LoadingMessage
+      text={text ?? progressMessage(progress, what)}
+      done={counted ? progress.done : undefined}
+      total={counted ? progress.total : undefined}
+      label={`Loading ${what}`}
+    />
   );
 }
 

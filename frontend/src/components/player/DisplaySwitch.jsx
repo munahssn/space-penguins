@@ -17,6 +17,7 @@ export default function DisplaySwitch({ value, onChange, disabled = {} }) {
           <button
             key={id}
             type="button"
+            className="toggle"
             aria-pressed={id === value}
             disabled={Boolean(disabled[id])}
             title={disabled[id]}
