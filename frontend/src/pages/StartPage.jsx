@@ -11,14 +11,11 @@ import DataChip from "../components/status/DataChip.jsx";
 import StatusBar from "../components/status/StatusBar.jsx";
 import "../components/start/start.css";
 
-/** A start-page section: small label, big title, then the content. */
-function Section({ id, kicker, title, children }) {
+/** A start-page section: a big title, then the content. */
+function Section({ id, title, children }) {
   return (
     <section id={id} className="start-section" aria-labelledby={`${id}-title`}>
-      <div className="start-section-titles">
-        <p className="kicker">{kicker}</p>
-        <h2 id={`${id}-title`} className="start-section-title">{title}</h2>
-      </div>
+      <h2 id={`${id}-title`} className="start-section-title">{title}</h2>
       {children}
     </section>
   );
@@ -48,15 +45,15 @@ export default function StartPage() {
 
         <Mission />
 
-        <Section id="how" kicker="How it works" title="Three Steps">
+        <Section id="how" title="Three Steps">
           <HowItWorks />
         </Section>
 
-        <Section id="features" kicker="In the viewer" title="Features">
+        <Section id="features" title="Features">
           <FeatureGrid />
         </Section>
 
-        <Section id="popular" kicker="Popular finds" title="Check Out Some Well-Known Movers">
+        <Section id="popular" title="Check Out Some Well-Known Finds">
           <TargetCards />
         </Section>
       </main>
