@@ -53,6 +53,7 @@ function FrameSlider({ count, index, onPick }) {
 function SpeedPicker({ speed, onChange }) {
   return (
     <div className="fp-speed" role="group" aria-label="Speed">
+      <span className="fp-speed-label" aria-hidden="true">Speed</span>
       {Object.keys(SPEEDS).map((key) => (
         <button
           key={key}

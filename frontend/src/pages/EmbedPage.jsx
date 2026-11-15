@@ -20,7 +20,7 @@ export default function EmbedPage() {
           <p className="embed-empty">This embed link has no target. Add ?ra=…&dec=… to the address.</p>
         )}
       </main>
-      <footer>
+      <footer className="embed-footer">
         <a className="embed-open" href={shareUrl()} target="_blank" rel="noopener noreferrer">
           Open in SPHEREx Blink ↗
         </a>

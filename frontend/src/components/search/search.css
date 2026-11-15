@@ -1,19 +1,24 @@
-.search { display: flex; flex-direction: column; gap: var(--space-1); width: 100%; }
+.search { display: flex; flex-direction: column; gap: var(--space-2); width: 100%; }
 
 .search-row { display: flex; gap: var(--space-2); }
-.search-input { flex: 1; min-width: 0; }
+.search-input,
+.search-targets { min-height: 44px; background: var(--color-surface); }
+.search-input { flex: 1; min-width: 0; padding: 0 var(--space-4); }
 .search-input[aria-invalid="true"] { border-color: var(--color-danger); }
-.search-targets { max-width: 180px; }
+.search-targets { max-width: 220px; padding: 0 var(--space-3); }
 
 .search-error { margin: 0; color: var(--color-danger); font-size: var(--text-xs); }
 
+/* phone: search box and Go on one row, the target list under them */
 @media (max-width: 640px) {
   .search-row { flex-wrap: wrap; }
-  .search-input { flex-basis: 100%; }
-  .search-targets { flex: 1; max-width: none; }
+  .search-input { flex: 1 1 200px; }
+  .search-targets { flex: 1 1 100%; max-width: none; }
 }
 
-/* start page: bigger box */
+/* start page: bigger box over the hero image */
 .search--large .search-input,
-.search--large button { padding: var(--space-3) var(--space-4); font-size: var(--text-lg); }
+.search--large .search-row button { min-height: 52px; }
+.search--large .search-input { font-size: var(--text-md); background: rgba(5, 5, 5, 0.72); border-color: var(--color-border-strong); }
+.search--large .search-row button { padding: 0 var(--space-6); }
 .search--large .search-error { font-size: var(--text-sm); }

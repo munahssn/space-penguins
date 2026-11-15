@@ -1,11 +1,32 @@
 // The small pieces of the "Is it new?" panel. Each is presentational: data in, markup out.
+import { useId } from "react";
 import { externalLinks } from "./externalLinks.js";
 import { formatMotion, totalMotion, verdictInfo } from "./verdicts.js";
 
-/** "Known star" / "Unexplained" pill. */
+/** "Known star" / "Unexplained" label. */
 export function VerdictBadge({ verdict }) {
   const { label, tone } = verdictInfo(verdict);
   return <span className={`verdict-badge verdict-badge--${tone}`}>{label}</span>;
+}
+
+/**
+ * Shown while the catalogues are checked: grey blocks the size of the answer, shimmering unless motion is
+ * reduced, plus a line that screen readers announce.
+ */
+export function CheckingPlaceholder() {
+  return (
+    <div className="verdict-checking">
+      <p className="verdict-muted" role="status">Checking Gaia, SIMBAD and the known asteroids…</p>
+      <div className="verdict-skeleton" aria-hidden="true">
+        <span className="skeleton verdict-skeleton-line" />
+        <span className="skeleton verdict-skeleton-line verdict-skeleton-line--short" />
+        <div className="verdict-stats">
+          <span className="skeleton verdict-skeleton-stat" />
+          <span className="skeleton verdict-skeleton-stat" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /** Warnings from the backend, e.g. "may be an artifact". */
@@ -34,10 +55,14 @@ export function Explanation({ template, explain }) {
   );
 }
 
-function MotionValue({ label, motion, emptyText }) {
+/** swatch: which chart series this number is (same colours as the Motion chart). */
+function MotionValue({ label, motion, emptyText, swatch }) {
   return (
     <div className="verdict-stat">
-      <span className="verdict-stat-label">{label}</span>
+      <span className="verdict-stat-label">
+        <span className={`verdict-swatch verdict-swatch--${swatch}`} aria-hidden="true" />
+        {label}
+      </span>
       <span className="verdict-stat-value">{motion === null ? emptyText : formatMotion(motion)}</span>
     </div>
   );
@@ -56,11 +81,11 @@ export function MotionComparison({ track, loading }) {
   return (
     <div className="verdict-motion">
       <div className="verdict-stats">
-        <MotionValue label="Catalog motion" motion={catalog} emptyText={emptyText} />
-        <MotionValue label="Measured here" motion={measured} emptyText={emptyText} />
+        <MotionValue label="Catalogue says" motion={catalog} emptyText={emptyText} swatch="catalog" />
+        <MotionValue label="We measured" motion={measured} emptyText={emptyText} swatch="measured" />
       </div>
       {difference !== null && (
-        <p className="verdict-note">Our measurement is {(difference * 100).toFixed(0)}% off the catalog value.</p>
+        <p className="verdict-note">That's {(difference * 100).toFixed(0)}% off the catalogue value.</p>
       )}
     </div>
   );
@@ -68,13 +93,17 @@ export function MotionComparison({ track, loading }) {
 
 /** Links to the same position in SIMBAD, WiseView and the Legacy Survey. */
 export function ExternalLinks({ position }) {
+  const labelId = useId();
   return (
-    <ul className="verdict-links">
-      {externalLinks(position).map(({ name, url, what }) => (
-        <li key={name}>
-          <a href={url} target="_blank" rel="noreferrer" title={what}>{name} ↗</a>
-        </li>
-      ))}
-    </ul>
+    <div className="verdict-links-row">
+      <span id={labelId} className="verdict-links-label">Look it up:</span>
+      <ul className="verdict-links" aria-labelledby={labelId}>
+        {externalLinks(position).map(({ name, url, what }) => (
+          <li key={name}>
+            <a href={url} target="_blank" rel="noreferrer" title={what}>{name} ↗</a>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

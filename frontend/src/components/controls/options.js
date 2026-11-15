@@ -6,7 +6,7 @@ const rangeLabel = ([min, max]) => `${formatUm(min)}–${formatUm(max)} µm`;
 
 export const DETECTOR_OPTIONS = [
   ...DETECTORS.map((d) => ({ value: d.value, label: `${d.value} · ${rangeLabel([d.minUm, d.maxUm])}` })),
-  { value: "all", label: `All · ${rangeLabel(WAVELENGTH_RANGE_UM)}` },
+  { value: "all", label: `All bands · ${rangeLabel(WAVELENGTH_RANGE_UM)}` },
 ];
 
 /** Field of view in degrees, labelled in arcminutes (backend max is 0.5°). */
@@ -18,6 +18,6 @@ export function arcminLabel(deg) {
 
 export const STRETCH_OPTIONS = [
   { value: "normal", label: "Normal" },
-  { value: "faint", label: "Brighter (faint objects)" },
+  { value: "faint", label: "Show faint" },
   { value: "contrast", label: "High contrast" },
 ];

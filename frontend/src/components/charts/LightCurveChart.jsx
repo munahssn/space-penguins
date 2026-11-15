@@ -49,7 +49,7 @@ export default function LightCurveChart({ lightcurve, det }) {
         </ResponsiveContainer>
       </div>
       <figcaption className="chart-caption">
-        Detector {det}, one point per survey pass. A variable star rises and falls; a steady one stays flat.
+        Detector {det}, one dot per survey pass. A variable star rises and falls; a steady one stays flat.
       </figcaption>
       <DataTable columns={TABLE_COLUMNS} rows={rows} />
     </figure>

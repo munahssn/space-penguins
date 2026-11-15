@@ -1,60 +1,59 @@
 /* Frame player. Classes are prefixed fp- so they can't clash with other components.
-   Colours, fonts and radii come from the theme tokens in styles/theme.css. */
+   Colours, fonts and sizes come from the theme tokens in styles/theme.css. */
 
 .fp {
   --fp-warning: var(--color-warning);
   /* data colours: they mean something, so they stay coloured whatever the theme */
-  --fp-before: #4c7dff;   /* difference: was here */
-  --fp-after: #ff4b3a;    /* difference: is here now */
+  --fp-before: #4c7dff;   /* difference: was here (matches the backend's blue) */
+  --fp-after: #ff4b3a;    /* difference: is here now (matches the backend's red) */
   --fp-star: #5cc8ff;     /* Gaia star circles */
   --fp-asteroid: #b79cff; /* known asteroids */
   --fp-flag: var(--color-warning); /* flagged pixels */
   --fp-selected: #ff9a3d; /* the clicked spot */
-  --fp-overlay: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  --fp-overlay: rgba(5, 5, 5, 0.78); /* boxes drawn over the image */
 
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-5);
   width: 100%;
   outline: none;
 }
 
-/* one view (blink or still) under the switch */
-.fp-view { display: flex; flex-direction: column; gap: var(--space-3); outline: none; }
-.fp-view:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); border-radius: var(--radius-md); }
+/* title (from the page) + Blink / Difference / IR colour switch */
+.fp-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-4); }
 
-/* toolbar above the image: view switch + overlay toggles */
-.fp-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+/* one view (blink or still) */
+.fp-swap,
+.fp-view { display: flex; flex-direction: column; gap: var(--space-4); }
+.fp-view { outline: none; }
+.fp-view:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); }
 
-/* Blink / Difference / IR colour switch */
-.fp-display {
-  display: inline-flex;
-  align-self: flex-start;
-  gap: var(--space-1);
-  padding: var(--space-1);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
+/* ---------- view switch ---------- */
+.fp-display-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2); }
+.fp-display { display: inline-flex; border: 1px solid var(--color-border); }
 .fp-display button {
-  min-height: 36px;
-  padding: 0 var(--space-4);
+  min-height: 40px;
+  padding: 0 var(--space-5);
   border: 0;
   background: transparent;
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-button);
+  text-transform: uppercase;
 }
-.fp-display button[aria-pressed="true"] { background: var(--color-accent); color: var(--color-on-accent); font-weight: 600; }
-.fp-display button:hover:not(:disabled):not([aria-pressed="true"]) { color: var(--color-text); }
+.fp-display button[aria-pressed="true"] { background: var(--color-accent); color: var(--color-on-accent); }
+.fp-display button:hover:not(:disabled):not([aria-pressed="true"]) { background: var(--color-surface-raised); }
+/* width 0 + min-width 100%: the hint wraps to the buttons' width instead of widening the switch */
+.fp-display-hint { width: 0; min-width: 100%; margin: 0; color: var(--color-text-muted); font-size: var(--text-xs); text-align: right; }
 
-/* stage: square, image scaled up with hard pixel edges */
+/* ---------- stage: square, image scaled up with hard pixel edges ---------- */
 .fp-stage {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
+  container-type: inline-size; /* the scale bar is sized in cqw, i.e. % of this box */
   background: #000; /* the sky: always black, whatever the theme */
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line);
   overflow: hidden;
 }
 .fp-canvas {
@@ -67,45 +66,33 @@
 /* Brightness setting (Blink only). The PNGs are already 8 bit, so this is a display-only boost. */
 .fp-canvas--faint { filter: brightness(1.8) contrast(1.15); }
 .fp-canvas--contrast { filter: contrast(1.9); }
-.fp-badge {
-  position: absolute;
-  pointer-events: none;
-  left: var(--space-3);
-  top: var(--space-3);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  background: var(--fp-overlay);
-  font-size: var(--text-xs);
-}
+
+.fp-badge,
 .fp-scale {
   position: absolute;
   pointer-events: none;
+  padding: 6px 10px;
+  background: var(--fp-overlay);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+.fp-badge { left: var(--space-3); top: var(--space-3); letter-spacing: 0.08em; text-transform: uppercase; }
+.fp-scale {
   right: var(--space-3);
   bottom: var(--space-3);
-  width: 40%;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: var(--space-1);
-  font-size: var(--text-xs);
-  text-shadow: 0 1px 2px #000;
+  gap: 6px;
 }
-.fp-scale-bar { display: block; height: 3px; background: var(--color-text); box-shadow: 0 1px 2px #000; }
+.fp-scale-bar { display: block; height: 2px; background: var(--color-text); }
 
-/* controls */
-.fp-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
+/* ---------- controls ---------- */
+.fp-controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4); }
 .fp-controls .fp-play {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
+  flex: none;
   padding: 0;
   border-radius: 50%;
   border: 0;
@@ -120,22 +107,21 @@
 .fp-frame-btn {
   flex: 1;
   min-width: 0;
-  min-height: 44px;
-  padding: var(--space-1) var(--space-2);
+  min-height: 48px;
+  padding: var(--space-1) var(--space-3);
   background: transparent;
   text-align: left;
 }
-.fp-frame-btn[aria-pressed="true"] {
-  border-color: var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
-}
-.fp-frame-btn-num { display: block; font-weight: 600; font-size: var(--text-sm); }
-.fp-frame-btn-date { display: block; font-size: var(--text-xs); color: var(--color-text-muted); }
+.fp-frame-btn:hover:not([aria-pressed="true"]) { background: var(--color-surface-raised); }
+.fp-frame-btn[aria-pressed="true"] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent); }
+.fp-frame-btn-num { display: block; font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 500; }
+.fp-frame-btn-date { display: block; font-family: var(--font-mono); font-size: var(--text-2xs); opacity: 0.75; }
 
 .fp-slider { flex: 1 1 260px; display: flex; }
 .fp-slider input { width: 100%; padding: 0; border: 0; background: transparent; accent-color: var(--color-accent); }
 
-.fp-speed { display: flex; gap: var(--space-1); }
+.fp-speed { display: flex; align-items: center; gap: var(--space-1); }
+.fp-speed-label { margin-right: var(--space-1); color: var(--color-text-muted); font-size: var(--text-xs); }
 .fp-speed button {
   min-height: 36px;
   padding: 0 var(--space-3);
@@ -143,38 +129,44 @@
   font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
-.fp-speed button[aria-pressed="true"] {
-  color: var(--color-text);
-  background: var(--color-surface-raised);
-  border-color: var(--color-text-muted);
-}
+.fp-speed button:hover:not([aria-pressed="true"]) { color: var(--color-text); }
+.fp-speed button[aria-pressed="true"] { color: var(--color-text); border-color: var(--color-text-muted); }
 
-/* info */
+/* ---------- text under the player ---------- */
 .fp-info { display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--text-sm); }
 .fp-info p { margin: 0; }
-.fp-info-label { font-weight: 600; }
+.fp-info-label { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.06em; text-transform: uppercase; }
 .fp-info-meta { color: var(--color-text-muted); }
 .fp-info-warning { color: var(--fp-warning); }
 
-/* empty / loading / error states keep the same square footprint as the player */
+.fp-tip { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); }
+
+/* ---------- empty / loading / error: same square footprint as the player ---------- */
 .fp-placeholder {
   display: grid;
   place-items: center;
   width: 100%;
   aspect-ratio: 1 / 1;
-  padding: var(--space-6);
+  padding: var(--space-8);
   text-align: center;
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
   color: var(--color-text-muted);
 }
-.fp-placeholder--error { color: var(--color-danger); border-style: solid; }
+.fp-placeholder--error { color: var(--color-danger); border-color: currentColor; }
 
+.fp-loading { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); width: min(320px, 100%); }
+.fp-loading-text { margin: 0; font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.04em; }
 
-/* legend under the Difference / IR colour image */
+/* progress bar: fills to done/total; "busy" (no count yet) is a faint full track */
+.fp-bar { position: relative; width: 100%; height: 2px; overflow: hidden; background: var(--color-line); }
+.fp-bar-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--color-accent); }
+.fp-bar--busy .fp-bar-fill { width: 100%; opacity: 0.3; }
+
+/* ---------- legend under the Difference / IR colour image ---------- */
 .fp-legend { display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
 .fp-legend p { margin: 0; }
-.fp-legend-title { font-weight: 600; }
+.fp-legend-title { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.06em; text-transform: uppercase; }
 .fp-legend-note { color: var(--color-text-muted); }
 .fp-legend-items { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin: 0; padding: 0; list-style: none; }
 .fp-legend-items li { display: inline-flex; align-items: center; gap: var(--space-2); }
@@ -196,7 +188,6 @@
   position: absolute;
   transform: translate(10px, -50%);
   padding: 1px 6px;
-  border-radius: var(--radius-sm);
   background: var(--fp-overlay);
   border: 1px solid var(--fp-asteroid);
   color: var(--fp-asteroid);
@@ -215,11 +206,30 @@
 }
 
 /* overlay toggles */
-.fp-overlays { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin: 0; padding: 0; border: 0; }
+.fp-overlays { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-6); margin: 0; padding: 0; border: 0; }
 .fp-overlay-toggle { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 32px; font-size: var(--text-sm); cursor: pointer; }
-.fp-overlay-toggle:has(input:disabled) { color: var(--color-text-muted); cursor: not-allowed; }
+.fp-overlay-toggle:has(input:disabled) { color: var(--color-text-faint); cursor: not-allowed; }
 .fp-overlay-toggle input { width: 16px; height: 16px; padding: 0; accent-color: var(--color-accent); }
 .fp-overlay-swatch { width: 12px; height: 12px; border-radius: 50%; }
 .fp-overlay-swatch--stars { border: 2px solid var(--fp-star); }
 .fp-overlay-swatch--asteroids { background: var(--fp-asteroid); }
 .fp-overlay-swatch--flags { background: var(--fp-flag); border-radius: 2px; }
+.fp-overlay-toggle:has(input:disabled) .fp-overlay-swatch { opacity: 0.5; }
+
+/* ---------- narrow screens ---------- */
+@media (max-width: 640px) {
+  .fp-display-wrap { align-items: stretch; width: 100%; }
+  .fp-display button { flex: 1; padding: 0 var(--space-2); }
+  .fp-display-hint { text-align: left; }
+}
+
+/* ---------- motion (none when the system asks for reduced motion) ---------- */
+@keyframes fp-ring-pulse { 50% { opacity: 0.4; } }
+@keyframes fp-busy { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .fp-swap { animation: fade-in 350ms ease both; }          /* switching Blink / Difference / IR colour */
+  .fp-selected-ring { animation: fp-ring-pulse 2.4s ease-in-out infinite; }
+  .fp-bar-fill { transition: width 400ms var(--ease-out); }
+  .fp-bar--busy .fp-bar-fill { width: 40%; opacity: 1; animation: fp-busy 1.3s ease-in-out infinite; }
+}

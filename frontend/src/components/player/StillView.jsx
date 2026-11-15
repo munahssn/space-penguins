@@ -1,7 +1,7 @@
 // Difference and IR colour: one image computed by the backend, shown with a legend.
 import FrameCanvas from "./FrameCanvas.jsx";
 import { DiffLegend, RgbLegend } from "./Legend.jsx";
-import { PlayerPlaceholder, errorMessage, progressMessage } from "./PlayerStatus.jsx";
+import { LoadingProgress, PlayerPlaceholder, errorMessage } from "./PlayerStatus.jsx";
 import ScaleBar from "./ScaleBar.jsx";
 import SelectionLayer from "./SelectionLayer.jsx";
 import { usePreloadedImages } from "./usePreloadedImages.js";
@@ -25,8 +25,8 @@ export default function StillView({ kind, view, frames, grid }) {
   const selectHere = (position) => view.setSelected({ ...position, mjd: latest.mjd, date: latest.date });
 
   if (still.error) return <PlayerPlaceholder tone="error">{errorMessage(still.error, what)}</PlayerPlaceholder>;
-  if (still.loading) return <PlayerPlaceholder>{progressMessage(still.progress, what)}</PlayerPlaceholder>;
-  if (!image.ready) return <PlayerPlaceholder>Loading {what}…</PlayerPlaceholder>;
+  if (still.loading) return <PlayerPlaceholder><LoadingProgress progress={still.progress} what={what} /></PlayerPlaceholder>;
+  if (!image.ready) return <PlayerPlaceholder><LoadingProgress what={what} text={`Loading ${what}…`} /></PlayerPlaceholder>;
 
   return (
     <div className="fp-view">

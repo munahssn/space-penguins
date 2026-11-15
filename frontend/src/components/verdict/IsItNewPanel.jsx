@@ -8,7 +8,7 @@ import { useViewState } from "../../hooks/useViewState.jsx";
 import { useRequest } from "../../hooks/useRequest.js";
 import { useFrames } from "../player/useFrames.js"; // same request as the player: api.js shares it
 import { templateText } from "./verdicts.js";
-import { Explanation, ExternalLinks, MotionComparison, VerdictBadge, Warnings } from "./VerdictParts.jsx";
+import { CheckingPlaceholder, Explanation, ExternalLinks, MotionComparison, VerdictBadge, Warnings } from "./VerdictParts.jsx";
 import "./verdict.css";
 
 const COORD_DECIMALS = 5;
@@ -16,10 +16,13 @@ const COORD_DECIMALS = 5;
 /** Same click → same key → no refetch. A new click or field size → new requests. */
 const requestKey = (selected, fov) => (selected ? `${selected.ra}|${selected.dec}|${selected.mjd}|${fov}` : null);
 
-function PanelShell({ children }) {
+function PanelShell({ badge = null, children }) {
   return (
-    <section className="verdict" aria-labelledby="verdict-title">
-      <h2 id="verdict-title" className="verdict-title">Is it new?</h2>
+    <section className="side-block verdict rise rise-2" aria-labelledby="verdict-title">
+      <div className="verdict-head">
+        <h2 id="verdict-title" className="panel-title">Is It New?</h2>
+        {badge}
+      </div>
       {children}
     </section>
   );
@@ -42,7 +45,7 @@ export default function IsItNewPanel() {
   if (!selected) {
     return (
       <PanelShell>
-        <p className="verdict-muted">Click a dot on the image to check whether it's already known.</p>
+        <p className="verdict-muted">Click any dot on the image to check if it's already known.</p>
         {/* Keyboard (and screen-reader) route: clicking the image needs a pointer. */}
         <button
           type="button"
@@ -57,8 +60,8 @@ export default function IsItNewPanel() {
   }
 
   const position = (
-    <p className="verdict-position">
-      RA {selected.ra.toFixed(COORD_DECIMALS)}° · Dec {selected.dec.toFixed(COORD_DECIMALS)}°
+    <p className="kicker">
+      Checked at RA {selected.ra.toFixed(COORD_DECIMALS)}° · Dec {selected.dec.toFixed(COORD_DECIMALS)}°
       {selected.date && <> · {selected.date}</>}
     </p>
   );
@@ -77,17 +80,14 @@ export default function IsItNewPanel() {
     return (
       <PanelShell>
         {position}
-        <p className="verdict-muted" role="status">Checking Gaia and known asteroids…</p>
+        <CheckingPlaceholder />
       </PanelShell>
     );
   }
 
   return (
-    <PanelShell>
-      <div className="verdict-head">
-        {position}
-        <VerdictBadge verdict={context.data.verdict} />
-      </div>
+    <PanelShell badge={<VerdictBadge verdict={context.data.verdict} />}>
+      {position}
       <Warnings warnings={context.data.warnings} />
       <Explanation template={templateText(context.data)} explain={explain.data} />
       <MotionComparison track={track.data} loading={track.loading} />

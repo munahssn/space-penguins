@@ -33,7 +33,7 @@ export function ChartTooltip({ active, payload, rows }) {
 export function DataTable({ columns, rows }) {
   return (
     <details className="chart-table">
-      <summary>Show as table</summary>
+      <summary>Show the numbers as a table</summary>
       <table>
         <thead>
           <tr>{columns.map((c) => <th key={c.key} scope="col">{c.label}</th>)}</tr>
@@ -50,11 +50,15 @@ export function DataTable({ columns, rows }) {
   );
 }
 
-/** Loading / error / no-data message, same height as a chart so the panel doesn't jump. */
-export function ChartMessage({ tone = "muted", children }) {
+/**
+ * Loading / error / no-data message, same height as a chart so the panel doesn't jump.
+ * `loading` adds a thin bar that moves while we wait (still when motion is reduced).
+ */
+export function ChartMessage({ tone = "muted", loading = false, children }) {
   return (
-    <p className={`chart-message chart-message--${tone}`} role={tone === "error" ? "alert" : "status"}>
-      {children}
-    </p>
+    <div className={`chart-message chart-message--${tone}`} role={tone === "error" ? "alert" : "status"}>
+      <p>{children}</p>
+      {loading && <span className="chart-busy" aria-hidden="true"><span /></span>}
+    </div>
   );
 }

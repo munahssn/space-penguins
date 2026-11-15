@@ -9,8 +9,13 @@ import ChartsPanel from "../components/charts/ChartsPanel.jsx";
 import SearchBar from "../components/search/SearchBar.jsx";
 import ControlPanel from "../components/controls/ControlPanel.jsx";
 import SkyMap from "../components/skymap/SkyMap.jsx";
+import TargetHeading from "../components/target/TargetHeading.jsx";
+import TargetSummary from "../components/target/TargetSummary.jsx";
 
-/** Main viewer page: search + status on top, player and controls on the left, details on the right. */
+/**
+ * Main viewer page: search + status on top; the player with charts and sky map under it on the left;
+ * the black side panel with the target, view settings and "Is it new?" on the right.
+ */
 export default function ViewerPage() {
   return (
     <AppLayout
@@ -22,19 +27,18 @@ export default function ViewerPage() {
         />
       }
       statusBar={<StatusBar />}
-      viewer={
-        <>
-          {/* Screen readers navigate by headings; the page's look doesn't need a visible one. */}
-          <h1 className="visually-hidden">SPHEREx Blink viewer</h1>
-          <FramePlayer />
-          <ControlPanel />
-        </>
+      viewer={<FramePlayer heading={<TargetHeading />} />}
+      below={
+        <div className="viewer-extras">
+          <ChartsPanel />
+          <SkyMap />
+        </div>
       }
       side={
         <>
+          <TargetSummary />
+          <ControlPanel />
           <IsItNewPanel />
-          <ChartsPanel />
-          <SkyMap />
         </>
       }
     />

@@ -9,13 +9,13 @@ function Swatch({ className }) {
 export function DiffLegend({ firstDate, lastDate }) {
   return (
     <div className="fp-legend">
-      <p className="fp-legend-title">Last pass ({lastDate}) − first pass ({firstDate})</p>
+      <p className="fp-legend-title">Newest pass ({lastDate}) minus first pass ({firstDate})</p>
       <ul className="fp-legend-items">
         <li><Swatch className="fp-swatch--before" />was here</li>
         <li><Swatch className="fp-swatch--after" />is here now</li>
       </ul>
       <p className="fp-legend-note">
-        Anything that stayed put cancels out. A moving object shows up as a blue–red pair.
+        Anything that stayed put cancels out. Something that moved shows up as a blue and red pair.
       </p>
     </div>
   );

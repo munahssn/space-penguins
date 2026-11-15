@@ -7,8 +7,8 @@ import { useReachable } from "./useReachable.js";
 import "./skymap.css";
 
 const SKY_LAYERS = [
-  { id: "optical", label: "Optical (DSS)", survey: "P/DSS2/color", credit: "DSS2 colour" },
-  { id: "infrared", label: "Infrared (WISE)", survey: "P/allWISE/color", credit: "AllWISE colour" },
+  { id: "optical", label: "Visible light", survey: "P/DSS2/color", credit: "DSS2 colour" },
+  { id: "infrared", label: "Infrared", survey: "P/allWISE/color", credit: "AllWISE colour" },
 ];
 /** Small file on the CDS server that serves both layers: if it answers, the sky tiles will load too. */
 const SURVEY_CHECK_URL = "https://alasky.cds.unistra.fr/DSS/DSSColor/properties";
@@ -52,8 +52,8 @@ function LayerSwitch({ value, onChange }) {
         <button
           key={layer.id}
           type="button"
-          className={layer.id === value.id ? "is-active" : ""}
           aria-pressed={layer.id === value.id}
+          title={layer.credit}
           onClick={() => onChange(layer)}
         >
           {layer.label}
@@ -98,8 +98,11 @@ export default function SkyMap() {
   }, [A, aladin, ra, dec, fov]);
 
   return (
-    <section className="skymap" aria-label="Sky map around the target">
-      {aladin && <LayerSwitch value={layer} onChange={setLayer} />}
+    <section className="skymap rise rise-1" aria-labelledby="skymap-title">
+      <div className="skymap-head">
+        <h2 id="skymap-title" className="panel-title">Sky Map</h2>
+        {aladin && <LayerSwitch value={layer} onChange={setLayer} />}
+      </div>
       <div className="skymap-frame">
         <div ref={containerRef} className="skymap-view" />
         {!aladin && <div className="skymap-overlay-message">{statusMessage(reachable, error)}</div>}

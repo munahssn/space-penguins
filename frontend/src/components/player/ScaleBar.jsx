@@ -1,4 +1,5 @@
-// Scale bar + orientation, drawn over the frame. Sized in % of the frame, so it scales with the canvas.
+// Scale bar + orientation, drawn over the frame. Its length is in cqw (% of the image's width: .fp-stage
+// is a size container), so it stays true at any player size.
 import { MAX_SCALE_BAR_SHARE, SCALE_BAR_ARCSEC } from "./constants.js";
 
 /** "30″", "1′", "2.5′" */
@@ -22,10 +23,10 @@ export default function ScaleBar({ grid }) {
 
   return (
     <div className="fp-scale">
-      <span className="fp-scale-bar" style={{ width: `${widthPercent}%` }} aria-hidden="true" />
+      <span className="fp-scale-bar" style={{ width: `${widthPercent}cqw` }} aria-hidden="true" />
       <span>
         <span className="visually-hidden">Scale bar: </span>
-        {formatArcsec(barArcsec)} · N up, E left
+        {formatArcsec(barArcsec)} · North up, East left
       </span>
     </div>
   );

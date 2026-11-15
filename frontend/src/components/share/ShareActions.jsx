@@ -35,7 +35,7 @@ export default function ShareActions() {
         getText={() => shareUrl()}
       />
       <CopyButton
-        className="btn-primary"
+        className="btn-ghost"
         label="Embed"
         copiedLabel="Snippet copied!"
         promptLabel="Copy this embed code:"

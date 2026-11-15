@@ -44,7 +44,7 @@ function RangeSlider({ lo, hi, committedFrom, committedTo, onCommit, summary }) 
   return (
     <div className="wl" role="group" aria-labelledby={labelId}>
       <div className="wl-head">
-        <span id={labelId} className="wl-label">Wavelength</span>
+        <span id={labelId} className="field-label">Narrow the band</span>
         <span className="wl-value">{formatUm(from)}–{formatUm(to)} µm</span>
         {filtered && (
           <button type="button" className="btn-ghost wl-reset" onClick={() => setRange([lo, hi])}>

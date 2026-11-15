@@ -1,5 +1,6 @@
-// Motion track: where we measured the object in each pass, against where the catalog motion says it
+// Motion track: where we measured the object in each pass, against where the catalogue motion says it
 // should be. Sky convention: north up, east LEFT (so the x axis runs right-to-left).
+// The catalogue line draws itself in (charts.css, .chart--track), unless motion is reduced.
 import { CartesianGrid, ErrorBar, Legend, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from "recharts";
 import { trackRows } from "./chartData.js";
 import { ChartTooltip, DataTable, Dot } from "./ChartParts.jsx";
@@ -29,7 +30,7 @@ export default function MotionTrackChart({ track }) {
   const { measured, predicted } = trackRows(track);
 
   return (
-    <figure className="chart" aria-label="Motion track: measured positions against the catalog prediction">
+    <figure className="chart chart--track" aria-label="Motion track: measured positions against the catalogue prediction">
       {/* The drawing is hidden from screen readers: the label above and the table below carry the data. */}
       <div aria-hidden="true">
         <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -55,7 +56,7 @@ export default function MotionTrackChart({ track }) {
             <Legend verticalAlign="top" height={24} iconType="circle" formatter={legendText} wrapperStyle={{ fontSize: 12 }} />
             {predicted.length > 0 && (
               <Scatter
-                name="Catalog prediction"
+                name="Catalogue path"
                 data={predicted}
                 fill={SERIES.predicted}
                 line={{ stroke: SERIES.predicted, strokeWidth: 2, strokeDasharray: "6 4" }}
@@ -71,7 +72,7 @@ export default function MotionTrackChart({ track }) {
         </ResponsiveContainer>
       </div>
       <figcaption className="chart-caption">
-        Offsets from the first pass. If the orange dots follow the blue path, the object moves as the catalog says.
+        Offsets from the first pass. If the orange dots follow the blue path, it moves the way the catalogue says.
       </figcaption>
       <DataTable columns={TABLE_COLUMNS} rows={measured} />
     </figure>

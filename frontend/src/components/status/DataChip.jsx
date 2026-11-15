@@ -16,7 +16,7 @@ export default function DataChip() {
   const isError = status.state === "unreachable";
 
   return (
-    <span className={`chip ${isError ? "chip-error" : ""}`.trim()} title="SPHEREx data release · latest date">
+    <span className={`chip ${isError ? "chip-error" : ""}`.trim()} title="SPHEREx data release in use, and the date of the newest images">
       {chipText(status)}
     </span>
   );

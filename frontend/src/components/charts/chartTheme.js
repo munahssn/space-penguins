@@ -4,6 +4,7 @@
 // (#0f0f0f): both sit in the dark-mode lightness band, and they stay distinct for colour-blind
 // readers (ΔE ≥ 23). Orange = what we measured (it matches the orange selection ring on the image);
 // blue = what the catalog predicts (it matches the blue Gaia circles).
+// Same values as --color-measured / --color-catalog in styles/theme.css (used by the verdict panel).
 export const SERIES = {
   measured: "#e06c1f",
   predicted: "#2f94d6",
@@ -12,7 +13,7 @@ export const SERIES = {
 /** Text and grid use theme tokens, never the series colours. */
 export const INK = {
   axis: "var(--color-text-muted)",
-  grid: "var(--color-border)",
+  grid: "var(--color-line)",
   reference: "var(--color-text-muted)",
 };
 

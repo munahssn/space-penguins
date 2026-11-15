@@ -4,44 +4,77 @@
 .app-main {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(0, var(--viewer-max-width)) minmax(var(--side-panel-width), 1fr);
-  gap: var(--space-6);
+  grid-template-columns: minmax(0, 1fr) minmax(340px, var(--side-panel-width));
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "viewer side"
+    "below  side";
   width: 100%;
-  max-width: 1400px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
-  padding: var(--space-6) var(--page-gutter);
 }
 
 .app-viewer,
-.app-side { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.app-below,
+.app-side { display: flex; flex-direction: column; min-width: 0; }
+
+.app-viewer { grid-area: viewer; gap: var(--space-5); padding: var(--space-8) var(--page-gutter) 0; }
+.app-below { grid-area: below; gap: var(--space-5); padding: var(--space-8) var(--page-gutter) var(--space-12); }
+.app-viewer > *,
+.app-below > * { width: 100%; max-width: var(--viewer-max-width); }
+
+/* the black "spec sheet" panel */
+.app-side {
+  grid-area: side;
+  gap: var(--space-8);
+  padding: var(--space-8);
+  background: var(--color-panel);
+  border-left: 1px solid var(--color-line);
+}
+
+/* blocks inside the side panel are separated by a hairline */
+.side-block { display: flex; flex-direction: column; gap: var(--space-4); }
+.side-block + .side-block { padding-top: var(--space-6); border-top: 1px solid var(--color-line); }
+
+/* charts + sky map under the player: two cells side by side, stacked on narrow screens */
+.viewer-extras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1px;
+  background: var(--color-line);
+  border: 1px solid var(--color-line);
+}
+.viewer-extras > * { min-width: 0; padding: var(--space-6); background: var(--color-surface); }
 
 /* ---------- header ---------- */
 .app-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3) var(--space-6);
   min-height: var(--header-height);
-  padding: var(--space-2) var(--page-gutter);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-3) var(--page-inset);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-line);
 }
 
-.app-header-search { flex: 1; min-width: 0; max-width: 560px; }
-.app-header-end { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; }
+.app-header-search { flex: 1 1 420px; min-width: 0; max-width: 640px; }
+.app-header-end { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-left: auto; }
 
 /* ---------- logo ---------- */
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   color: var(--color-text);
   text-decoration: none;
   font-family: var(--font-display);
-  font-size: var(--text-lg);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.16em;
   white-space: nowrap;
 }
-.logo-mark { width: 28px; height: 28px; }
-.logo-text strong { color: var(--color-accent); font-weight: 700; }
+.logo-mark { width: 26px; height: 26px; }
 
 /* ---------- placeholder ---------- */
 .placeholder {
@@ -64,13 +97,24 @@
 .placeholder-inline { min-height: 0; flex-direction: row; padding: var(--space-2) var(--space-3); }
 .placeholder-square { aspect-ratio: 1; }
 
-/* ---------- phone / narrow ---------- */
-@media (max-width: 900px) {
-  .app-main { grid-template-columns: 1fr; }
-}
-
+/* ---------- narrow screens ---------- */
 /* Below ~1100px logo + search + data chip + share buttons don't fit on one line: search gets its own row. */
 @media (max-width: 1100px) {
-  .app-header { flex-wrap: wrap; }
   .app-header-search { order: 3; flex-basis: 100%; max-width: none; }
+}
+
+/* One column: player, then settings and verdict, then charts and sky map. */
+@media (max-width: 1000px) {
+  .app-main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas: "viewer" "side" "below";
+  }
+  .app-side {
+    margin-top: var(--space-8);
+    padding: var(--space-8) var(--page-gutter);
+    border-left: 0;
+    border-block: 1px solid var(--color-line);
+  }
+  .app-side > * { max-width: var(--viewer-max-width); }
 }

@@ -2,19 +2,13 @@ import { useId, useRef, useState } from "react";
 import { resolve } from "../../api/api.js";
 import { useViewState } from "../../hooks/useViewState.jsx";
 import { formatCoords, parseSearch } from "./parseSearch.js";
-import { useTargets } from "./useTargets.js";
+import { findTargetAt, useTargets } from "./useTargets.js";
 import "./search.css";
-
-const SAME_POSITION_DEG = 1e-4;
 
 function lookupErrorMessage(error, name) {
   if (error.status === 404) return `No object called “${name}” was found. Check the spelling, or enter coordinates.`;
   if (error.status === 422) return error.message;
   return "Couldn't reach the name lookup. Try again, or enter coordinates.";
-}
-
-function isAt(target, ra, dec) {
-  return Math.abs(target.ra - ra) < SAME_POSITION_DEG && Math.abs(target.dec - dec) < SAME_POSITION_DEG;
 }
 
 function TargetSelect({ targets, value, onChange }) {
@@ -51,7 +45,7 @@ export default function SearchBar({ large = false, showTargets = true }) {
   const latestLookup = useRef(0); // ignore answers to older lookups if the user searched again
   const errorId = useId();
 
-  const currentTarget = ra !== null && dec !== null ? targets.find((t) => isAt(t, ra, dec)) : undefined;
+  const currentTarget = findTargetAt(targets, ra, dec);
 
   function goTo(position) {
     setError(null);

@@ -1,15 +1,15 @@
 // Tunable numbers and labels for the frame player, in one place.
 
-/** What the player can show. `id` matches `display` in useViewState. */
+/** What the player can show. `id` matches `display` in useViewState; `hint` explains it in one line. */
 export const DISPLAYS = [
-  { id: "blink", label: "Blink" },
-  { id: "diff", label: "Difference" },
-  { id: "rgb", label: "IR colour" },
+  { id: "blink", label: "Blink", hint: "Flips through each pass. Things that move jump." },
+  { id: "diff", label: "Difference", hint: "Shows only what changed between the first and newest pass." },
+  { id: "rgb", label: "IR colour", hint: "Three bands as red, green and blue. Cold objects look red." },
 ];
 
 /** Milliseconds each frame stays on screen, per speed setting. */
 export const SPEEDS = { slow: 1000, med: 600, fast: 300 };
-export const SPEED_LABELS = { slow: "Slow", med: "Med", fast: "Fast" };
+export const SPEED_LABELS = { slow: "Slow", med: "Normal", fast: "Fast" };
 export const DEFAULT_SPEED = "med";
 
 /** Above this share of artifact pixels (ghosts, halos, streaks…) a frame gets a warning. */
@@ -31,9 +31,9 @@ export const RGB_CHANNELS = [
 
 /** Overlays drawn on the image, in the order of their toggles. */
 export const OVERLAYS = [
-  { id: "stars", label: "Gaia stars" },
+  { id: "stars", label: "Known stars (Gaia)" },
   { id: "asteroids", label: "Known asteroids" },
-  { id: "flags", label: "Flagged pixels" },
+  { id: "flags", label: "Bad pixels" },
 ];
 export const DEFAULT_OVERLAYS = { stars: true, asteroids: true, flags: false };
 

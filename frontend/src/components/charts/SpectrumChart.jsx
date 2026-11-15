@@ -59,7 +59,7 @@ export default function SpectrumChart({ spectrum }) {
         </ResponsiveContainer>
       </div>
       <figcaption className="chart-caption">
-        Each dot is one exposure. Dips at the dashed lines can mean water, CO₂ or CO ice.
+        One dot per exposure. A dip at a dashed line can point to water, CO₂ or CO ice.
       </figcaption>
       <DataTable columns={TABLE_COLUMNS} rows={rows} />
     </figure>

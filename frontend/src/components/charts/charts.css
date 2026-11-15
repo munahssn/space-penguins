@@ -1,45 +1,44 @@
-/* Charts panel. Classes are prefixed charts- / chart- so they can't clash with other components. */
+/* Charts panel (under the player). Classes are prefixed charts- / chart- so they can't clash. */
 
-.charts {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-}
+.charts { display: flex; flex-direction: column; gap: var(--space-4); font-size: var(--text-sm); }
 .charts-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
-.charts-title { font-size: var(--text-lg); }
 .charts-subject { color: var(--color-text-muted); font-size: var(--text-xs); }
 
-.charts-tabs { display: flex; gap: var(--space-1); }
+/* tabs: underline marks the open one */
+.charts-tabs { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--color-line); }
 .charts-tabs button {
-  min-height: 34px;
-  padding: 0 var(--space-3);
+  min-height: 40px;
+  margin-bottom: -1px;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-bottom: 2px solid transparent;
   background: transparent;
   color: var(--color-text-muted);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
 }
-.charts-tabs button[aria-selected="true"] {
-  color: var(--color-text);
-  background: var(--color-surface-raised);
-  border-color: var(--color-text-muted);
-}
+.charts-tabs button:hover { color: var(--color-text); }
+.charts-tabs button[aria-selected="true"] { color: var(--color-text); border-bottom-color: var(--color-text); }
 
 .chart { margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
-.chart-caption { color: var(--color-text-muted); font-size: var(--text-xs); line-height: 1.4; }
+.chart-caption { color: var(--color-text-muted); font-size: var(--text-xs); line-height: 1.5; }
 
 .chart-message {
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
   min-height: 240px; /* same height as a chart, so switching tabs doesn't jump */
-  margin: 0;
+  padding: 0 var(--space-4);
   color: var(--color-text-muted);
   text-align: center;
 }
+.chart-message p { margin: 0; }
 .chart-message--error { color: var(--color-danger); }
+
+/* waiting bar under a loading message: a faint track, with a moving piece unless motion is reduced */
+.chart-busy { position: relative; width: min(200px, 60%); height: 2px; overflow: hidden; background: var(--color-line); }
+.chart-busy span { position: absolute; inset: 0 auto 0 0; width: 100%; background: var(--color-accent); opacity: 0.3; }
 
 /* hover tooltip: text colours only, the dot it points at carries the series colour */
 .chart-tooltip {
@@ -49,7 +48,6 @@
   padding: var(--space-2) var(--space-3);
   background: var(--color-surface-raised);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
   font-size: var(--text-xs);
   color: var(--color-text);
 }
@@ -64,11 +62,23 @@
   /* Big enough to tap on a phone (24px minimum target). */
   line-height: 24px;
 }
+.chart-table summary:hover { color: var(--color-text); }
 .chart-table table { width: 100%; margin-top: var(--space-2); border-collapse: collapse; font-size: var(--text-xs); }
 .chart-table th,
-.chart-table td { padding: var(--space-1) var(--space-2); border-bottom: 1px solid var(--color-border); text-align: right; }
+.chart-table td { padding: var(--space-1) var(--space-2); border-bottom: 1px solid var(--color-line); text-align: right; }
 .chart-table th:first-child,
 .chart-table td:first-child { text-align: left; }
 .chart-table th { color: var(--color-text-muted); font-weight: 500; }
 
 .chart-legend-text { color: var(--color-text); }
+
+/* ---------- motion (none when the system asks for reduced motion) ---------- */
+@keyframes chart-reveal { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes chart-busy { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .charts .chart { animation: fade-in 350ms ease both; }
+  /* the catalogue line in the Motion chart draws itself in */
+  .chart--track .recharts-scatter-line path { animation: chart-reveal 900ms var(--ease-out) 150ms both; }
+  .chart-busy span { width: 40%; opacity: 1; animation: chart-busy 1.3s ease-in-out infinite; }
+}
