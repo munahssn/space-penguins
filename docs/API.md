@@ -185,6 +185,21 @@ Infrared colour picture: `D1` (0.75-1.1 um) blue, `D3` (1.6-2.4 um) green, `D6` 
 - Needs three downloads (one per detector). While they run it answers 202 with `status`, `done`, `total` (summed
   over the running ones) and `detectors` (each detector's own status).
 
+## Measuring a clicked spot: no new download
+`/api/spectrum`, `/api/lightcurve`, `/api/track` and `/api/explain` measure at (`ra`, `dec`). If that point
+lies inside a field that is already downloaded for the same detector (for example the `/api/frames` field the
+user is looking at), the box around the point is cut out of that field and the answer comes at once, instead
+of a 202 and a new download. The answer's `query.from_field` then names that field.
+- In that case the error comes from the sky noise (the VARIANCE extension is not kept in the cache) and an
+  exposure with a masked pixel under the point is skipped rather than reported with `flags`.
+- `/api/spectrum` with `det=all` still needs all detectors, so it usually downloads.
+- `/api/track` and `/api/explain` without `det` use a detector whose data already covers the point (D6 first,
+  then D5 ... D1), else they download D6.
+- `/api/track`'s `catalog_pm` is the test target's value when the point is a test target, else the proper
+  motion of the Gaia DR3 star or SIMBAD object matched at the point (`name`, `source`,
+  `separation_arcsec`), or `null`. If a catalogue did not answer, `/api/track`'s `warnings` says so
+  (`"Gaia unavailable: ..."`).
+
 ## `GET /api/explain`
 The "Is it new?" answer in plain words, for the panel.
 

@@ -8,29 +8,58 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
 
 from .. import jobs, spherex
-from ..cache import get_exposures
+from ..cache import field_covering, get_exposures, view_at
 from ..config import MOCK
+from ..cache import is_cached
 from ..targets import catalog_match
+from .context import catalog_motion
 from ..validation import check_photometry_fov, check_query, check_wavelength
 from .images import image_url
 
 router = APIRouter()
 
 
-def _exposures(ra, dec, fov, det, wmin, wmax):
-    """The cached exposures, or a 202 response while they download."""
-    check_query(ra, dec, fov, det)
-    check_wavelength(wmin, wmax)
-    check_photometry_fov(fov, spherex.MIN_PHOT_PIXELS, spherex.PIXSCALE_DEG)
+TRACK_DETECTORS = ("D6", "D5", "D4", "D3", "D2", "D1")   # track without det: first one already downloaded
+
+
+def exposures_at(ra, dec, fov, det):
+    """Exposures for a measurement at (ra, dec): cut out of an already downloaded field that
+    contains the point if there is one (instant), else the usual download (202 while it runs).
+    Returns (exposures, None) or (None, 202 response)."""
+    v = view_at(ra, dec, fov, det)
+    if v:
+        return v, None
     info = jobs.pending(ra, dec, fov, det)
     if info:
-        return None, JSONResponse(status_code=202, content=info, headers={"Retry-After": "2"})
+        return None, _pending(info)
     return get_exposures(ra, dec, fov, det), None
 
 
-def _query(ra, dec, fov, det, wmin, wmax):
-    return {"ra": ra, "dec": dec, "fov": fov, "det": det, "wmin": wmin, "wmax": wmax,
-            "release": "mock" if MOCK else spherex.RELEASE}
+def track_detector(ra, dec, fov, det):
+    """The detector to track in: `det` if given; else the first of TRACK_DETECTORS whose data
+    already covers the point; else D6 (brown dwarfs are brightest there)."""
+    if det:
+        return det
+    for d in TRACK_DETECTORS:
+        if is_cached(ra, dec, fov, d) or field_covering(ra, dec, fov, d):
+            return d
+    return "D6"
+
+
+def _exposures(ra, dec, fov, det, wmin, wmax):
+    """The exposures, or a 202 response while they download."""
+    check_query(ra, dec, fov, det)
+    check_wavelength(wmin, wmax)
+    check_photometry_fov(fov, spherex.MIN_PHOT_PIXELS, spherex.PIXSCALE_DEG)
+    return exposures_at(ra, dec, fov, det)
+
+
+def _query(ra, dec, fov, det, wmin, wmax, e=None):
+    q = {"ra": ra, "dec": dec, "fov": fov, "det": det, "wmin": wmin, "wmax": wmax,
+         "release": "mock" if MOCK else spherex.RELEASE}
+    if e and "field" in e:
+        q["from_field"] = e["field"]   # measured inside this already downloaded field
+    return q
 
 
 def _pending(info):
@@ -48,7 +77,7 @@ def spectrum(ra: float, dec: float, fov: float = 0.05, det: str = "all",
     if not points:
         raise HTTPException(404, "No exposure could be measured at this position: " + (
             "the source saturates the detector" if skipped else "nothing in the wavelength range"))
-    return {"query": _query(ra, dec, fov, det, wmin, wmax), "ra": ra, "dec": dec,
+    return {"query": _query(ra, dec, fov, det, wmin, wmax, e), "ra": ra, "dec": dec,
             "flux_unit": "mJy", "n_skipped": skipped, "points": points}
 
 
@@ -63,22 +92,25 @@ def lightcurve(ra: float, dec: float, det: str = "D3", fov: float = 0.05,
     if not points:
         raise HTTPException(404, "No exposure could be measured at this position "
                                  "(saturated with too small a fov, or nothing in the wavelength range)")
-    return {"query": _query(ra, dec, fov, det, wmin, wmax), "ra": ra, "dec": dec,
+    return {"query": _query(ra, dec, fov, det, wmin, wmax, e), "ra": ra, "dec": dec,
             "flux_unit": "mJy", "method": method, "points": points}
 
 
 @router.get("/api/track")
-def track(ra: float, dec: float, det: str = "D6", fov: float = 0.05):
-    """Where the target is in each survey pass, and the proper motion fitted to that."""
-    check_query(ra, dec, fov, det)
+def track(ra: float, dec: float, det: str | None = None, fov: float = 0.05):
+    """Where the target is in each survey pass, and the proper motion fitted to that.
+    Without det: a detector whose data already covers the point, else D6."""
+    check_query(ra, dec, fov, det or "D6")
     check_photometry_fov(fov, spherex.MIN_TRACK_PIXELS, spherex.PIXSCALE_DEG)
-    info = jobs.pending(ra, dec, fov, det)
-    if info:
-        return _pending(info)
-    e = get_exposures(ra, dec, fov, det)
+    det = track_detector(ra, dec, fov, det)
+    e, pending = exposures_at(ra, dec, fov, det)
+    if pending:
+        return pending
     measured = spherex.track_points(e, ra, dec, fov)
     fit = spherex.fit_proper_motion(measured)
-    cat = catalog_match(ra, dec)
+    # catalogue motion: our curated test targets first, else the Gaia/SIMBAD object at the point
+    warnings = []
+    cat = catalog_match(ra, dec) or catalog_motion(ra, dec, sum(e["mjds"]) / len(e["mjds"]), warnings)
     compare = None
     if fit and cat:
         compare = {}
@@ -86,10 +118,9 @@ def track(ra: float, dec: float, det: str = "D6", fov: float = 0.05):
             d = fit[k] - cat[k]
             compare[k + "_diff"] = round(d, 1)
             compare[k + "_sigma"] = round(abs(d) / fit[k + "_err"], 1) if fit[k + "_err"] > 0 else None
-    return {"query": {"ra": ra, "dec": dec, "fov": fov, "det": det,
-                      "release": "mock" if MOCK else spherex.RELEASE},
+    return {"query": _query(ra, dec, fov, det, None, None, e),
             "unit": "mas/yr", "measured": measured, "fit": fit,
-            "catalog_pm": cat, "compare": compare}
+            "catalog_pm": cat, "compare": compare, "warnings": warnings}
 
 
 @router.get("/api/rgb")

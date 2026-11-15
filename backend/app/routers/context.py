@@ -110,7 +110,8 @@ def context(ra: float, dec: float, mjd: float, fov: float = 0.1,
             for s in near:
                 d = catalogs.sep_arcsec(ra, dec, s["ra"], s["dec"])
                 cands.append((d, 0, "known_star", {"name": f"Gaia DR3 {s['source_id']}", "type": "star",
-                                                   "source": "Gaia DR3", "gmag": s["gmag"]}))
+                                                   "source": "Gaia DR3", "gmag": s["gmag"],
+                                                   "pmra": s["pmra"], "pmdec": s["pmdec"]}))
         except Exception as e:
             warnings.append(f"Gaia unavailable: {str(e)[:120]}")
         # 2. SkyBoT: where asteroids and comets were at that moment
@@ -129,7 +130,8 @@ def context(ra: float, dec: float, mjd: float, fov: float = 0.1,
             for o in catalogs.simbad_cone(ra, dec, _margin(year, catalogs.SIMBAD_EPOCH)):
                 d = catalogs.simbad_distance(o, ra, dec, year)
                 name = o["name"][5:] if o["name"].startswith("NAME ") else o["name"]   # SIMBAD's prefix for common names
-                cands.append((d, 2, "known_other", {"name": name, "type": o["otype"], "source": "SIMBAD"}))
+                cands.append((d, 2, "known_other", {"name": name, "type": o["otype"], "source": "SIMBAD",
+                                                    "pmra": o["pmra"], "pmdec": o["pmdec"]}))
         except Exception as e:
             warnings.append(f"SIMBAD unavailable: {str(e)[:120]}")
 
@@ -146,3 +148,38 @@ def context(ra: float, dec: float, mjd: float, fov: float = 0.1,
             "other_matches": [{**c[3], "distance_arcsec": round(c[0], 2), "verdict": c[2]} for c in hits[1:11]],
             "match_radius_arcsec": round(MATCH_ARCSEC, 2),
             "stars": stars, "asteroids": asteroids, "warnings": warnings}
+
+
+def catalog_motion(ra, dec, mjd, warnings=None):
+    """Catalogue proper motion of the Gaia DR3 star or SIMBAD object at (ra, dec) on mjd, as
+    {pmra, pmdec, name, source, separation_arcsec}, or None (nothing there, no proper motion,
+    or the catalogues did not answer). Same matching as /api/context, without SkyBoT.
+    A catalogue that fails is added to the `warnings` list, if one is given."""
+    year = catalogs.year_of(mjd)
+    cands = []
+    warnings = [] if warnings is None else warnings
+    if MOCK:
+        stars, others = _mock_catalogs(ra, dec, 0.1, year)
+        for o, rank, src in [(s, 0, "Gaia DR3 (mock)") for s in stars] + [(o, 2, "SIMBAD (mock)") for o in others]:
+            cands.append((catalogs.sep_arcsec(ra, dec, o["ra"], o["dec"]), rank, o["name"], src, o["pmra"], o["pmdec"]))
+    else:
+        try:
+            for s in catalogs.stars_at(catalogs.gaia_cone(ra, dec, _margin(year, catalogs.GAIA_EPOCH)), year):
+                cands.append((catalogs.sep_arcsec(ra, dec, s["ra"], s["dec"]), 0, f"Gaia DR3 {s['source_id']}",
+                              "Gaia DR3", s["pmra"], s["pmdec"]))
+        except Exception as e:
+            warnings.append(f"Gaia unavailable: {str(e)[:120]}")
+        try:
+            for o in catalogs.simbad_cone(ra, dec, _margin(year, catalogs.SIMBAD_EPOCH)):
+                name = o["name"][5:] if o["name"].startswith("NAME ") else o["name"]
+                cands.append((catalogs.simbad_distance(o, ra, dec, year), 2, name, "SIMBAD", o["pmra"], o["pmdec"]))
+        except Exception as e:
+            warnings.append(f"SIMBAD unavailable: {str(e)[:120]}")
+    hits = sorted((c for c in cands if c[0] <= MATCH_ARCSEC), key=lambda c: c[0])
+    if not hits:
+        return None
+    close = [c for c in hits if c[0] <= hits[0][0] + TIE_ARCSEC]
+    d, _, name, src, pmra, pmdec = min(close, key=lambda c: c[1])
+    if pmra is None or pmdec is None:
+        return None
+    return {"pmra": pmra, "pmdec": pmdec, "name": name, "source": src, "separation_arcsec": round(d, 2)}

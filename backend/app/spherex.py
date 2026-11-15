@@ -305,7 +305,7 @@ BAD_NAMES = {0: "TRANSIENT", 1: "OVERFLOW", 2: "SUR_ERROR", 6: "NONFUNC", 7: "DI
              9: "MISSING_DATA", 10: "HOT", 11: "COLD", 15: "NONLINEAR", 17: "PERSIST", 19: "OUTLIER"}
 
 
-def aperture_flux(img, var, sky_img=None):
+def aperture_flux(img, var, sky_img=None, cx=None, cy=None):
     """Brightness of whatever sits at the centre of the grid (the requested position).
 
     Sum of the pixels within AP_RADIUS, minus the local sky (median of an annulus,
@@ -318,7 +318,9 @@ def aperture_flux(img, var, sky_img=None):
     if min(ny, nx) < MIN_PHOT_PIXELS:
         return None
     yy, xx = np.mgrid[0:ny, 0:nx]
-    r = np.hypot(xx - (nx - 1) / 2, yy - (ny - 1) / 2)
+    cx = (nx - 1) / 2 if cx is None else cx   # default: the requested position, at the grid centre
+    cy = (ny - 1) / 2 if cy is None else cy
+    r = np.hypot(xx - cx, yy - cy)
     ap = r <= AP_RADIUS
     sky = (img if sky_img is None else sky_img)[(r >= SKY_IN) & (r <= SKY_OUT)]
     sky = sky[np.isfinite(sky)]
@@ -361,7 +363,7 @@ WING_SKY_IN = 12.5               # everything further out is the reference level
 MIN_WING_PIXELS = 30             # grid needed for that (fov 0.05 deg)
 
 
-def wing_flux(img):
+def wing_flux(img, cx=None, cy=None):
     """Relative brightness of a star whose core is saturated, from the light in its wings.
 
     Very bright stars have no usable pixel within several pixels of the centre, but
@@ -374,7 +376,9 @@ def wing_flux(img):
     if min(ny, nx) < MIN_WING_PIXELS:
         return None
     yy, xx = np.mgrid[0:ny, 0:nx]
-    r = np.hypot(xx - (nx - 1) / 2, yy - (ny - 1) / 2)
+    cx = (nx - 1) / 2 if cx is None else cx
+    cy = (ny - 1) / 2 if cy is None else cy
+    r = np.hypot(xx - cx, yy - cy)
     ring = (r >= WING_IN) & (r <= WING_OUT)
     w = img[ring]
     w = w[np.isfinite(w)]
@@ -412,7 +416,7 @@ def wing_points(e, wmin=None, wmax=None):
         wl = res[3]
         if wl is None or not in_range(wl, wmin, wmax):
             continue
-        f = wing_flux(res[0])
+        f = wing_flux(res[0], *e.get("center", (None, None)))
         if f is not None:
             pts.append({"wavelength_um": round(wl, 4), "flux": round(f[0], 4), "error": round(f[1], 4),
                         "mjd": round(mjd, 5), "det": band, "flags": ["SATURATED"]})
@@ -530,12 +534,13 @@ def track_points(e, ra, dec, fov):
     The first pass is searched around the requested position, each later pass around
     where the target was before, so a fast mover is followed from pass to pass.
     The error is the larger of the centroid's own error and the scatter of the
-    centroids in the pass's single exposures (when at least 3 of them detect it)."""
-    wcs, _ = target_grid(ra, dec, fov)
+    centroids in the pass's single exposures (when at least 3 of them detect it).
+    A view cut from a bigger field (cache.view_at) brings its own WCS and the pixel of (ra, dec)."""
+    wcs = e["wcs"] if "wcs" in e else target_grid(ra, dec, fov)[0]
     stacks, meta = stack_epochs(e["mjds"], e["results"])
     groups = group_epochs(e["mjds"])
     n = stacks[0].shape[0] if stacks else 0
-    x0 = y0 = (n - 1) / 2
+    x0, y0 = e.get("center", ((n - 1) / 2, (n - 1) / 2))
     pts = []
     for s, m, g in zip(stacks, meta, groups):
         c = centroid(s, x0, y0)
