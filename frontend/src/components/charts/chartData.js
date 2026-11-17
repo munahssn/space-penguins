@@ -29,7 +29,7 @@ export function lightcurveRows(lightcurve) {
  * evaluated at the same dates, so each measured point has a predicted partner.
  *
  * @param {{measured: {mjd, ra, dec, err}[], catalog_pm: {pmra, pmdec}|null}} track
- *   ra/dec/err in degrees, pmra (already × cos Dec) / pmdec in mas/yr
+ *   ra/dec in degrees, err in mas (as the backend sends it), pmra (already × cos Dec) / pmdec in mas/yr
  * @returns {{measured: object[], predicted: object[]}}
  */
 export function trackRows(track) {
@@ -42,7 +42,7 @@ export function trackRows(track) {
   const measured = points.map((p) => ({
     x: (p.ra - first.ra) * cosDec * ARCSEC_PER_DEG,
     y: (p.dec - first.dec) * ARCSEC_PER_DEG,
-    err: (p.err ?? 0) * ARCSEC_PER_DEG,
+    err: (p.err ?? 0) / MAS_PER_ARCSEC,
     date: mjdToDate(p.mjd),
   }));
 

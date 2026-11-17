@@ -1,5 +1,5 @@
 // The only place that talks to the backend. Components import these functions and never call fetch.
-// Response shapes: docs/DESIGN.md §6. Mock mode returns the same shapes from ./mock/.
+// Mock mode returns responses in the same shapes as the backend, from ./mock/.
 //
 // .env:  VITE_USE_MOCK=true|false   VITE_API_URL=http://localhost:8000
 //

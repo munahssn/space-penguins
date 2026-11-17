@@ -1,5 +1,5 @@
 // What each verdict from /api/context means, and the plain sentence we show straight away.
-// The backend decides the verdict with rules (DESIGN.md §5); nothing here guesses.
+// The backend decides the verdict with rules (backend/app/routers/context.py); nothing here guesses.
 import { MAS_PER_ARCSEC } from "../../utils/angles.js";
 
 /** verdict id → badge label + tone (tone picks the colour in verdict.css). */

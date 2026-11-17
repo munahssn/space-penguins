@@ -90,7 +90,7 @@ npm run dev                          # http://localhost:5173
 
 By default `frontend/.env` uses mock data, so no backend is needed. To use the real backend, create `frontend/.env.local` with `VITE_USE_MOCK=false` and restart `npm run dev`.
 
-Deploying: see [docs/DEPLOY.md](docs/DEPLOY.md). API reference: [docs/API.md](docs/API.md).
+The backend's interactive API reference is at http://localhost:8000/docs.
 
 ## Project structure
 
@@ -106,7 +106,7 @@ space_penguins/
 │   ├── src/components/   player, charts, verdict, search, …
 │   ├── src/pages/        start page, viewer, embed
 │   └── src/api/          backend calls and mock data
-└── docs/               API, design, deployment notes and screenshots
+└── docs/screenshots/   pictures used in this README
 ```
 
 ## Team (Space Penguins)

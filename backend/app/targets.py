@@ -5,8 +5,6 @@ Positions are catalogue positions at `epoch`, plus proper motion (mas/yr,
 pmra already includes cos(dec)). Fast movers like Barnard's Star have moved
 several arcminutes since J2000, so we shift them to the SPHEREx era before
 querying, otherwise the target can fall off the cutout.
-
-TODO (Phase 0): double-check each value against SIMBAD / Gaia DR3.
 """
 import math
 
