@@ -7,6 +7,7 @@ import concurrent.futures as cf
 import io
 import os
 import re
+import time
 import warnings
 
 import numpy as np
@@ -46,6 +47,29 @@ class NoData(Exception):
     pass
 
 
+class ArchiveUnavailable(Exception):
+    """IRSA's image search did not answer, even after retrying (e.g. its '502 Proxy Error')."""
+
+
+# IRSA's search service fails now and then (HTTP 502/503 for a few seconds or minutes), and a
+# retry often works. Seconds to wait before each extra try.
+SEARCH_RETRY_WAITS = (2, 5, 10)
+
+
+def _query_sia(coord, radius, irsa):
+    """Irsa.query_sia with retries; raises ArchiveUnavailable when every try fails."""
+    last = None
+    for wait in (0, *SEARCH_RETRY_WAITS):
+        if wait:
+            time.sleep(wait)
+        try:
+            return irsa.query_sia(pos=(coord, radius), collection=COLLECTIONS)
+        except Exception as e:  # network errors, 502/503 from IRSA, broken answers
+            last = e
+            print(f"IRSA search failed ({type(e).__name__}): {str(e).splitlines()[0][:120]}")
+    raise ArchiveUnavailable(str(last).splitlines()[0][:300] if last else "no answer")
+
+
 # ---------- query ----------
 
 def find_images(ra, dec, fov, det):
@@ -57,7 +81,7 @@ def find_images(ra, dec, fov, det):
     from astroquery.ipac.irsa import Irsa
 
     coord = SkyCoord(ra, dec, unit="deg")
-    tbl = Irsa.query_sia(pos=(coord, 1 * u.arcsec), collection=COLLECTIONS)
+    tbl = _query_sia(coord, 1 * u.arcsec, Irsa)
 
     rank = {c: i for i, c in enumerate(COLLECTIONS)}
     best = {}  # same exposure can be in DR1 and QR3: keep the preferred release
