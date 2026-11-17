@@ -2,7 +2,8 @@
 
 SPHEREx Blink is a web tool that allows anyone to flip through NASA's newest infrared sky images captured by the SPHEREx, spot what changed, and check whether an object has already been found or not.
 
-Built by our team Space Penguins for the **NASA Space Apps 2026 (Budapest) Hackathon**!
+Built by our team Space Penguins for the **NASA Space Apps 2026 (Budapest) Hackathon**! 
+Check it out here: https://space-penguins.vercel.app/ .
 
 ![SPHEREx Blink start page](docs/screenshots/start-page.png)
 
